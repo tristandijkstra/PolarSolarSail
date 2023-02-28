@@ -43,7 +43,7 @@ current_directory = os.getcwd()
 # INPUTS ##################################################################
 ###########################################################################
 
-daysToRun = 365 * 2
+daysToRun = 365 * 4
 fixed_step_size = 100.0
 spacecraftMass = 400 # kg
 # solar sail length
@@ -96,7 +96,7 @@ bodies.get("SOLARSAIL").mass = spacecraftMass
 ###########################################################################
 
 # Create thrust guidance object (e.g. object that calculates direction/magnitude of thrust)
-thrust_magnitude = 1
+thrust_magnitude = 0.2
 solar_sail_object = SolarSailGuidance(thrust_magnitude, bodies, sailName="SOLARSAIL")
 
 # Create engine model (default JUICE-fixed pointing direction) with custom thrust magnitude calculation

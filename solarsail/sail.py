@@ -95,6 +95,7 @@ class SolarSailGuidance:
                 inclination = current_keplerian_state[2]
 
                 if inclination > np.pi / 2:
+                    print("Inclination Change complete -> Science")
                     self.currentPhase = 3
                 return Hdirection
 
@@ -126,7 +127,7 @@ class SolarSailGuidance:
             if (self.currentPhase == 0):
                 thrust_magnitude = self.maximum_thrust/2
             elif (self.currentPhase == 2):
-                thrust_magnitude = self.maximum_thrust/2
+                thrust_magnitude = self.maximum_thrust*4
             else:
                 thrust_magnitude = 0
 
