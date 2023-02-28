@@ -2,21 +2,20 @@
 #
 # # Numerical Astrodynamics 2022/2023
 #
-# # Assignment 1 - Propagation Settings
+# # Assignment 1, Question 5 - Propagation Settings
 #
 ###########################################################################
 
 
-""" 
+''' 
 Copyright (c) 2010-2020, Delft University of Technology
 All rights reserved
-
 This file is part of Tudat. Redistribution and use in source and 
 binary forms, with or without modification, are permitted exclusively
 under the terms of the Modified BSD license. You should have received
 a copy of the license with this file. If not, please or visit:
 http://tudat.tudelft.nl/LICENSE.
-"""
+'''
 
 import os
 
@@ -27,8 +26,17 @@ from tudatpy.io import save2txt
 from tudatpy.kernel import constants
 from tudatpy.kernel.interface import spice
 from tudatpy.kernel import numerical_simulation
+from tudatpy.kernel.numerical_simulation import environment
 from tudatpy.kernel.numerical_simulation import environment_setup
 from tudatpy.kernel.numerical_simulation import propagation_setup
+from tudatpy.kernel.astro import element_conversion
+
+from solarsail.sail import SolarSailGuidance
+
+
+
+# Retrieve current directory
+current_directory = os.getcwd()
 
 
 ###########################################################################
@@ -59,9 +67,9 @@ simulation_end_epoch = simulation_start_epoch + (daysToRun * constants.JULIAN_DA
 # CREATE ENVIRONMENT ######################################################
 ###########################################################################
 
+
 # Load spice kernels.
 spice.load_standard_kernels()
-# spice.load_kernel(current_directory + "/solarSail_mat_crema_5_1_150lb_v01.bsp")
 
 # Create settings for celestial bodies
 bodies_to_create = ["Sun"]
@@ -83,36 +91,32 @@ bodies = environment_setup.create_system_of_bodies(body_settings)
 bodies.create_empty_body("SOLARSAIL")
 bodies.get("SOLARSAIL").mass = spacecraftMass
 
+###########################################################################
+# CREATE THRUST MODEL #####################################################
+###########################################################################
 
-# define parameters of the panelled model
-emissivities = [0.73]  # emissivity of each panel
-areas = [solarSailDim * solarSailDim]  # area of each panel
-diffusion_coefficients = [0.1]  # diffusion coefficient of each panel
-panel_surface_normals = (
-    [  # normals of each panel surfaces in body-fixed reference frame
-        # [0.2, 0.8, 0.0],
-        # [1.0, 0.0, 0.0],
-        # [0.0, 1.0, 0.0],
-        [0.5, 0.5, 0.0],
-        # [0.0, 0.5, -0.5],
-    ]
-)
-# define parameter for occulting body
-# create radiation pressure interface settings
-radiation_pressure_settings = environment_setup.radiation_pressure.panelled(
-    "Sun", emissivities, areas, diffusion_coefficients, panel_surface_normals
-)
+# Create thrust guidance object (e.g. object that calculates direction/magnitude of thrust)
+thrust_magnitude = 1
+solar_sail_object = SolarSailGuidance(thrust_magnitude, bodies, sailName="SOLARSAIL")
 
-rotation_model_settings = (
-    environment_setup.rotation_model.orbital_state_direction_based(
-        "Sun", True, False, "J2000", "SOLARSAIL_Fixed"
-    )
-)
-# add radiation pressure interface to "Spacecraft" body
-environment_setup.add_rotation_model(bodies, "SOLARSAIL", rotation_model_settings)
-environment_setup.add_radiation_pressure_interface(
-    bodies, "SOLARSAIL", radiation_pressure_settings
-)
+# Create engine model (default JUICE-fixed pointing direction) with custom thrust magnitude calculation
+constant_specific_impulse = 0
+thrust_magnitude_settings = (
+    propagation_setup.thrust.custom_thrust_magnitude_fixed_isp(
+        solar_sail_object.compute_thrust_magnitude,
+        constant_specific_impulse ) )
+environment_setup.add_engine_model(
+    'SOLARSAIL', 'SAILENGINE', thrust_magnitude_settings, bodies )
+
+# Create vehicle rotation model such that thrust points in required direction in inertial frame
+thrust_direction_function = solar_sail_object.compute_thrust_direction
+rotation_model_settings = environment_setup.rotation_model.custom_inertial_direction_based(
+    thrust_direction_function,
+    "SOLARSAIL-fixed",
+    "ECLIPJ2000" )
+
+environment_setup.add_rotation_model( bodies, "SOLARSAIL", rotation_model_settings)
+
 
 ###########################################################################
 # CREATE ACCELERATIONS ####################################################
@@ -124,7 +128,11 @@ central_bodies = ["Sun"]
 
 # Define accelerations acting on vehicle.
 acceleration_settings_on_vehicle = dict(
-    Sun=[propagation_setup.acceleration.point_mass_gravity(),propagation_setup.acceleration.panelled_radiation_pressure(),]
+        SOLARSAIL=[
+        # Define the thrust acceleration from its direction and magnitude
+        propagation_setup.acceleration.thrust_from_engine('SAILENGINE')
+    ],
+    Sun=[propagation_setup.acceleration.point_mass_gravity()]
 )
 
 # Create global accelerations dictionary.
@@ -141,7 +149,7 @@ acceleration_models = propagation_setup.create_acceleration_models(
 
 # Define initial state.
 system_initial_state = spice.get_body_cartesian_state_at_epoch(
-    target_body_name="Venus",  # NOTE start at earth's position (CHANGE LATER)
+    target_body_name="Earth",  # NOTE start at earth's position (CHANGE LATER)
     observer_body_name="Sun",
     reference_frame_name="ECLIPJ2000",
     aberration_corrections="NONE",
@@ -149,10 +157,10 @@ system_initial_state = spice.get_body_cartesian_state_at_epoch(
 )
 
 # Define required outputs  panelled_radiation_pressure_acceleration_type
-acctype = propagation_setup.acceleration.panelled_radiation_pressure_acceleration_type
+# acctype = propagation_setup.acceleration.panelled_radiation_pressure_acceleration_type
 dependent_variables_to_save = [
-    propagation_setup.dependent_variable.single_acceleration(acctype, "SOLARSAIL", "Sun"),
-    propagation_setup.dependent_variable.single_acceleration_norm(acctype, "SOLARSAIL", "Sun"),
+    # propagation_setup.dependent_variable.single_acceleration(acctype, "SOLARSAIL", "Sun"),
+    # propagation_setup.dependent_variable.single_acceleration_norm(acctype, "SOLARSAIL", "Sun"),
     propagation_setup.dependent_variable.heading_angle("SOLARSAIL", "Sun")
     # propagation_setup.dependent_variable.keplerian_state("SOLARSAIL", "Sun")
 ]
@@ -172,6 +180,7 @@ propagator_settings = propagation_setup.propagator.translational(
     simulation_start_epoch,
     integrator_settings,
     termination_settings,
+    # propagation_setup.propagator.cowell,
     output_variables=dependent_variables_to_save,
 )
 
