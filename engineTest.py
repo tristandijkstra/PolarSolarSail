@@ -43,7 +43,7 @@ current_directory = os.getcwd()
 # INPUTS ##################################################################
 ###########################################################################
 
-daysToRun = 365 * 4
+daysToRun = 365 * 7
 fixed_step_size = 100.0
 spacecraftMass = 400 # kg
 # solar sail length

@@ -127,7 +127,7 @@ class SolarSailGuidance:
             if (self.currentPhase == 0):
                 thrust_magnitude = self.maximum_thrust/2
             elif (self.currentPhase == 2):
-                thrust_magnitude = self.maximum_thrust*4
+                thrust_magnitude = self.maximum_thrust*6
             else:
                 thrust_magnitude = 0
 
