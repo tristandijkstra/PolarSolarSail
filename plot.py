@@ -23,7 +23,7 @@ ax.set_aspect("equal")
 # fig.set_tight_layout()
 
 fig2, ax2 = plt.subplots(3,1)
-ax2[0].plot(data2.iloc[:, 1:4], label=["x", "y", "z"])
+ax2[0].plot(data2.iloc[:, 1:5], label=["x", "y", "z", "norm"])
 ax2[0].legend()
 ax2[0].set_title("Sail Acceleration")
 ax2[1].set_title("Altitude (AU)")

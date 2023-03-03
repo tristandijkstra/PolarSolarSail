@@ -43,7 +43,7 @@ current_directory = os.getcwd()
 # INPUTS ##################################################################
 ###########################################################################
 
-daysToRun = 365 * 7
+daysToRun = 365 * 1
 fixed_step_size = 100.0
 spacecraftMass = 400 # kg
 # solar sail length
@@ -88,8 +88,9 @@ bodies = environment_setup.create_system_of_bodies(body_settings)
 ###########################################################################
 
 # Create vehicle object
-bodies.create_empty_body("SOLARSAIL")
-bodies.get("SOLARSAIL").mass = spacecraftMass
+spacecraftName = "SOLARSAIL"
+bodies.create_empty_body(spacecraftName)
+bodies.get(spacecraftName).mass = spacecraftMass
 
 ###########################################################################
 # CREATE THRUST MODEL #####################################################
@@ -97,7 +98,7 @@ bodies.get("SOLARSAIL").mass = spacecraftMass
 
 # Create thrust guidance object (e.g. object that calculates direction/magnitude of thrust)
 thrust_magnitude = 0.2
-solar_sail_object = SolarSailGuidance(thrust_magnitude, bodies, sailName="SOLARSAIL")
+solar_sail_object = SolarSailGuidance(bodies, sailName=spacecraftName)
 
 # Create engine model (default JUICE-fixed pointing direction) with custom thrust magnitude calculation
 constant_specific_impulse = 0
@@ -115,7 +116,7 @@ rotation_model_settings = environment_setup.rotation_model.custom_inertial_direc
     "SOLARSAIL-fixed",
     "ECLIPJ2000" )
 
-environment_setup.add_rotation_model( bodies, "SOLARSAIL", rotation_model_settings)
+environment_setup.add_rotation_model( bodies, spacecraftName, rotation_model_settings)
 
 
 ###########################################################################
@@ -123,7 +124,7 @@ environment_setup.add_rotation_model( bodies, "SOLARSAIL", rotation_model_settin
 ###########################################################################
 
 # Define bodies that are propagated, and their central bodies of propagation.
-bodies_to_propagate = ["SOLARSAIL"]
+bodies_to_propagate = [spacecraftName]
 central_bodies = ["Sun"]
 
 # Define accelerations acting on vehicle.
@@ -136,7 +137,7 @@ acceleration_settings_on_vehicle = dict(
 )
 
 # Create global accelerations dictionary.
-acceleration_settings = {"SOLARSAIL": acceleration_settings_on_vehicle}
+acceleration_settings = {spacecraftName: acceleration_settings_on_vehicle}
 
 # Create acceleration models.
 acceleration_models = propagation_setup.create_acceleration_models(
@@ -149,7 +150,7 @@ acceleration_models = propagation_setup.create_acceleration_models(
 
 # Define initial state.
 system_initial_state = spice.get_body_cartesian_state_at_epoch(
-    target_body_name="Earth",  # NOTE start at earth's position (CHANGE LATER)
+    target_body_name="Venus",  # NOTE start at earth's position (CHANGE LATER)
     observer_body_name="Sun",
     reference_frame_name="ECLIPJ2000",
     aberration_corrections="NONE",
@@ -158,10 +159,12 @@ system_initial_state = spice.get_body_cartesian_state_at_epoch(
 
 # Define required outputs  panelled_radiation_pressure_acceleration_type
 # acctype = propagation_setup.acceleration.panelled_radiation_pressure_acceleration_type
+acctype = propagation_setup.acceleration.thrust_acceleration_type 
 dependent_variables_to_save = [
-    # propagation_setup.dependent_variable.single_acceleration(acctype, "SOLARSAIL", "Sun"),
+    propagation_setup.dependent_variable.single_acceleration(acctype, spacecraftName, spacecraftName),
+    propagation_setup.dependent_variable.single_acceleration_norm(acctype, spacecraftName, spacecraftName),
     # propagation_setup.dependent_variable.single_acceleration_norm(acctype, "SOLARSAIL", "Sun"),
-    propagation_setup.dependent_variable.heading_angle("SOLARSAIL", "Sun")
+    # propagation_setup.dependent_variable.heading_angle("SOLARSAIL", "Sun")
     # propagation_setup.dependent_variable.keplerian_state("SOLARSAIL", "Sun")
 ]
 
