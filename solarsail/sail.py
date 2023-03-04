@@ -1,19 +1,10 @@
-import os
-
 import numpy as np
-from matplotlib import pyplot as plt
 
-# from tudatpy.io import save2txt
 from tudatpy.kernel import constants
-
-# from tudatpy.kernel.interface import spice
-# from tudatpy.kernel import numerical_simulation
 from tudatpy.kernel.numerical_simulation import environment
-
-# from tudatpy.kernel.numerical_simulation import environment_setup
-# from tudatpy.kernel.numerical_simulation import propagation_setup
 from tudatpy.kernel.astro import element_conversion
-from typing import Callable
+
+from typing import Callable, Tuple
 
 
 def eps_f_func(T: float) -> float:
@@ -30,7 +21,7 @@ def kappaf(
     Xb: float = 1,
     epsF: Callable[[float], float] = eps_f_func,
     epsB: Callable[[float], float] = eps_b_func,
-):
+) -> Tuple[float, float, float]:
     kappa = (Xf * epsF(T) - Xb * epsB(T)) / (epsF(T) + epsB(T))
     return kappa, Xf, Xb
 
@@ -48,20 +39,29 @@ class SolarSailGuidance:
         self,
         bodies: environment.SystemOfBodies,
         sailName: str = "Sail",
-        mass=500,
-        sailArea=22500,
+        mass: float = 100,
+        sailArea: float = 22500,
+        targetAltitude: float = 0.48,
+        # TODO: add fast transfer stuff
+        deepestAltitude: float = 0.48,
+        targetInclination: float = 90,
+        # TODO: get realistic values for these:
         a: float = 1,
         rspec: float = 1,
         rdiff: float = 1,
-        targetAltitude=0.48,
-        targetInclination=90,
     ):
         self.bodies = bodies
         self.sailName = sailName
         self.targetAltitude = targetAltitude
+        self.deepestAltitude = deepestAltitude
 
         self.mass = mass
         self.sigma = mass / sailArea
+        self.sigmaC = 2 * (
+            SolarSailGuidance.I_AU / (SolarSailGuidance.c * SolarSailGuidance.gAU)
+        )
+
+        print(f"sigma = {self.sigma} | sigmaC = {self.sigmaC}")
 
         self.a = a
         self.rspec = rspec
@@ -69,16 +69,13 @@ class SolarSailGuidance:
 
         self.targetInclination = np.radians(targetInclination)
 
-        self.sigmaC = 2 * (
-            SolarSailGuidance.I_AU / (SolarSailGuidance.c * SolarSailGuidance.gAU)
-        )
-
         # 0 = Transfer, 1 = Pause, 2 = Inclination change
         self.currentPhase = 0
+
         self.lastTimeMeasured = 0
         self.lastAccelVector: np.ndarray
 
-    def computeSail(self):
+    def computeSail(self) -> np.ndarray:
         T = 100 + 273
 
         current_cartesian_state = (
@@ -124,7 +121,8 @@ class SolarSailGuidance:
             # return -progradeDirection
             # alpha = np.pi/2
             delta = 0
-            alpha = np.arctan(1 / np.sqrt(2))
+            # alpha = np.arctan(1 / np.sqrt(2))
+            alpha = np.pi / 4
             # delta = np.pi/2
         # wait for correct orbit
         elif self.currentPhase == 1:
@@ -166,30 +164,27 @@ class SolarSailGuidance:
 
         nx = nvec[0]
 
-        B = (
-            (self.bodies.get("Sun").gravitational_parameter / current_alt**2)
-            * (0.5 * (self.sigmaC / self.sigma))
-            * nx
-        )
+        B = (mu / (current_alt * current_alt)) * (0.5 * (self.sigmaC / self.sigma)) * nx
 
         kappa, Xf, Xb = kappaf(T)
 
+        uvec = np.array([1, 0, 0])
+
         # TODO nvec uvec
-        bVec = (((2 * self.rspec * nx) + (Xf * self.rdiff) + kappa * self.a) * nvec) + (
-            (self.a + self.rdiff) * radialDirection
-        )
+        bVec = (
+            ((2 * self.rspec * nx) + (Xf * self.rdiff) + (kappa * self.a)) * nvec
+        ) + ((self.a + self.rdiff) * uvec)
 
-        # Transform to inertial
-        # TODO
+        # TODO Transform to inertial
+        rh = radialDirection * Hdirection
+        transform = np.cross(rh, rh)
 
-        accelerationSC = B * bVec
-
-        # self.lastAccelVector = accelerationSC
+        accelerationSC = transform * (B * bVec)
+        # print(accelerationSC)
 
         return accelerationSC
 
     def compute_thrust_direction(self, current_time: float) -> np.ndarray:
-        # Check if computation is to be done
         if self.lastTimeMeasured == current_time:
             acc = self.lastAccelVector
             return acc / np.sqrt(np.square(acc).sum())
@@ -199,6 +194,7 @@ class SolarSailGuidance:
             self.lastAccelVector = acc
             self.lastTimeMeasured = current_time
 
+            # print(f"thrust direction {acc}")
             direction = acc / np.sqrt(np.square(acc).sum())
 
             return direction
@@ -206,12 +202,13 @@ class SolarSailGuidance:
         else:
             return np.zeros([3, 1])
 
-    def compute_thrust_magnitude(self, current_time: float):
+    def compute_thrust_magnitude(self, current_time: float) -> float:
         # Check if computation is to be done
         if self.lastTimeMeasured == current_time:
             acc = self.lastAccelVector
             return np.sqrt(np.square(acc).sum())
         elif current_time == current_time:
+            # print("thrust magnitude")
             acc = self.computeSail()
 
             self.lastAccelVector = acc

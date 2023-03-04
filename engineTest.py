@@ -7,7 +7,7 @@
 ###########################################################################
 
 
-''' 
+""" 
 Copyright (c) 2010-2020, Delft University of Technology
 All rights reserved
 This file is part of Tudat. Redistribution and use in source and 
@@ -15,7 +15,7 @@ binary forms, with or without modification, are permitted exclusively
 under the terms of the Modified BSD license. You should have received
 a copy of the license with this file. If not, please or visit:
 http://tudat.tudelft.nl/LICENSE.
-'''
+"""
 
 import os
 
@@ -34,7 +34,6 @@ from tudatpy.kernel.astro import element_conversion
 from solarsail.sail import SolarSailGuidance
 
 
-
 # Retrieve current directory
 current_directory = os.getcwd()
 
@@ -45,9 +44,9 @@ current_directory = os.getcwd()
 
 daysToRun = 365 * 1
 fixed_step_size = 100.0
-spacecraftMass = 400 # kg
+spacecraftMass = 400  # kg
 # solar sail length
-solarSailDim = 150 #m
+solarSailDim = 150  # m
 # fixed_step_size = 10.0
 
 ###########################################################################
@@ -98,25 +97,28 @@ bodies.get(spacecraftName).mass = spacecraftMass
 
 # Create thrust guidance object (e.g. object that calculates direction/magnitude of thrust)
 thrust_magnitude = 0.2
-solar_sail_object = SolarSailGuidance(bodies, sailName=spacecraftName)
+solar_sail_object = SolarSailGuidance(
+    bodies, sailName=spacecraftName, mass=spacecraftMass
+)
 
 # Create engine model (default JUICE-fixed pointing direction) with custom thrust magnitude calculation
 constant_specific_impulse = 0
-thrust_magnitude_settings = (
-    propagation_setup.thrust.custom_thrust_magnitude_fixed_isp(
-        solar_sail_object.compute_thrust_magnitude,
-        constant_specific_impulse ) )
+thrust_magnitude_settings = propagation_setup.thrust.custom_thrust_magnitude_fixed_isp(
+    solar_sail_object.compute_thrust_magnitude, constant_specific_impulse
+)
 environment_setup.add_engine_model(
-    'SOLARSAIL', 'SAILENGINE', thrust_magnitude_settings, bodies )
+    "SOLARSAIL", "SAILENGINE", thrust_magnitude_settings, bodies
+)
 
 # Create vehicle rotation model such that thrust points in required direction in inertial frame
 thrust_direction_function = solar_sail_object.compute_thrust_direction
-rotation_model_settings = environment_setup.rotation_model.custom_inertial_direction_based(
-    thrust_direction_function,
-    "SOLARSAIL-fixed",
-    "ECLIPJ2000" )
+rotation_model_settings = (
+    environment_setup.rotation_model.custom_inertial_direction_based(
+        thrust_direction_function, "SOLARSAIL-fixed", "ECLIPJ2000"
+    )
+)
 
-environment_setup.add_rotation_model( bodies, spacecraftName, rotation_model_settings)
+environment_setup.add_rotation_model(bodies, spacecraftName, rotation_model_settings)
 
 
 ###########################################################################
@@ -129,11 +131,11 @@ central_bodies = ["Sun"]
 
 # Define accelerations acting on vehicle.
 acceleration_settings_on_vehicle = dict(
-        SOLARSAIL=[
+    SOLARSAIL=[
         # Define the thrust acceleration from its direction and magnitude
-        propagation_setup.acceleration.thrust_from_engine('SAILENGINE')
+        propagation_setup.acceleration.thrust_from_engine("SAILENGINE")
     ],
-    Sun=[propagation_setup.acceleration.point_mass_gravity()]
+    Sun=[propagation_setup.acceleration.point_mass_gravity()],
 )
 
 # Create global accelerations dictionary.
@@ -159,10 +161,14 @@ system_initial_state = spice.get_body_cartesian_state_at_epoch(
 
 # Define required outputs  panelled_radiation_pressure_acceleration_type
 # acctype = propagation_setup.acceleration.panelled_radiation_pressure_acceleration_type
-acctype = propagation_setup.acceleration.thrust_acceleration_type 
+acctype = propagation_setup.acceleration.thrust_acceleration_type
 dependent_variables_to_save = [
-    propagation_setup.dependent_variable.single_acceleration(acctype, spacecraftName, spacecraftName),
-    propagation_setup.dependent_variable.single_acceleration_norm(acctype, spacecraftName, spacecraftName),
+    propagation_setup.dependent_variable.single_acceleration(
+        acctype, spacecraftName, spacecraftName
+    ),
+    propagation_setup.dependent_variable.single_acceleration_norm(
+        acctype, spacecraftName, spacecraftName
+    ),
     # propagation_setup.dependent_variable.single_acceleration_norm(acctype, "SOLARSAIL", "Sun"),
     # propagation_setup.dependent_variable.heading_angle("SOLARSAIL", "Sun")
     # propagation_setup.dependent_variable.keplerian_state("SOLARSAIL", "Sun")
