@@ -7,6 +7,9 @@ from tudatpy.kernel.astro import element_conversion
 from typing import Callable, Tuple
 
 
+def norm(vec:np.ndarray):
+    return np.sqrt(np.square(vec).sum())
+
 def eps_f_func(T: float) -> float:
     return 0.73
 
@@ -105,8 +108,8 @@ class SolarSailGuidance:
         current_keplerian_state = element_conversion.cartesian_to_keplerian(
             current_cartesian_state, mu
         )
-
-        Hdirection = np.cross(radialDirection, progradeDirection)
+        H = np.cross(current_cartesian_velocity, current_cartesian_position)
+        Hnorm = np.cross(radialDirection, progradeDirection)
 
         inclination = current_keplerian_state[2]
 
@@ -121,8 +124,8 @@ class SolarSailGuidance:
             # return -progradeDirection
             # alpha = np.pi/2
             delta = 0
-            # alpha = np.arctan(1 / np.sqrt(2))
-            alpha = np.pi / 4
+            alpha = np.arctan(1 / np.sqrt(2))
+            # alpha = 0 * np.pi / 4
             # delta = np.pi/2
         # wait for correct orbit
         elif self.currentPhase == 1:
@@ -168,18 +171,26 @@ class SolarSailGuidance:
 
         kappa, Xf, Xb = kappaf(T)
 
-        uvec = np.array([1, 0, 0])
+        # uvec = np.array([1, 0, 0])
 
         # TODO nvec uvec
         bVec = (
             ((2 * self.rspec * nx) + (Xf * self.rdiff) + (kappa * self.a)) * nvec
-        ) + ((self.a + self.rdiff) * uvec)
+        ) + ((self.a + self.rdiff) * radialDirection)
 
         # TODO Transform to inertial
-        rh = radialDirection * Hdirection
-        transform = np.cross(rh, rh)
+        # rh = radialDirection * Hdirection
+        n_temp = H / norm(H)
 
-        accelerationSC = transform * (B * bVec)
+        ncrossr = np.cross(n_temp, current_cartesian_position)
+        t_temp = ncrossr / norm(ncrossr)
+        r_temp = current_cartesian_position / norm(current_cartesian_position)
+
+        transformMatrix = np.array([n_temp, t_temp, r_temp])
+        # transform = np.cross(rh, rh)
+
+        accelerationSC = transformMatrix @ (B * bVec)
+        # accelerationSC = (B * bVec)
         # print(accelerationSC)
 
         return accelerationSC
@@ -206,7 +217,7 @@ class SolarSailGuidance:
         # Check if computation is to be done
         if self.lastTimeMeasured == current_time:
             acc = self.lastAccelVector
-            return np.sqrt(np.square(acc).sum())
+            return np.sqrt(np.square(acc).sum()) * self.mass
         elif current_time == current_time:
             # print("thrust magnitude")
             acc = self.computeSail()
@@ -214,7 +225,7 @@ class SolarSailGuidance:
             self.lastAccelVector = acc
             self.lastTimeMeasured = current_time
 
-            magnitude = np.sqrt(np.square(acc).sum())
+            magnitude = np.sqrt(np.square(acc).sum()) * self.mass
             return magnitude
 
         # If no computation is to be done, return zeros

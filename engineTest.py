@@ -44,7 +44,7 @@ current_directory = os.getcwd()
 
 daysToRun = 365 * 1
 fixed_step_size = 100.0
-spacecraftMass = 400  # kg
+spacecraftMass = 700  # kg
 # solar sail length
 solarSailDim = 150  # m
 # fixed_step_size = 10.0
@@ -152,7 +152,7 @@ acceleration_models = propagation_setup.create_acceleration_models(
 
 # Define initial state.
 system_initial_state = spice.get_body_cartesian_state_at_epoch(
-    target_body_name="Venus",  # NOTE start at earth's position (CHANGE LATER)
+    target_body_name="Earth",  # NOTE start at earth's position (CHANGE LATER)
     observer_body_name="Sun",
     reference_frame_name="ECLIPJ2000",
     aberration_corrections="NONE",
@@ -171,7 +171,7 @@ dependent_variables_to_save = [
     ),
     # propagation_setup.dependent_variable.single_acceleration_norm(acctype, "SOLARSAIL", "Sun"),
     # propagation_setup.dependent_variable.heading_angle("SOLARSAIL", "Sun")
-    # propagation_setup.dependent_variable.keplerian_state("SOLARSAIL", "Sun")
+    propagation_setup.dependent_variable.keplerian_state("SOLARSAIL", "Sun")
 ]
 
 # Create numerical integrator settings.
