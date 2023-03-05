@@ -8,6 +8,8 @@ fig, ax = plt.subplots(1, 1, subplot_kw=dict(projection="3d"))
 
 file = "SOLARSAILPropagationHistory_Q1.dat"
 file2 = "SOLARSAILPropagationHistory_DependentVariables_Q1.dat"
+file = "SOLARSAIL_Basic.dat"
+file2 = "SOLARSAIL_Dep_Basic.dat"
 
 data = pd.read_csv(
     file, delimiter="	", names=["t", "x", "y", "z", "vx", "vy", "vz"], header=None
@@ -31,7 +33,7 @@ data2 = pd.read_csv(file2, delimiter="	", names=depVars, header=None)
 
 ax.plot(data.iloc[:, 1], data.iloc[:, 2], data.iloc[:, 3])
 
-quiverEvery = 4000
+quiverEvery = 6000
 ax.quiver(
     data.x[::quiverEvery],
     data.y[::quiverEvery],
@@ -39,7 +41,7 @@ ax.quiver(
     data2.ThrustX[::quiverEvery],
     data2.ThrustY[::quiverEvery],
     data2.ThrustZ[::quiverEvery],
-    length=0.08 * AU,
+    length=0.1 * AU,
     normalize=True,
     color="tab:orange",
 )
