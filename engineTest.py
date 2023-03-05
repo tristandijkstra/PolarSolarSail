@@ -31,7 +31,8 @@ from tudatpy.kernel.numerical_simulation import environment_setup
 from tudatpy.kernel.numerical_simulation import propagation_setup
 from tudatpy.kernel.astro import element_conversion
 
-from solarsail.sail import SolarSailGuidance
+from solarsail.sailBasic import SolarSailGuidance
+# from solarsail.sail import SolarSailGuidance
 
 
 # Retrieve current directory
@@ -42,7 +43,7 @@ current_directory = os.getcwd()
 # INPUTS ##################################################################
 ###########################################################################
 
-daysToRun = 365 * 1
+daysToRun = 365 * 7
 fixed_step_size = 100.0
 spacecraftMass = 700  # kg
 # solar sail length
@@ -96,9 +97,10 @@ bodies.get(spacecraftName).mass = spacecraftMass
 ###########################################################################
 
 # Create thrust guidance object (e.g. object that calculates direction/magnitude of thrust)
-thrust_magnitude = 0.2
 solar_sail_object = SolarSailGuidance(
-    bodies, sailName=spacecraftName, mass=spacecraftMass
+    bodies,
+    sailName=spacecraftName,
+    mass=spacecraftMass,
 )
 
 # Create engine model (default JUICE-fixed pointing direction) with custom thrust magnitude calculation
@@ -171,7 +173,7 @@ dependent_variables_to_save = [
     ),
     # propagation_setup.dependent_variable.single_acceleration_norm(acctype, "SOLARSAIL", "Sun"),
     # propagation_setup.dependent_variable.heading_angle("SOLARSAIL", "Sun")
-    propagation_setup.dependent_variable.keplerian_state("SOLARSAIL", "Sun")
+    propagation_setup.dependent_variable.keplerian_state("SOLARSAIL", "Sun"),
 ]
 
 # Create numerical integrator settings.
