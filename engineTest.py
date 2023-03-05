@@ -140,6 +140,7 @@ acceleration_settings_on_vehicle = dict(
     Sun=[propagation_setup.acceleration.point_mass_gravity()],
 )
 
+print(acceleration_settings_on_vehicle)
 # Create global accelerations dictionary.
 acceleration_settings = {spacecraftName: acceleration_settings_on_vehicle}
 
