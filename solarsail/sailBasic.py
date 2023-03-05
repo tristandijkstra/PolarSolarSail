@@ -23,12 +23,15 @@ class SolarSailGuidance:
         sailName: str = "Sail",
         targetAltitude=0.48,
         mass: float = 100,
+        sailArea: float = 22500,
         maximum_thrust: float = 0.2,
     ):
         self.maximum_thrust = maximum_thrust
         self.bodies = bodies
         self.sailName = sailName
         self.targetAltitude = targetAltitude
+        self.mass = mass
+
 
         # 0 = Transfer, 1 = Pause, 2 = Inclination change
         self.currentPhase = 0
