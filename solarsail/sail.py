@@ -52,6 +52,8 @@ class SolarSailGuidance:
         a: float = 1,
         rspec: float = 1,
         rdiff: float = 1,
+        # Deprecated: here for backwards compatibility
+        maximum_thrust: float = 0,
     ):
         self.bodies = bodies
         self.sailName = sailName
