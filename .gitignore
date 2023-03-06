@@ -4,3 +4,4 @@ __pycache__
 animations/
 test*
 *.log
+*.png
