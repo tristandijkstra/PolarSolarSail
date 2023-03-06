@@ -125,7 +125,7 @@ def simulate(
 
     # Define initial state.
     system_initial_state = spice.get_body_cartesian_state_at_epoch(
-        target_body_name="Venus",  # NOTE start at earth's position (CHANGE LATER)
+        target_body_name="Earth",  # NOTE start at earth's position (CHANGE LATER)
         observer_body_name="Sun",
         reference_frame_name="ECLIPJ2000",
         aberration_corrections="NONE",

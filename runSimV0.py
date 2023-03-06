@@ -1,5 +1,5 @@
 from simulation import simulationV0
-from solarsail.sailIntermediate import SolarSailGuidance
+from solarsail.sailPhysicalV1 import SolarSailGuidance
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -18,12 +18,16 @@ logging.basicConfig(filename=f'{saveDirectory}/simV0.log', encoding='utf-8', lev
 
 masses = [500, 700]
 sailAreas = [15000, 22500]
-masses = [500]
+masses = [532]
 sailAreas = [22500]
+masses = [532]
+sailAreas = [22500]
+masses = [765]
+sailAreas = [10000]
 
 paramNames = ["mass", "area"]
 
-yearsToRun = 7
+yearsToRun = 20
 yearInSeconds = 365 * 24 * 3600
 
 combinations = list(product(masses, sailAreas))

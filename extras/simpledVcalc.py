@@ -21,7 +21,7 @@ def dV(radiusAU: float, inclChangeDeg: float, mu: float = muSun):
 
 
 if __name__ == "__main__":
-    defaultVal = (dV(0.48, 90))
+    defaultVal = (dV(0.48, 90)) 
 
     radii = np.linspace(0.25, 0.75, 100)
     inclinations = np.linspace(60, 90, 30)
