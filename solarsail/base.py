@@ -74,7 +74,7 @@ class SolarSailGuidanceBase:
 
                 accNorm = self.norm(acc)
                 if accNorm == 0:
-                    return np.zeros([3, 1])
+                    direction = np.zeros([3, 1])
                 else:
                     direction = acc / accNorm
 

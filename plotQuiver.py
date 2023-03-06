@@ -15,6 +15,10 @@ file = "data/mass500_area45000.dat"
 file2 = "data/mass500_area45000_dep.dat"
 file = "data/mass500_area5625.0.dat"
 file2 = "data/mass500_area5625.0_dep.dat"
+file = "data/mass500_area11250.0.dat"
+file2 = "data/mass500_area11250.0_dep.dat"
+file = "data/mass500_area22500.dat"
+file2 = "data/mass500_area22500_dep.dat"
 
 data = pd.read_csv(
     file, delimiter="	", names=["time", "x", "y", "z", "vx", "vy", "vz"], header=None

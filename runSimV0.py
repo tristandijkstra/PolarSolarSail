@@ -9,7 +9,7 @@ from tqdm import tqdm
 masses = [500, 700]
 sailAreas = [15000, 22500]
 masses = [500]
-sailAreas = [22500/4]
+sailAreas = [22500]
 
 paramNames = ["mass", "area"]
 

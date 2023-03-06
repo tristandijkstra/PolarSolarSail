@@ -96,15 +96,15 @@ class SolarSailGuidance(SolarSailGuidanceBase):
             # thetaNode = (2 * np.pi) - current_keplerian_state[3]
             trueAnomaly = current_keplerian_state[5]
 
-            nearNode1 = abs(thetaNode - trueAnomaly) < np.pi
-            nearNode2 = abs(thetaNode - np.pi - trueAnomaly) < np.pi
+            nearNode1 = abs(trueAnomaly - thetaNode) < 0.5 * np.pi
+            nearNode2 = abs(trueAnomaly - (thetaNode + np.pi)) < 0.5 * np.pi
             
             if nearNode1:
                 b = Hdirection
             elif nearNode2:
                 b = -Hdirection
             else:
-                print(thetaNode - trueAnomaly)
+                print((trueAnomaly - thetaNode), trueAnomaly)
                 b = Hdirection
 
         # post-inclination change
