@@ -1,6 +1,7 @@
 import os
 
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
 
 from tudatpy.io import save2txt
@@ -104,7 +105,9 @@ def simulate(
     central_bodies = ["Sun"]
 
     acceleration_settings_on_vehicle = {
-        spacecraftName: [propagation_setup.acceleration.thrust_from_engine("SAILENGINE")],
+        spacecraftName: [
+            propagation_setup.acceleration.thrust_from_engine("SAILENGINE")
+        ],
         "Sun": [propagation_setup.acceleration.point_mass_gravity()],
     }
 
@@ -199,3 +202,76 @@ def simulate(
     )
 
     return sailGuidanceObject, fileName, fileNameDep
+
+
+def plotSimulation(satName, dataFile: str, dataDepFile: str, extraText:str="", quiverEvery:int = 6000):
+    AU = constants.ASTRONOMICAL_UNIT  # m
+    yearInSeconds = 365 * 24 * 3600
+
+    fig, ax = plt.subplots(1, 1, subplot_kw=dict(projection="3d"))
+
+    cols = ["time", "x", "y", "z", "vx", "vy", "vz"]
+    depVars = [
+        "time",
+        "ThrustX",
+        "ThrustY",
+        "ThrustZ",
+        "ThrustMagnitude",
+        "a",
+        "e",
+        "i",
+        "omega",
+        "RAAN",
+        "theta",
+    ]
+
+    data = pd.read_csv(dataFile, delimiter="	", names=cols, header=None).assign(
+        altitude=lambda x: np.sqrt(x.x**2 + x.y**2 + x.z**2) / AU
+    )
+    data2 = pd.read_csv(dataDepFile, delimiter="	", names=depVars, header=None)
+
+    time = (data2.time - data.time.iloc[0]) / yearInSeconds
+    ax.plot(data.iloc[:, 1], data.iloc[:, 2], data.iloc[:, 3])
+
+
+    ax.quiver(
+        data.x[::quiverEvery],
+        data.y[::quiverEvery],
+        data.z[::quiverEvery],
+        data2.ThrustX[::quiverEvery],
+        data2.ThrustY[::quiverEvery],
+        data2.ThrustZ[::quiverEvery],
+        length=0.1 * AU,
+        normalize=True,
+        color="tab:orange",
+    )
+    ax.set_ylim(-0.5 * AU, 0.5 * AU)
+    ax.set_xlim(-0.5 * AU, 0.5 * AU)
+    ax.set_aspect("equal")
+
+    fig2, ax2 = plt.subplots(3, 1, sharex=True)
+
+
+    ax2[0].plot(time, data2.iloc[:, 1:4], label=["x", "y", "z"])
+    ax2[0].plot(time, data2.iloc[:, 4], label="norm", linestyle="--")
+    ax2[0].legend()
+    ax2[0].grid()
+    ax2[0].set_ylabel(r"Acceleration $[m/s^2]$")
+
+    ax2[1].plot(time, data.altitude)
+    ax2[1].set_ylabel(r"Radius $[AU]$")
+    ax2[1].grid()
+
+    ax2[2].plot(time, np.degrees(data2.i))
+    ax2[2].set_ylabel(r"Inclination $[\deg]$")
+    ax2[2].set_xlabel("Time [years]")
+    ax2[2].grid()
+
+    fig.suptitle(f"{satName} | {extraText}")
+    fig2.suptitle(f"{satName} | {extraText}")
+
+    fig.set_tight_layout(True)
+    fig2.set_tight_layout(True)
+
+    fig.savefig(f"data/{satName}_3d.png")
+    fig2.savefig(f"data/{satName}_var.png")
