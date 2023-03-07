@@ -7,28 +7,32 @@ import os.path
 AU = 149.6e9
 
 
-def animate(speed, dataFile, bodyColor="cyan", plotLimits=AU, savename = "sailAnimation"):
+def animate(speed, dataFile, bodyColor="cyan", plotLimits=AU, savename = "sailAnimation", dpi=96, dt=100, showPlanet=False):
     plt.style.use("dark_background")
-    fig = plt.figure(figsize=(10, 10))
+    fig = plt.figure(figsize=(1920/dpi, 1080/dpi), dpi=dpi)
+    fig.tight_layout()
+    
     ax = fig.add_subplot(111, projection="3d")
 
-    # if Body is not None:
-    #     assert (type(Body) == msp.Planet), "Incorrect Body type, should be main.Planet"
-    #     # Sphere:
-    #     u = np.linspace(0, 2 * np.pi, 100)
-    #     v = np.linspace(0, np.pi, 100)
-    #     x = Body.r * np.outer(np.cos(u), np.sin(v))
-    #     y = Body.r * np.outer(np.sin(u), np.sin(v))
-    #     z = Body.r * np.outer(np.ones(np.size(u)), np.cos(v))
-    #     # Plot the surface
-    #     ax.plot_surface(x, y, z, color=str(bodyColor))
+    if showPlanet:
+        rSun = 7e8
+        u = np.linspace(0, 2 * np.pi, 100)
+        v = np.linspace(0, np.pi, 100)
+        x = rSun * np.outer(np.cos(u), np.sin(v))
+        y = rSun * np.outer(np.sin(u), np.sin(v))
+        z = rSun * np.outer(np.ones(np.size(u)), np.cos(v))
+        # Plot the surface
+        ax.plot_surface(x, y, z, color=str(bodyColor))
 
     (line,) = ax.plot([], [], lw=1)
     (scatt,) = ax.plot([], [], linestyle="", marker="o", color="white")
 
     ax.set_ylim(-plotLimits, plotLimits)
     ax.set_xlim(-plotLimits, plotLimits)
-    ax.set_zlim(-plotLimits, plotLimits)
+    ax.set_zlim(-plotLimits/2, plotLimits/2)
+    # ax.axis('equal')
+    ax.set_box_aspect((2, 2, 1), zoom=1.5)
+    # ax.set_box_aspect([1,1,0.5])
     plt.axis("off")
 
     # SOLARSAILPropagationHistoryAnimate
@@ -54,7 +58,7 @@ def animate(speed, dataFile, bodyColor="cyan", plotLimits=AU, savename = "sailAn
     print(f", reduced to: {len(data)}")
 
     # savename = "sailAnimation"
-    headerText = savename + " " + str(speed*100) + "x speed"
+    headerText = savename + " " + str(speed*dt) + "x speed"
     title = ax.set_title(headerText)
     steps = len(data)
 
@@ -99,14 +103,15 @@ def animate(speed, dataFile, bodyColor="cyan", plotLimits=AU, savename = "sailAn
         os.makedirs("animations")
     fullSaveName = "animations/" + savename + ".mp4"
     print("Saving to " + fullSaveName)
-    anim.save(fullSaveName, fps=120, extra_args=["-vcodec", "libx264"], dpi=100)
+    anim.save(fullSaveName, fps=60, extra_args=["-vcodec", "libx264"], dpi=dpi)
 
     # plt.show()
 
 
 if __name__ == "__main__":
-    SPEED = 1000
+    SPEED = 4000
     DATAFILE = r"SOLARSAILPropagationHistoryAnimate.dat"
-    savename = "sailAnimationRot"
+    DATAFILE = r"data\mass765_area10000.dat"
+    savename = "sailAnimationRotNew4x"
 
     animate(SPEED, DATAFILE, savename=savename)

@@ -27,7 +27,7 @@ sailAreas = [10000]
 
 paramNames = ["mass", "area"]
 
-yearsToRun = 20
+yearsToRun = 25
 yearInSeconds = 365 * 24 * 3600
 
 combinations = list(product(masses, sailAreas))
@@ -48,6 +48,7 @@ for combination in tqdm(combinations):
         sailGuidanceObject=guidanceObject,
         saveFile=spacecraftName,
         yearsToRun=yearsToRun,
+        simStepSize=100.0
     )
 
     inclinationChangeDuration, finalInclination = finalGuidanceObj.getInclinationChangeDuration()
