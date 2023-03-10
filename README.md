@@ -8,14 +8,21 @@ CSDP - Solar sail orbit model
 - runSimV0.py
 
 ### Install:
-Install Tudat:
-https://docs.tudat.space/en/latest/_src_getting_started/installation.html
 
-Clone Repository
+1. Clone Repository
 ```
 git clone git@github.com:tristandijkstra/PolarSolarSail.git
 ```
+2. Download and install miniconda: https://docs.conda.io/en/latest/miniconda.html
+3. Set up conda with the following commands:
+   ```
+   conda config --add channels conda-forge
+   conda config --set channel_priority strict
+   cd PolarSolarSail
+   conda env create -f environment.yaml
+   ```
+4. Run ```runSimV0.py```
 
-Run ```runSimV0.py```
+### Example:
 
 ![example plot](doc/mass532_area22500_3d.png)
