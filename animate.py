@@ -31,7 +31,7 @@ def animate(speed, dataFile, bodyColor="cyan", plotLimits=AU, savename = "sailAn
     ax.set_xlim(-plotLimits, plotLimits)
     ax.set_zlim(-plotLimits/2, plotLimits/2)
     # ax.axis('equal')
-    ax.set_box_aspect((2, 2, 1), zoom=1.5)
+    ax.set_box_aspect((2, 2, 1), zoom=1.45)
     # ax.set_box_aspect([1,1,0.5])
     plt.axis("off")
 
@@ -58,7 +58,8 @@ def animate(speed, dataFile, bodyColor="cyan", plotLimits=AU, savename = "sailAn
     print(f", reduced to: {len(data)}")
 
     # savename = "sailAnimation"
-    headerText = savename + " " + str(speed*dt) + "x speed"
+    headerText = "25 years" + " " + str(speed*dt) + "x speed"
+    # title = ax.set_title(headerText)
     title = ax.set_title(headerText)
     steps = len(data)
 
@@ -103,7 +104,7 @@ def animate(speed, dataFile, bodyColor="cyan", plotLimits=AU, savename = "sailAn
         os.makedirs("animations")
     fullSaveName = "animations/" + savename + ".mp4"
     print("Saving to " + fullSaveName)
-    anim.save(fullSaveName, fps=60, extra_args=["-vcodec", "libx264"], dpi=dpi)
+    anim.save(fullSaveName, fps=120, extra_args=["-vcodec", "libx264"], dpi=dpi)
 
     # plt.show()
 

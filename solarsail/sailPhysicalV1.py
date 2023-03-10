@@ -10,7 +10,9 @@ from scipy.optimize import fsolve
 
 
 def lambdFunc(alpha, lamd=0):
-    return (2 - 4 * np.tan(alpha)**2) / (np.cos(alpha) * (2 - np.tan(alpha)**2)) - lamd
+    return (2 - 4 * np.tan(alpha) ** 2) / (
+        np.cos(alpha) * (2 - np.tan(alpha) ** 2)
+    ) - lamd
 
 
 class SolarSailGuidance(SolarSailGuidanceBase):
@@ -27,7 +29,7 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         # Deprecated: here for backwards compatibility
         maximum_thrust: float = 0,
         # ac=0.0005,
-        reflectivity:float = 1
+        reflectivity: float = 1,
     ):
         super().__init__(
             bodies,
@@ -40,45 +42,43 @@ class SolarSailGuidance(SolarSailGuidanceBase):
             maximum_thrust,
         )
 
-        self.ac = ((9.08 * reflectivity) / (self.sigma * 1000)) / 1000
-        print(f"Characteristic velocity: {self.ac}")
-        lambd = 168.6284 * self.ac
-
-        self.spiralAlpha = fsolve(lambdFunc, 30 * np.pi/180, args=(lambd))[0]
-
+        self.charAccel = ((9.08 * reflectivity) / (self.sigma * 1000)) / 1000
+        lambd = 168.6284 * self.charAccel
+        self.spiralAlpha = fsolve(lambdFunc, 30 * np.pi / 180, args=(lambd))[0]
+        
+        print(f"Characteristic velocity: {self.charAccel}")
         print(f"Spiral Alpha = {self.spiralAlpha}")
-
 
     def computeSail(self, current_time) -> np.ndarray:
         current_cartesian_state = (
             self.bodies.get(self.sailName).state - self.bodies.get("Sun").state
         )
-        current_cartesian_velocity = (
-            self.bodies.get(self.sailName).velocity
-            # - self.bodies.get("Sun").velocity
-        )
+        # current_cartesian_velocity = (
+        #     self.bodies.get(self.sailName).velocity
+        #     # - self.bodies.get("Sun").velocity
+        # )
 
         current_cartesian_position = (
             self.bodies.get(self.sailName).position - self.bodies.get("Sun").position
         )
 
-        progradeDirection = current_cartesian_velocity / np.sqrt(
-            np.square(current_cartesian_velocity).sum()
-        )
+        # progradeDirection = current_cartesian_velocity / np.sqrt(
+        #     np.square(current_cartesian_velocity).sum()
+        # )
 
         current_alt = np.sqrt(np.square(current_cartesian_position).sum())
 
-        radialDirection = current_cartesian_position / np.sqrt(
-            np.square(current_cartesian_position).sum()
-        )
+        # radialDirection = current_cartesian_position / np.sqrt(
+        #     np.square(current_cartesian_position).sum()
+        # )
 
         mu = self.bodies.get("Sun").gravitational_parameter
 
         current_keplerian_state = element_conversion.cartesian_to_keplerian(
             current_cartesian_state, mu
         )
-        H = np.cross(current_cartesian_velocity, current_cartesian_position)
-        Hdirection = H / self.norm(H)
+        # H = np.cross(current_cartesian_velocity, current_cartesian_position)
+        # Hdirection = H / self.norm(H)
 
         inclination = current_keplerian_state[2]
 
@@ -104,21 +104,23 @@ class SolarSailGuidance(SolarSailGuidanceBase):
             # TODO
             alpha = 0
             delta = 0
+
         # inclination change
         elif self.currentPhase == 2:
             self.inclinationChangeEnd = current_time
             self.lastInclination = np.degrees(inclination)
+
             if inclination > self.targetInclination:
                 print("Inclination Change complete -> Science")
                 self.currentPhase = 3
-            # return Hdirection
+
             alpha = np.arctan(1 / np.sqrt(2))
 
             if np.cos(argPeriapsis + trueAnomaly) >= 0:
                 delta = 0
             else:
                 delta = np.pi
-                
+
         # post-inclination change
         elif self.currentPhase == 3:
             # TODO
@@ -138,11 +140,9 @@ class SolarSailGuidance(SolarSailGuidanceBase):
             ]
         )
 
-        F0 = (SolarSailGuidanceBase.AU / current_alt) ** 2 * self.ac
+        F0 = (SolarSailGuidanceBase.AU / current_alt) ** 2 * self.charAccel
 
-        # F = np.dot(radialDirection, nvec)**2 * nvec
-
-        ForceRTN = F0 * (np.cos(alpha)**2) * nVecAlt
+        ForceRTN = F0 * (np.cos(alpha) ** 2) * nVecAlt
 
         A1 = np.array(
             [
@@ -156,7 +156,11 @@ class SolarSailGuidance(SolarSailGuidanceBase):
                     np.cos(argPeriapsis + trueAnomaly),
                     0,
                 ],
-                [0, 0, 1],
+                [
+                    0,
+                    0,
+                    1
+                ],
             ]
         )
 
@@ -201,6 +205,6 @@ class SolarSailGuidance(SolarSailGuidanceBase):
 
         AtotalInv = np.linalg.inv(A1 @ A2 @ A3)
 
-        b = (AtotalInv @ ForceRTN)
+        b = AtotalInv @ ForceRTN
 
         return b

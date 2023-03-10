@@ -22,8 +22,9 @@ masses = [532]
 sailAreas = [22500]
 masses = [532]
 sailAreas = [22500]
-masses = [765]
+masses = [680]
 sailAreas = [10000]
+stepSize = 1200
 
 paramNames = ["mass", "area"]
 
@@ -40,7 +41,7 @@ for combination in tqdm(combinations):
 
     print(f"Running Combination: mass = {combination[0]} | area = {combination[1]}")
     guidanceObject = SolarSailGuidance(
-        None, sailName=spacecraftName, mass=combination[0], sailArea=combination[1]
+        None, sailName=spacecraftName, mass=combination[0], sailArea=combination[1], targetAltitude=0.25
     )
 
     finalGuidanceObj, save, saveDep = simulationV0.simulate(
@@ -48,7 +49,7 @@ for combination in tqdm(combinations):
         sailGuidanceObject=guidanceObject,
         saveFile=spacecraftName,
         yearsToRun=yearsToRun,
-        simStepSize=100.0
+        simStepSize=stepSize,
     )
 
     inclinationChangeDuration, finalInclination = finalGuidanceObj.getInclinationChangeDuration()

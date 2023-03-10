@@ -204,7 +204,14 @@ def simulate(
     return sailGuidanceObject, fileName, fileNameDep
 
 
-def plotSimulation(satName, dataFile: str, dataDepFile: str, extraText:str="", quiverEvery:int = 6000):
+def plotSimulation(
+    satName,
+    dataFile: str,
+    dataDepFile: str,
+    extraText: str = "",
+    quiverEvery: int = 6000,
+    skiprows:int=10,
+):
     AU = constants.ASTRONOMICAL_UNIT  # m
     yearInSeconds = 365 * 24 * 3600
 
@@ -225,14 +232,23 @@ def plotSimulation(satName, dataFile: str, dataDepFile: str, extraText:str="", q
         "theta",
     ]
 
-    data = pd.read_csv(dataFile, delimiter="	", names=cols, header=None).assign(
-        altitude=lambda x: np.sqrt(x.x**2 + x.y**2 + x.z**2) / AU
+    data = pd.read_csv(
+        dataFile,
+        delimiter="	",
+        names=cols,
+        header=None,
+        skiprows=lambda i: i % skiprows,
+    ).assign(altitude=lambda x: np.sqrt(x.x**2 + x.y**2 + x.z**2) / AU)
+    data2 = pd.read_csv(
+        dataDepFile,
+        delimiter="	",
+        names=depVars,
+        header=None,
+        skiprows=lambda i: i % skiprows,
     )
-    data2 = pd.read_csv(dataDepFile, delimiter="	", names=depVars, header=None)
 
     time = (data2.time - data.time.iloc[0]) / yearInSeconds
     ax.plot(data.iloc[:, 1], data.iloc[:, 2], data.iloc[:, 3])
-
 
     ax.quiver(
         data.x[::quiverEvery],
@@ -245,12 +261,12 @@ def plotSimulation(satName, dataFile: str, dataDepFile: str, extraText:str="", q
         normalize=True,
         color="tab:orange",
     )
-    ax.set_ylim(-0.5 * AU, 0.5 * AU)
-    ax.set_xlim(-0.5 * AU, 0.5 * AU)
+    ax.set_ylim(-AU, AU)
+    ax.set_xlim(-AU, AU)
+    ax.set_zlim(-0.5 * AU, 0.5 * AU)
     ax.set_aspect("equal")
 
     fig2, ax2 = plt.subplots(3, 1, sharex=True)
-
 
     ax2[0].plot(time, data2.iloc[:, 1:4], label=["x", "y", "z"])
     ax2[0].plot(time, data2.iloc[:, 4], label="norm", linestyle="--")
