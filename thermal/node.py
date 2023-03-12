@@ -1,7 +1,6 @@
-################################################################################################################
-#################################################  THERMAL MODEL ###############################################
-################################################################################################################
 '''
+node.py
+
 This model computes equilibrium temperatures and thermal balances for the solar orbiter spacecraft. The code is
 just a loop that goes through each shielding condition, each thermal condition, and each node of the spacecraft
 to print out equilibrium temperatures and thermal balances.
@@ -15,11 +14,9 @@ Some key assumptions:
     - Conductive transfer in the interface between the shield and spacecraft was also not considered, and was assumed small
     through the use of potential thermal isolation techniques.
 
-Some next steps:
-    - Adding some plotting features to better understand thermal trends.
-    - Integrate with the orbital model to generate temperature profiles over the course of the mission, and understand
-    critical scenarios that may have been missed in this preliminary analysis.
+TODO:
     - Add more nodes for better localization of heat and cold centres in the model.
+    - Add temporal changes to the thermal model based on the orbital model (can use animations if we would like to showoff)
     - Migrate this to software such as ANSYS for analysis once a 3D model is created.
 
 '''
