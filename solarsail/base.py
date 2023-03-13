@@ -4,7 +4,7 @@ from tudatpy.kernel import constants
 from tudatpy.kernel.numerical_simulation import environment
 from tudatpy.kernel.astro import element_conversion
 
-from typing import Callable, Tuple
+from typing import Callable, Tuple, Union
 
 
 class SolarSailGuidanceBase:
@@ -25,8 +25,7 @@ class SolarSailGuidanceBase:
         targetAltitude: float = 0.48,
         deepestAltitude: float = 0.48,
         targetInclination: float = 90,
-        # Deprecated: here for backwards compatibility
-        maximum_thrust: float = 0,
+        characteristicAcceleration: Union[None, float] = None,
     ):
         self.bodies = bodies
         self.sailName = sailName
@@ -34,14 +33,23 @@ class SolarSailGuidanceBase:
         self.deepestAltitude = deepestAltitude
 
         self.mass = mass
-        self.sigma = mass / sailArea
-        self.sigmaC = 2 * (
-            SolarSailGuidanceBase.I_AU
-            / (SolarSailGuidanceBase.c * SolarSailGuidanceBase.gAU)
-        )
+        # self.sigmaC = 2 * (
+        #     SolarSailGuidanceBase.I_AU
+        #     / (SolarSailGuidanceBase.c * SolarSailGuidanceBase.gAU)
+        # )
+
         reflectivity = 0.9 # TODO set a realistic value for this
-        self.charAccel = ((9.08 * reflectivity) / (self.sigma * 1000)) / 1000
-        print(f"char. acceleration = {round(self.charAccel*1000, 4)} | sigma = {self.sigma} | sigmaC = {self.sigmaC}")
+        if characteristicAcceleration is None:
+            self.sigma = mass / sailArea
+            self.charAccel = ((9.08 * reflectivity) / (self.sigma * 1000)) / 1000
+        else:
+            print(f"Characteristic acceleration overide: {characteristicAcceleration}")
+            self.charAccel = characteristicAcceleration
+            self.sigma = ((9.08 * reflectivity) / characteristicAcceleration) / 1e6
+       
+        print(f"Characteristic acceleration = {round(self.charAccel*1000, 4)}")
+        print(f"Mass = {self.mass} | sigma = {round(self.sigma,4)}")
+            #    | sigmaC = {round(self.sigmaC, 4)}")
 
         self.targetInclination = np.radians(targetInclination)
 
