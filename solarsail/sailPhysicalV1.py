@@ -8,6 +8,8 @@ from tudatpy.kernel.numerical_simulation import environment
 from tudatpy.kernel.astro import element_conversion
 from scipy.optimize import fsolve
 
+from typing import Union
+
 
 def lambdFunc(alpha, lamd=0):
     return (2 - 4 * np.tan(alpha) ** 2) / (
@@ -26,10 +28,7 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         # TODO: add fast transfer stuff
         deepestAltitude: float = 0.48,
         targetInclination: float = 90,
-        # Deprecated: here for backwards compatibility
-        maximum_thrust: float = 0,
-        # ac=0.0005,
-        reflectivity: float = 1,
+        characteristicAcceleration: Union[None, float] = None,
     ):
         super().__init__(
             bodies,
@@ -39,7 +38,7 @@ class SolarSailGuidance(SolarSailGuidanceBase):
             targetAltitude,
             deepestAltitude,
             targetInclination,
-            maximum_thrust,
+            characteristicAcceleration
         )
 
         lambd = 168.6284 * self.charAccel

@@ -14,7 +14,12 @@ saveDirectory = "data"
 if not os.path.exists(saveDirectory):
     os.mkdir(saveDirectory)
 
-logging.basicConfig(filename=f'{saveDirectory}/simV0.log', encoding='utf-8', level=logging.INFO, format='%(asctime)s | %(message)s')
+logging.basicConfig(
+    filename=f"{saveDirectory}/simV0.log",
+    encoding="utf-8",
+    level=logging.INFO,
+    format="%(asctime)s | %(message)s",
+)
 
 masses = [500, 700]
 sailAreas = [15000, 22500]
@@ -41,7 +46,12 @@ for combination in tqdm(combinations):
 
     print(f"Running Combination: mass = {combination[0]} | area = {combination[1]}")
     guidanceObject = SolarSailGuidance(
-        None, sailName=spacecraftName, mass=combination[0], sailArea=combination[1], targetAltitude=0.5
+        None,
+        sailName=spacecraftName,
+        mass=combination[0],
+        sailArea=combination[1],
+        targetAltitude=0.5,
+        characteristicAcceleration=0.3027,
     )
 
     finalGuidanceObj, save, saveDep = simulationV0.simulate(
@@ -52,8 +62,11 @@ for combination in tqdm(combinations):
         simStepSize=stepSize,
     )
 
-    inclinationChangeDuration, finalInclination = finalGuidanceObj.getInclinationChangeDuration()
-    dur = round(inclinationChangeDuration/yearInSeconds, 3)
+    (
+        inclinationChangeDuration,
+        finalInclination,
+    ) = finalGuidanceObj.getInclinationChangeDuration()
+    dur = round(inclinationChangeDuration / yearInSeconds, 3)
     print(f"Final inclination = {round(finalInclination, 3)} deg")
     print(f"Inclination change duration = {dur} years")
 
