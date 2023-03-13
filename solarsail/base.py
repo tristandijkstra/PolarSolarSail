@@ -46,7 +46,7 @@ class SolarSailGuidanceBase:
         self.targetInclination = np.radians(targetInclination)
 
         # 0 = Transfer, 1 = Pause, 2 = Inclination change
-        self.currentPhase = 0
+        self.currentPhase:int = 0
 
         self.lastTimeMeasured = 0
         self.lastAccelVector: np.ndarray
@@ -60,6 +60,9 @@ class SolarSailGuidanceBase:
 
     def computeSail(self, current_time) -> np.ndarray:
         return np.zeros([3, 1])
+
+    def stopPropagation(self):
+        return False
 
     def compute_thrust_direction(self, current_time: float) -> np.ndarray:
         # Check if computation is to be done
