@@ -42,11 +42,9 @@ class SolarSailGuidance(SolarSailGuidanceBase):
             maximum_thrust,
         )
 
-        self.charAccel = ((9.08 * reflectivity) / (self.sigma * 1000)) / 1000
         lambd = 168.6284 * self.charAccel
         self.spiralAlpha = fsolve(lambdFunc, 30 * np.pi / 180, args=(lambd))[0]
         
-        print(f"Characteristic velocity: {self.charAccel}")
         print(f"Spiral Alpha = {self.spiralAlpha}")
 
     def computeSail(self, current_time) -> np.ndarray:

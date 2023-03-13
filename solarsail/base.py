@@ -39,8 +39,9 @@ class SolarSailGuidanceBase:
             SolarSailGuidanceBase.I_AU
             / (SolarSailGuidanceBase.c * SolarSailGuidanceBase.gAU)
         )
-
-        print(f"sigma = {self.sigma} | sigmaC = {self.sigmaC}")
+        reflectivity = 0.9 # TODO set a realistic value for this
+        self.charAccel = ((9.08 * reflectivity) / (self.sigma * 1000)) / 1000
+        print(f"char. acceleration = {round(self.charAccel*1000, 4)} | sigma = {self.sigma} | sigmaC = {self.sigmaC}")
 
         self.targetInclination = np.radians(targetInclination)
 

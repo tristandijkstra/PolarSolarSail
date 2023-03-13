@@ -22,7 +22,7 @@ masses = [532]
 sailAreas = [22500]
 masses = [532]
 sailAreas = [22500]
-masses = [680]
+masses = [270]
 sailAreas = [10000]
 stepSize = 1200
 
@@ -41,7 +41,7 @@ for combination in tqdm(combinations):
 
     print(f"Running Combination: mass = {combination[0]} | area = {combination[1]}")
     guidanceObject = SolarSailGuidance(
-        None, sailName=spacecraftName, mass=combination[0], sailArea=combination[1], targetAltitude=0.25
+        None, sailName=spacecraftName, mass=combination[0], sailArea=combination[1], targetAltitude=0.5
     )
 
     finalGuidanceObj, save, saveDep = simulationV0.simulate(
@@ -64,6 +64,6 @@ for combination in tqdm(combinations):
     logging.info(logStr)
 
 for u in saveFiles:
-    simulationV0.plotSimulation(*u)
+    simulationV0.plotSimulation(*u, quiverEvery=200)
 
 plt.show()
