@@ -111,17 +111,23 @@ for idx, time_step in enumerate(tqdm(time_interp)):
                 thermal_balance = node.thermal_balance()
                 # print("Thermal Balance - " + node.name + " " + str(thermal_balance) + " W")
 
+lower_temp_limit = min_temp*np.ones(np.shape(time_interp))
+upper_temp_limit = max_temp*np.ones(np.shape(time_interp))
 # Plotting Results
 fig, ax = plt.subplots(2, 1)
 ax[0].set_title(f"Spacecraft Surface Temperature - Shielding Layers: {shield_layers}")
-ax[0].plot(time_interp, temps)
+ax[0].plot(time_interp, temps, label='Spacecraft Surface Temperature')
+limit = ax[0].plot(time_interp, lower_temp_limit, 'r', linestyle='dashed', label='Temperature Limit')
+ax[0].plot(time_interp, upper_temp_limit, 'r', linestyle='dashed')
 ax[0].set_ylabel("Temperature [K]")
 ax[0].set_xlabel("Time [years]")
+ax[0].legend()
 ax[1].plot(time_interp, sun_dist)
 ax[1].set_title("Altitude [AU]")
 ax[1].set_ylabel("Altitude [AU]")
 ax[1].set_xlabel("Time [years]")
 ax[1].plot()
+fig.set_tight_layout(True)
 
 plt.savefig(f"data/thermal_{data_file[5:-4]}.png")
 
