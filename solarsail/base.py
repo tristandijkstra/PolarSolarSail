@@ -25,7 +25,7 @@ class SolarSailGuidanceBase:
         targetAltitude: float = 0.48,
         deepestAltitude: float = 0.48,
         targetInclination: float = 90,
-        characteristicAcceleration: Union[None, float] = None,
+        characteristicAcceleration = None,
     ):
         self.bodies = bodies
         self.sailName = sailName
@@ -69,7 +69,7 @@ class SolarSailGuidanceBase:
     def computeSail(self, current_time) -> np.ndarray:
         return np.zeros([3, 1])
 
-    def stopPropagation(self):
+    def stopPropagation(self, time):
         return False
 
     def compute_thrust_direction(self, current_time: float) -> np.ndarray:

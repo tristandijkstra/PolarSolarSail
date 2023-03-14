@@ -8,6 +8,8 @@ from tudatpy.kernel.numerical_simulation import environment
 from tudatpy.kernel.astro import element_conversion
 from scipy.optimize import fsolve
 
+from typing import Union
+
 
 def lambdFunc(alpha, lamd=0):
     return (2 - 4 * np.tan(alpha) ** 2) / (
@@ -26,10 +28,7 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         # TODO: add fast transfer stuff
         deepestAltitude: float = 0.48,
         targetInclination: float = 90,
-        # Deprecated: here for backwards compatibility
-        maximum_thrust: float = 0,
-        # ac=0.0005,
-        reflectivity: float = 1,
+        characteristicAcceleration: Union[None, float] = None,
     ):
         super().__init__(
             bodies,
@@ -39,20 +38,39 @@ class SolarSailGuidance(SolarSailGuidanceBase):
             targetAltitude,
             deepestAltitude,
             targetInclination,
-            maximum_thrust,
+            characteristicAcceleration,
         )
 
         lambd = 168.6284 * self.charAccel
         self.spiralAlpha = fsolve(lambdFunc, 30 * np.pi / 180, args=(lambd))[0]
+        self.inclinationChangeAlpha = np.arctan(1 / np.sqrt(2))
         
-        print(f"Spiral Alpha = {self.spiralAlpha}")
+        print("=== Cone angles ===")
+        print(f"Spiral Alpha = {round(self.spiralAlpha, 4)} rad = {round(np.degrees(self.spiralAlpha), 4)} deg")
+        print(f"Inclination Change Alpha = {round(self.inclinationChangeAlpha, 4)} rad = {round(np.degrees(self.inclinationChangeAlpha), 4)} deg")
+        
+        self.currentPhase:int = -1
+        self.startTime = 0
+
+        self.alpha = 0
+        self.delta = 0
 
         
-    def stopPropagation(self):
+    def stopPropagation(self, time):
         if self.currentPhase == 3:
             return True
         else:
             return False
+        
+    def getInclinationChangeDuration(self):
+        inclinationChangeDuration = (
+            self.inclinationChangeEnd - self.inclinationChangeStart
+        )
+        spiralDuration = (
+            self.inclinationChangeStart - self.startTime
+        )
+        return self.charAccel, spiralDuration, inclinationChangeDuration, self.lastInclination
+
 
     def computeSail(self, current_time) -> np.ndarray:
         current_cartesian_state = (
@@ -94,6 +112,9 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         ###########################################
         ############## Flight Phases ##############
         ###########################################
+        if self.currentPhase == -1:
+            self.startTime = current_time
+            self.currentPhase = 0
         # Transfer
         if self.currentPhase == 0:
             if current_alt / SolarSailGuidance.AU < self.targetAltitude:
@@ -101,14 +122,14 @@ class SolarSailGuidance(SolarSailGuidanceBase):
                 self.inclinationChangeStart = current_time
                 self.currentPhase = 2
 
-            delta = 1.5 * np.pi
-            alpha = self.spiralAlpha
+            self.delta = 1.5 * np.pi
+            self.alpha = self.spiralAlpha
 
         # wait for correct orbit
         elif self.currentPhase == 1:
             # TODO
-            alpha = 0
-            delta = 0
+            self.alpha = 0
+            self.delta = 0
 
         # inclination change
         elif self.currentPhase == 2:
@@ -119,35 +140,35 @@ class SolarSailGuidance(SolarSailGuidanceBase):
                 print("Inclination Change complete -> Science")
                 self.currentPhase = 3
 
-            alpha = np.arctan(1 / np.sqrt(2))
+            self.alpha = self.inclinationChangeAlpha
 
             if np.cos(argPeriapsis + trueAnomaly) >= 0:
-                delta = 0
+                self.delta = 0
             else:
-                delta = np.pi
+                self.delta = np.pi
 
         # post-inclination change
         elif self.currentPhase == 3:
             # TODO
-            alpha = 0
-            delta = 0
+            self.alpha = 0
+            self.delta = 0
         else:
-            alpha = 0
-            delta = 0
+            self.alpha = 0
+            self.delta = 0
 
         # B = (mu / (current_alt * current_alt)) * (0.5 * (self.sigmaC / self.sigma))
 
         nVecAlt = np.array(
             [
-                np.cos(alpha),
-                np.sin(alpha) * np.sin(delta),
-                np.sin(alpha) * np.cos(delta),
+                np.cos(self.alpha),
+                np.sin(self.alpha) * np.sin(self.delta),
+                np.sin(self.alpha) * np.cos(self.delta),
             ]
         )
 
         F0 = (SolarSailGuidanceBase.AU / current_alt) ** 2 * self.charAccel
 
-        ForceRTN = F0 * (np.cos(alpha) ** 2) * nVecAlt
+        ForceRTN = F0 * (np.cos(self.alpha) ** 2) * nVecAlt
 
         A1 = np.array(
             [
