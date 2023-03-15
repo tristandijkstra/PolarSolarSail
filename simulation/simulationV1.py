@@ -143,6 +143,10 @@ def simulate(
             acctype, spacecraftName, spacecraftName
         ),
         propagation_setup.dependent_variable.keplerian_state(spacecraftName, "Sun"),
+        propagation_setup.dependent_variable.custom_dependent_variable(
+            sailGuidanceObject.dependantVariables,
+            sailGuidanceObject.extraDependentVariables,
+        ),
     ]
 
     # Create numerical integrator settings.
@@ -159,8 +163,9 @@ def simulate(
 
     termination_settings = propagation_setup.propagator.hybrid_termination(
         [termination_time_settings, termination_custom_settings],
-        fulfill_single_condition = True)
-    
+        fulfill_single_condition=True,
+    )
+
     propagator_settings = propagation_setup.propagator.translational(
         central_bodies,
         acceleration_models,
@@ -219,7 +224,7 @@ def plotSimulation(
     dataDepFile: str,
     extraText: str = "",
     quiverEvery: int = 6000,
-    skiprows:int=10,
+    skiprows: int = 10,
 ):
     AU = constants.ASTRONOMICAL_UNIT  # m
     yearInSeconds = 365 * 24 * 3600
@@ -239,6 +244,8 @@ def plotSimulation(
         "omega",
         "RAAN",
         "theta",
+        "cone",
+        "clock",
     ]
 
     data = pd.read_csv(
@@ -275,22 +282,37 @@ def plotSimulation(
     ax.set_zlim(-0.5 * AU, 0.5 * AU)
     ax.set_aspect("equal")
 
-    fig2, ax2 = plt.subplots(3, 1, sharex=True)
+    fig2, ax2 = plt.subplots(3, 2, sharex=True, figsize=(18, 12))
 
-    ax2[0].plot(time, data2.iloc[:, 1:4], label=["x", "y", "z"])
-    ax2[0].plot(time, data2.iloc[:, 4], label="norm", linestyle="--")
-    ax2[0].legend()
-    ax2[0].grid()
-    ax2[0].set_ylabel(r"Acceleration $[m/s^2]$")
+    ax2[0][1].plot(time, data2.iloc[:, 1:4], label=["x", "y", "z"])
+    ax2[0][1].plot(time, data2.iloc[:, 4], label="norm", linestyle="--")
+    ax2[0][1].legend()
+    ax2[0][1].grid()
+    ax2[0][1].set_ylabel(r"Acceleration $[m/s^2]$")
 
-    ax2[1].plot(time, data.altitude)
-    ax2[1].set_ylabel(r"Radius $[AU]$")
-    ax2[1].grid()
+    ax2[1][1].plot(time, np.degrees(data2.cone))
+    ax2[1][1].set_ylabel(r"Cone Angle $[\deg]$")
+    ax2[1][1].grid()
 
-    ax2[2].plot(time, np.degrees(data2.i))
-    ax2[2].set_ylabel(r"Inclination $[\deg]$")
-    ax2[2].set_xlabel("Time [years]")
-    ax2[2].grid()
+    ax2[2][1].plot(time, np.degrees(data2.clock))
+    ax2[2][1].set_ylabel(r"Clock Angle $[\deg]$")
+    ax2[2][1].set_xlabel("Time [years]")
+    ax2[2][1].grid()
+
+    ax2[0][0].plot(time, data.altitude)
+    ax2[0][0].set_ylabel(r"Radius $[AU]$")
+    ax2[0][0].grid()
+
+    ax2[1][0].plot(time, data2.e)
+    ax2[1][0].set_ylabel(r"Eccentricity $[-]$")
+    ax2[1][0].grid()
+
+    ax2[2][0].plot(time, np.degrees(data2.i))
+    ax2[2][0].set_ylabel(r"Inclination $[\deg]$")
+    ax2[2][0].set_xlabel("Time [years]")
+    ax2[2][0].grid()
+
+
 
     fig.suptitle(f"{satName} | {extraText}")
     fig2.suptitle(f"{satName} | {extraText}")

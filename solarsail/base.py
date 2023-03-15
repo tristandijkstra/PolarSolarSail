@@ -55,13 +55,19 @@ class SolarSailGuidanceBase:
 
         # 0 = Transfer, 1 = Pause, 2 = Inclination change
         self.currentPhase:int = 0
-
+        self.alpha = 0
+        self.delta = 0
+        self.extraDependentVariables = 2
+        
         self.lastTimeMeasured = 0
         self.lastAccelVector: np.ndarray
 
         self.inclinationChangeStart = 0
         self.inclinationChangeEnd = 0
         self.lastInclination = 0
+
+    def dependantVariables(self):
+        return np.array([self.alpha, self.delta])
 
     def norm(self, vec: np.ndarray):
         return np.sqrt(np.square(vec).sum())

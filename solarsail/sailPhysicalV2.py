@@ -52,9 +52,6 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         self.currentPhase:int = -1
         self.startTime = 0
 
-        self.alpha = 0
-        self.delta = 0
-
         
     def stopPropagation(self, time):
         if self.currentPhase == 3:

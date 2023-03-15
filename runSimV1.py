@@ -24,6 +24,7 @@ logging.basicConfig(
 
 masses = [500]
 sailAreas = [10000, 12500, 15000, 17500, 20000, 22500]
+sailAreas = [10000]
 sailAreas = sailAreas[::-1]
 
 stepSize = 3600
