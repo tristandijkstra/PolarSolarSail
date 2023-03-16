@@ -5,6 +5,7 @@ This code runs the single-node thermal analysis at different time steps througho
 
 -TODO:
     - Find a way to update the angle to the Sun.
+    - Figure out how to do multiple nodes for the spacecraft bus (in a modular fashion).
 
 '''
 import node as nd
@@ -14,14 +15,16 @@ import matplotlib.pyplot as plt
 import logging
 from tqdm import tqdm
 from budget_properties import Properties
+import materials
+
+AU = 149.6e9
+yearInSeconds = 365 * 24 * 3600
+solar_luminosity = 3.83e26
 
 ################################################################################################################
 #############################################  EDITABLE PARAMETERS #############################################
 ################################################################################################################
-AU = 149.6e9
 dt = 1000                                   # How much to timeskip the orbital sim (to save computational time)
-yearInSeconds = 365 * 24 * 3600
-solar_luminosity = 3.83e26
 max_temp = 343.0                            # maximum allowable temperature [K]
 min_temp = 243.0                            # minimum allowable temperature [K]
 heaters_power = 0                           # How much heat power is coming from heaters in watts
@@ -29,6 +32,68 @@ coolers_power = 0                           # How much heat is being rejected by
 electrical_heat = 800                       # How much electrical waste heat is being generated (taken from power budget)
 data_file = 'data/mass680_area10000.dat'    # Main data file
 data_dep_file = 'data/mass680_area10000_dep.dat' # Dependent data file
+
+# By default, the solar sail, spacecraft structure, booms, heat shield, and solar panels are written as nodes.
+# The main spacecraft structure can then be split into additional nodes (up to 4).
+node_structure = 1                          # The number of nodes you would like placed on the spacecraft structure
+
+# Spacecraft Configuration
+type = 'heliogyro'                          # Choose heliogyro or square
+structure = 'titanium'                      # Spacecraft structure material: 'titanium', 'aluminum', or 'cfrp' supported.
+insulator = 'multi-layer insulation'        # Coating material: 'multi-layer insulation', 'solar black', or None supported.
+radiator = 'az93 white paint'               # Radiator material: 'az93 white paint', 'magnesium oxide white paint', 'optical solar reflectors', or None supported.
+shield = 'ceramic cloth'                    # Heat shield material: 'ceramic cloth', or None supported.
+sail = 'standard'                           # Sail material: 'standard' supported, which is aluminum and chromium
+panel = 'gallium arsenide'                  # Panel material: 'gallium arsenide' supported 
+boom = None                                 # Boom material: 
+
+total_spacecraft_A = 15                     # Spacecraft surface area
+insulator_A = 5                             # Insulator surface area
+radiator_A = 5                              # Radiator surface area
+heat_shield_A = 5                           # Heat shield external surface area
+panel_A = 5                                 # Solar panel surface area
+panel_coating_A = 5                         # Solar panel coating surface area
+sail_A = 5                                  # Solar sail surface area
+boom_A = 10                                 # Boom exposed surface area
+
+shield_layers = 7                           # How many layers of shielding would you like to analyze?
+
+################################################################################################################
+#########################################  END OF EDITABLE PARAMETERS ##########################################
+################################################################################################################
+
+# Splitting the spacecraft into nodes
+structure = materials.structural_material(structure)
+radiator = materials.coating_material(radiator)
+insulator = materials.coating_material(insulator)
+sail_ref, sail_emi = materials.sail_material(sail)
+shield = materials.shield_material(shield)
+osr, panel = materials.panel_material(panel)
+boom = materials.boom_material(boom)
+
+structure_config = [structure['emissivity'], structure['reflectivity'], structure['absorptivity']]
+coating_config = [radiator['emissivity'], radiator['reflectivity'], radiator['absorptivity'],
+                 insulator['emissivity'], insulator['reflectivity'], insulator['absorptivity']]
+sail_config = [sail_emi['emissivity'], sail_ref['reflectivity'], sail_ref['absorptivity']]
+panel_config = [panel['emissivity'], panel['reflectivity'], panel['absorptivity']]
+boom_config = [boom['emissivity'], boom['reflectivity'], boom['absorptivity']]
+shield_config = [shield['emissivity'], shield['reflectivity'], shield['absorptivity']]
+
+# Catching inconsistencies in input arguments.
+if insulator == None:
+    insulator_A = 0
+
+if radiator == None:
+    radiator_A = 0
+
+if shield == None:
+    heat_shield_A = 0
+    shield_layers = 0
+
+if shield_layers == 0:
+    heat_shield_A = 0
+
+
 data = pd.read_csv(
     data_file, delimiter="	", names=["time", "x", "y", "z", "vx", "vy", "vz"], header=None
 ).assign(altitude=lambda x: np.sqrt(x.x**2 + x.y**2 + x.z**2) / AU)
@@ -50,7 +115,6 @@ data2 = pd.read_csv(data_dep_file, delimiter="	", names=depVars,
 
 logging.basicConfig(filename=f'data/thermal.log', encoding='utf-8', level=logging.INFO, format='%(asctime)s | %(message)s')
 
-
 # pointing_angle = pd.DataFrame(index=range(len(data.axes[0])),columns=range(len(data.axes[1])))
 # for index, row in data.iterrows():
 #     for index2, row2 in data2.iterrows():
@@ -65,12 +129,6 @@ time = (data.time - data.time.iloc[0])/yearInSeconds
 time_interp = time[::dt]
 sun_dist = data.altitude.iloc[::dt]
 
-
-
-no_coatings = [[0.4, 0.30, 0.04, 0.95], [7, 7, 0]]
-coatings = [[0.90, 0.30, 0.04, 0.95], [7, 0.5, 6.5]] # Sample inputs
-
-shield_layers = 7                      # How many layers of shielding would you like to analyze?
 temps = []
 
 for idx, time_step in enumerate(tqdm(time_interp)):
@@ -80,17 +138,15 @@ for idx, time_step in enumerate(tqdm(time_interp)):
     else:
         angle = 0 
     thermal_case = [sun_dist[idx*dt], angle]
-    # Please read Node() class __init__ for details on how you could change these numbers.
-    spacecraft_bus = nd.Node("Spacecraft Bus", no_coatings[0], no_coatings[1], thermal_case)
-    solar_sail = nd.Node("Solar Sail", [0.63, 0.12, 0.88, 0.00], [5000, 5000, 0], thermal_case)
+    spacecraft_bus = nd.Node("Spacecraft Bus", structure_config, total_spacecraft_A, thermal_case)
+    solar_sail = nd.Node("Solar Sail", sail_config, sail_A, thermal_case)
+    solar_panel = nd.Node("Solar Panel", panel_config, panel_A, thermal_case)
+    boom = nd.Node("Boom", boom_config, boom_A, thermal_case)
     if shield_layers > 0:
-        heat_shield = nd.Node("Heat Shield", [0.44, 0.96, 0.16, 0.00], [6, 6, 0], thermal_case, shield_layers)
+        heat_shield = nd.Node("Heat Shield", shield_config, heat_shield_A, thermal_case, shield_layers)
     else:
         heat_shield = None
-    ################################################################################################################
-    #########################################  END OF EDITABLE PARAMETERS ##########################################
-    ################################################################################################################
-    spacecraft = [spacecraft_bus, solar_sail, heat_shield]
+    spacecraft = [spacecraft_bus, solar_sail, solar_panel, boom, heat_shield]
     for node in spacecraft:
         if node != None:
             flux_in = node.solar_heat_in()

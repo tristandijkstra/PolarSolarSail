@@ -18,6 +18,8 @@ TODO:
     - Add more nodes for better localization of heat and cold centres in the model.
     - Add temporal changes to the thermal model based on the orbital model (can use animations if we would like to showoff)
     - Migrate this to software such as ANSYS for analysis once a 3D model is created.
+    - Add easier configurability for structural and coating materials
+    - Add structural mass calculation based on materials choice
 
 '''
 
