@@ -266,17 +266,18 @@ def plotSimulation(
     time = (data2.time - data.time.iloc[0]) / yearInSeconds
     ax.plot(data.iloc[:, 1], data.iloc[:, 2], data.iloc[:, 3])
 
-    ax.quiver(
-        data.x[::quiverEvery],
-        data.y[::quiverEvery],
-        data.z[::quiverEvery],
-        data2.ThrustX[::quiverEvery],
-        data2.ThrustY[::quiverEvery],
-        data2.ThrustZ[::quiverEvery],
-        length=0.1 * AU,
-        normalize=True,
-        color="tab:orange",
-    )
+    if quiverEvery != 0:
+        ax.quiver(
+            data.x[::quiverEvery],
+            data.y[::quiverEvery],
+            data.z[::quiverEvery],
+            data2.ThrustX[::quiverEvery],
+            data2.ThrustY[::quiverEvery],
+            data2.ThrustZ[::quiverEvery],
+            length=0.1 * AU,
+            normalize=True,
+            color="tab:orange",
+        )
     ax.set_ylim(-AU, AU)
     ax.set_xlim(-AU, AU)
     ax.set_zlim(-0.5 * AU, 0.5 * AU)
