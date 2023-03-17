@@ -22,15 +22,15 @@ logging.basicConfig(
 )
 
 
-masses = [500]
+masses = [200]
 sailAreas = [10000, 12500, 15000, 17500, 20000, 22500]
-sailAreas = [10000]
+sailAreas = [3600]
 # sailAreas = [7000,10000]
 sailAreas = sailAreas[::-1]
 
 stepSize = 3600
 stepSize = 36000
-stepSize = 18000
+# stepSize = 18000
 
 paramNames = ["mass", "area"]
 
@@ -54,7 +54,9 @@ for combination in tqdm(combinations):
         mass=combination[0],
         sailArea=combination[1],
         targetAltitude=targetAltitude,
-        targetInclination=90,
+        targetInclination=68,
+        deepestAltitude=0.35,
+        fastTransferOptimiseParameter=0.04
     )
 
     finalGuidanceObj, save, saveDep = sim.simulate(
