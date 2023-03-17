@@ -28,6 +28,7 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         # TODO: add fast transfer stuff
         deepestAltitude: float = 0.2,
         targetInclination: float = 90,
+        fastTransferOptimiseParameter: float = 0.0,
         characteristicAcceleration: Union[None, float] = None,
     ):
         super().__init__(
@@ -44,18 +45,22 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         lambd = 168.6284 * self.charAccel
         self.spiralAlpha = fsolve(lambdFunc, 30 * np.pi / 180, args=(lambd))[0]
         self.inclinationChangeAlpha = np.arctan(1 / np.sqrt(2))
+        self.fastTransferOptimiseParameter = fastTransferOptimiseParameter
         
         print("=== Cone angles ===")
         print(f"Spiral Alpha = {round(self.spiralAlpha, 4)} rad = {round(np.degrees(self.spiralAlpha), 4)} deg")
         print(f"Inclination Change Alpha = {round(self.inclinationChangeAlpha, 4)} rad = {round(np.degrees(self.inclinationChangeAlpha), 4)} deg")
+        print(f"Fast transfer optimisation parameter: {self.fastTransferOptimiseParameter}")
         
         self.currentPhase:int = -1
         self.startTime = 0
+        self.timesOutwards = 0
 
         
     def stopPropagation(self, time):
         if self.currentPhase == 10:
             print(f"Stopping Propagation.")
+            print(f"Times outwards: {self.timesOutwards}")
             return True
         else:
             return False
@@ -67,7 +72,15 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         spiralDuration = (
             self.inclinationChangeStart - self.startTime
         )
+        print(self.timesOutwards)
         return self.charAccel, spiralDuration, inclinationChangeDuration, self.lastInclination
+    
+
+    def getOptimiseOutput(self):
+        inclinationChangeDuration = (
+            self.inclinationChangeEnd - self.inclinationChangeStart
+        )
+        return inclinationChangeDuration, self.lastInclination, self.timesOutwards
 
 
     def computeSail(self, current_time) -> np.ndarray:
@@ -121,6 +134,7 @@ class SolarSailGuidance(SolarSailGuidanceBase):
                 print("Altitude reached -> Inclination Change")
                 self.inclinationChangeStart = current_time
                 self.currentPhase = 2
+                self.timesOutwards += 1
 
             self.delta = 1.5 * np.pi
             self.alpha = self.spiralAlpha
@@ -144,13 +158,12 @@ class SolarSailGuidance(SolarSailGuidanceBase):
                 print("Spiraling In")
                 self.currentPhase = 3
 
-            w = 0.05
-            w = 0.085
-            w = 0.13
+            self.alpha = self.inclinationChangeAlpha
+
             if np.cos(argPeriapsis + trueAnomaly) >= 0:
-                self.delta = np.pi * (w)
+                self.delta = np.pi * (self.fastTransferOptimiseParameter)
             else:
-                self.delta = np.pi * (1 - w)
+                self.delta = np.pi * (1 - self.fastTransferOptimiseParameter)
 
         # spiral back in
         elif self.currentPhase == 3:
@@ -163,17 +176,17 @@ class SolarSailGuidance(SolarSailGuidanceBase):
 
             if current_alt / SolarSailGuidance.AU < self.deepestAltitude:
                 print("Spiraling out")
+                self.timesOutwards += 1
                 self.currentPhase = 2
 
-            # self.alpha = self.inclinationChangeAlpha
+            self.alpha = self.inclinationChangeAlpha
 
-            # w = 0.2
-            # if np.cos(argPeriapsis + trueAnomaly) >= 0:
-            #     self.delta = np.pi * (w)
-            # else:
-            #     self.delta = np.pi * (1 - w)
-            self.delta = 1.5 * np.pi
-            self.alpha = self.spiralAlpha
+            if np.cos(argPeriapsis + trueAnomaly) >= 0:
+                self.delta = np.pi * (2 - self.fastTransferOptimiseParameter)
+            else:
+                self.delta = np.pi * (1 + self.fastTransferOptimiseParameter)
+            # self.delta = 1.5 * np.pi
+            # self.alpha = self.spiralAlpha
 
 
         # Transfer
