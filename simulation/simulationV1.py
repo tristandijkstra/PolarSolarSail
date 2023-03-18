@@ -11,15 +11,17 @@ from tudatpy.kernel import numerical_simulation
 from tudatpy.kernel.numerical_simulation import environment_setup
 from tudatpy.kernel.numerical_simulation import propagation_setup
 
+from typing import Union
 # from solarsail.sailBasic import SolarSailGuidance
 
 
 def simulate(
     spacecraftName,
     sailGuidanceObject,
-    saveFile: str,
+    saveFile: Union[str, None],
     yearsToRun: float = 7,
     simStepSize: float = 100.0,
+    verbose:bool = True
 ):
     ###########################################################################
     # INPUTS ##################################################################
@@ -32,7 +34,6 @@ def simulate(
 
     # Retrieve current directory
     current_directory = os.getcwd()
-    print(current_directory)
 
     simulation_start_epoch = (
         30 * constants.JULIAN_YEAR
@@ -177,7 +178,7 @@ def simulate(
         output_variables=dependent_variables_to_save,
     )
 
-    propagator_settings.print_settings.print_initial_and_final_conditions = True
+    propagator_settings.print_settings.print_initial_and_final_conditions = verbose
 
     ###########################################################################
     # PROPAGATE ORBIT #########################################################
@@ -199,21 +200,23 @@ def simulate(
     # SAVE RESULTS ############################################################
     ###########################################################################
 
-    # fileName = current_directory + "data/" + saveFile + ".dat"
-    # fileNameDep = current_directory + "data/" + saveFile + "_dep" + ".dat"
-    fileName = "data/" + saveFile + ".dat"
-    fileNameDep = "data/" + saveFile + "_dep" + ".dat"
-    save2txt(
-        solution=state_history,
-        filename=fileName,
-        directory="./",
-    )
+    if saveFile is not None:
+        fileName = "data/" + saveFile + ".dat"
+        fileNameDep = "data/" + saveFile + "_dep" + ".dat"
+        save2txt(
+            solution=state_history,
+            filename=fileName,
+            directory="./",
+        )
 
-    save2txt(
-        solution=dependent_variables,
-        filename=fileNameDep,
-        directory="./",
-    )
+        save2txt(
+            solution=dependent_variables,
+            filename=fileNameDep,
+            directory="./",
+        )
+    else:
+        fileName = None
+        fileNameDep = None
 
     return sailGuidanceObject, fileName, fileNameDep
 

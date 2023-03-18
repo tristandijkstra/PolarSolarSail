@@ -10,6 +10,7 @@ from itertools import product
 from tqdm import tqdm
 
 import scipy
+import time
 
 
 saveDirectory = "data"
@@ -29,7 +30,7 @@ sailArea = 10000
 mass = 500
 timesOutwardMax = 1
 
-stepSize = 36000
+stepSize = 72000
 
 yearsToRun = 25
 yearInSeconds = 365 * 24 * 3600
@@ -54,6 +55,8 @@ def runSim(
     w = w[0]
     spacecraftName = "sc_w=" + str(w)
 
+    start = time.perf_counter()
+
     guidanceObject = SolarSailGuidance(
         None,
         sailName=spacecraftName,
@@ -63,14 +66,16 @@ def runSim(
         targetInclination=targetInclination,
         deepestAltitude=deepestAltitude,
         fastTransferOptimiseParameter=w,
+        verbose=False
     )
 
     finalGuidanceObj, save, saveDep = sim.simulate(
         spacecraftName=spacecraftName,
         sailGuidanceObject=guidanceObject,
-        saveFile=spacecraftName,
+        saveFile=None,
         yearsToRun=yearsToRun,
         simStepSize=stepSize,
+        verbose=False,
     )
 
     (
@@ -81,8 +86,9 @@ def runSim(
 
     incldur = inclinationChangeDuration / yearInSeconds
     # totdur = round((spiralDuration + inclinationChangeDuration) / yearInSeconds, 3)
-
-    logStr = f"run: {spacecraftName} | Final inclin. = {round(lastInclination, 3)} | Inclin. change duration = {incldur} years"
+    end = time.perf_counter()
+    runtime = round(end - start, 2)
+    logStr = f"duration = {runtime} s | run: {spacecraftName} | Final inclin. = {round(lastInclination, 3)} | Inclin. change duration = {incldur} years"
     logging.info(logStr)
     print(logStr)
 
@@ -113,9 +119,28 @@ print(res)
 bestValue = res.x[0]
 
 print(resultslst[bestValue])
+saveFiel = "w=" + str(bestValue)
+guidanceObject = SolarSailGuidance(
+    None,
+    sailName="best",
+    mass=mass,
+    sailArea=sailArea,
+    targetAltitude=targetAltitude,
+    targetInclination=targetInclination,
+    deepestAltitude=deepestAltitude,
+    fastTransferOptimiseParameter=bestValue,
+    verbose=True
+)
 
-
-sim.plotSimulation(satName=resultslst[bestValue][0], dataFile=resultslst[bestValue][2], dataDepFile=resultslst[bestValue][3], quiverEvery=1000)
+finalGuidanceObj, save, saveDep = sim.simulate(
+    spacecraftName="best",
+    sailGuidanceObject=guidanceObject,
+    saveFile="w=" + str(bestValue),
+    yearsToRun=yearsToRun,
+    simStepSize=36000,
+    verbose=True,
+)
+sim.plotSimulation(satName=bestValue, dataFile=save, dataDepFile=saveDep, quiverEvery=1000)
 
 
 plt.show()

@@ -30,6 +30,7 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         targetInclination: float = 90,
         fastTransferOptimiseParameter: float = 0.0,
         characteristicAcceleration: Union[None, float] = None,
+        verbose=True,
     ):
         super().__init__(
             bodies,
@@ -40,6 +41,7 @@ class SolarSailGuidance(SolarSailGuidanceBase):
             deepestAltitude,
             targetInclination,
             characteristicAcceleration,
+            verbose
         )
 
         lambd = 168.6284 * self.charAccel
@@ -47,10 +49,11 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         self.inclinationChangeAlpha = np.arctan(1 / np.sqrt(2))
         self.fastTransferOptimiseParameter = fastTransferOptimiseParameter
         
-        print("=== Cone angles ===")
-        print(f"Spiral Alpha = {round(self.spiralAlpha, 4)} rad = {round(np.degrees(self.spiralAlpha), 4)} deg")
-        print(f"Inclination Change Alpha = {round(self.inclinationChangeAlpha, 4)} rad = {round(np.degrees(self.inclinationChangeAlpha), 4)} deg")
-        print(f"Fast transfer optimisation parameter: {self.fastTransferOptimiseParameter}")
+        if self.verbose:
+            print("=== Cone angles ===")
+            print(f"Spiral Alpha = {round(self.spiralAlpha, 4)} rad = {round(np.degrees(self.spiralAlpha), 4)} deg")
+            print(f"Inclination Change Alpha = {round(self.inclinationChangeAlpha, 4)} rad = {round(np.degrees(self.inclinationChangeAlpha), 4)} deg")
+            print(f"Fast transfer optimisation parameter: {self.fastTransferOptimiseParameter}")
         
         self.currentPhase:int = -1
         self.startTime = 0
@@ -59,8 +62,9 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         
     def stopPropagation(self, time):
         if self.currentPhase == 10:
-            print(f"Stopping Propagation.")
-            print(f"Times outwards: {self.timesOutwards}")
+            if self.verbose:
+                print(f"Stopping Propagation.")
+                print(f"Times outwards: {self.timesOutwards}")
             return True
         else:
             return False
@@ -72,7 +76,6 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         spiralDuration = (
             self.inclinationChangeStart - self.startTime
         )
-        print(self.timesOutwards)
         return self.charAccel, spiralDuration, inclinationChangeDuration, self.lastInclination
     
 
@@ -87,38 +90,26 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         current_cartesian_state = (
             self.bodies.get(self.sailName).state - self.bodies.get("Sun").state
         )
-        # current_cartesian_velocity = (
-        #     self.bodies.get(self.sailName).velocity
-        #     # - self.bodies.get("Sun").velocity
-        # )
-
         current_cartesian_position = (
             self.bodies.get(self.sailName).position - self.bodies.get("Sun").position
         )
 
-        # progradeDirection = current_cartesian_velocity / np.sqrt(
-        #     np.square(current_cartesian_velocity).sum()
-        # )
-
         current_alt = np.sqrt(np.square(current_cartesian_position).sum())
-
-        # radialDirection = current_cartesian_position / np.sqrt(
-        #     np.square(current_cartesian_position).sum()
-        # )
 
         mu = self.bodies.get("Sun").gravitational_parameter
 
         current_keplerian_state = element_conversion.cartesian_to_keplerian(
             current_cartesian_state, mu
         )
-        # H = np.cross(current_cartesian_velocity, current_cartesian_position)
-        # Hdirection = H / self.norm(H)
 
         inclination = current_keplerian_state[2]
+        semimajoraxis = current_keplerian_state[0]
 
         trueAnomaly = current_keplerian_state[5]
         argPeriapsis = current_keplerian_state[3]
         RAAN = current_keplerian_state[4]
+
+        current_altAU = current_alt / SolarSailGuidance.AU
 
         ###########################################
         ############## Flight Phases ##############
@@ -126,12 +117,14 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         if self.currentPhase == -1:
             self.startTime = current_time
             self.currentPhase = 0
-            print("Spiraling")
+            if self.verbose:
+                print("Spiraling")
 
         # Transfer
         elif self.currentPhase == 0:
-            if current_alt / SolarSailGuidance.AU < self.deepestAltitude:
-                print("Altitude reached -> Inclination Change")
+            if current_altAU < self.deepestAltitude:
+                if self.verbose:
+                    print("Altitude reached -> Inclination Change")
                 self.inclinationChangeStart = current_time
                 self.currentPhase = 2
                 self.timesOutwards += 1
@@ -151,11 +144,13 @@ class SolarSailGuidance(SolarSailGuidanceBase):
             self.lastInclination = np.degrees(inclination)
 
             if inclination > self.targetInclination:
-                print("Inclination Change complete -> Science")
+                if self.verbose:
+                    print("Inclination Change complete -> Science")
                 self.currentPhase = 9
 
-            if current_alt / SolarSailGuidance.AU > self.targetAltitude:
-                print("Spiraling In")
+            if current_altAU > self.targetAltitude:
+                if self.verbose:
+                    print("Spiraling In")
                 self.currentPhase = 3
                 self.timesOutwards += 1
 
@@ -172,11 +167,13 @@ class SolarSailGuidance(SolarSailGuidanceBase):
             self.lastInclination = np.degrees(inclination)
 
             if inclination > self.targetInclination:
-                print("Inclination Change complete -> Science")
+                if self.verbose:
+                    print("Inclination Change complete -> Science")
                 self.currentPhase = 9
 
-            if current_alt / SolarSailGuidance.AU < self.deepestAltitude:
-                print("Spiraling out")
+            if current_altAU < self.deepestAltitude:
+                if self.verbose:
+                    print("Spiraling out")
                 self.currentPhase = 2
 
             self.alpha = self.inclinationChangeAlpha
@@ -185,16 +182,14 @@ class SolarSailGuidance(SolarSailGuidanceBase):
                 self.delta = np.pi * (2 - self.fastTransferOptimiseParameter)
             else:
                 self.delta = np.pi * (1 + self.fastTransferOptimiseParameter)
-            # self.delta = 1.5 * np.pi
-            # self.alpha = self.spiralAlpha
-
 
         # Transfer
         elif self.currentPhase == 9:
-            if current_alt / SolarSailGuidance.AU > self.targetAltitude:
+            if current_altAU > self.targetAltitude:
                 # print("Inclination reached -> spiraling back out")
                 # self.inclinationChangeStart = current_time
-                print("finished spiraling")
+                if self.verbose:
+                    print("finished spiraling")
                 self.currentPhase = 10
 
             self.delta = 0.5 * np.pi
@@ -207,11 +202,10 @@ class SolarSailGuidance(SolarSailGuidanceBase):
             self.alpha = 0
             self.delta = 0
         else:
-            print(f"Current Phase = {self.currentPhase}")
+            print(f"Error: current phase unbounded = {self.currentPhase}")
             self.alpha = 0
             self.delta = 0
 
-        # B = (mu / (current_alt * current_alt)) * (0.5 * (self.sigmaC / self.sigma))
 
         nVecAlt = np.array(
             [
