@@ -157,6 +157,7 @@ class SolarSailGuidance(SolarSailGuidanceBase):
             if current_alt / SolarSailGuidance.AU > self.targetAltitude:
                 print("Spiraling In")
                 self.currentPhase = 3
+                self.timesOutwards += 1
 
             self.alpha = self.inclinationChangeAlpha
 
@@ -176,7 +177,6 @@ class SolarSailGuidance(SolarSailGuidanceBase):
 
             if current_alt / SolarSailGuidance.AU < self.deepestAltitude:
                 print("Spiraling out")
-                self.timesOutwards += 1
                 self.currentPhase = 2
 
             self.alpha = self.inclinationChangeAlpha
