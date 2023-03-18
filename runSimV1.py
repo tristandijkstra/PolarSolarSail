@@ -22,9 +22,9 @@ logging.basicConfig(
 )
 
 
-masses = [200]
+masses = [500]
 sailAreas = [10000, 12500, 15000, 17500, 20000, 22500]
-sailAreas = [3600]
+sailAreas = [10000]
 # sailAreas = [7000,10000]
 sailAreas = sailAreas[::-1]
 

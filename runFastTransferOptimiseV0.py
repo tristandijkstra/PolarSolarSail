@@ -24,11 +24,12 @@ logging.basicConfig(
 )
 
 targetAltitude = 0.48
+deepestAltitude = 0.2
 sailArea = 10000
 mass = 500
 timesOutwardMax = 1
 
-stepSize = 18000
+stepSize = 36000
 
 yearsToRun = 25
 yearInSeconds = 365 * 24 * 3600
@@ -36,7 +37,8 @@ yearInSeconds = 365 * 24 * 3600
 targetInclination = 90
 
 saveFiles = []
-resultslst = []
+# resultslst = []
+resultslst = {}
 
 
 def runSim(
@@ -46,10 +48,10 @@ def runSim(
     sailArea=sailArea,
     targetInclination=targetInclination,
     yearsToRun=25,
-    stepSize=stepSize
+    stepSize=stepSize,
 ):
-    
     # print(w)
+    w = w[0]
     spacecraftName = "sc_w=" + str(w)
 
     guidanceObject = SolarSailGuidance(
@@ -59,8 +61,8 @@ def runSim(
         sailArea=sailArea,
         targetAltitude=targetAltitude,
         targetInclination=targetInclination,
-        deepestAltitude=0.2,
-        fastTransferOptimiseParameter=w[0]
+        deepestAltitude=deepestAltitude,
+        fastTransferOptimiseParameter=w,
     )
 
     finalGuidanceObj, save, saveDep = sim.simulate(
@@ -77,36 +79,43 @@ def runSim(
         timesOutward,
     ) = finalGuidanceObj.getOptimiseOutput()
 
-    incldur = round(inclinationChangeDuration / yearInSeconds, 3)
+    incldur = inclinationChangeDuration / yearInSeconds
     # totdur = round((spiralDuration + inclinationChangeDuration) / yearInSeconds, 3)
 
     logStr = f"run: {spacecraftName} | Final inclin. = {round(lastInclination, 3)} | Inclin. change duration = {incldur} years"
     logging.info(logStr)
     print(logStr)
 
-    resultslst.append(
-        [
-            w,
-            inclinationChangeDuration / yearInSeconds,
-            save,
-            saveDep
-        ]
-    )
+    # extraTxt = f"\nFinal inclin. = {round(finalInclination, 3)} | Characteristic Acceleration = {round(characteristicacceleration*1000, 4)} mm/s^2\
+    #             \nInclin. change duration = {dur} years | Total duration = {totdur} years"
+
+    resultslst[w] = [spacecraftName, inclinationChangeDuration / yearInSeconds, save, saveDep]
+    # resultslst.append({str(w): [spacecraftName, inclinationChangeDuration / yearInSeconds, save, saveDep]})
 
     if lastInclination < 90:
-        return incldur + 10
+        return incldur + 100
     elif timesOutward != timesOutwardMax:
-        return incldur + 10
+        return incldur + 100
     else:
         return incldur
 
 
-res = scipy.optimize.minimize(runSim, np.array([0.04]))#, bounds=[(0.001, 0.2)])
+res = scipy.optimize.minimize(
+    runSim, np.array([0.001]), method="Powell", bounds=[(0.001, 0.2)]
+)
+# res = scipy.optimize.minimize(
+#     runSim, np.array([0.1]), method="Nelder-Mead", bounds=[(0.001, 0.2)]
+# )
 
 print(res)
 
-for u in resultslst:
-    sim.plotSimulation(satName=u[0], dataFile=u[2], dataDepFile=u[3], quiverEvery=1000)
+# bestValue = str(res.x)
+bestValue = res.x[0]
+
+print(resultslst[bestValue])
+
+
+sim.plotSimulation(satName=resultslst[bestValue][0], dataFile=resultslst[bestValue][2], dataDepFile=resultslst[bestValue][3], quiverEvery=1000)
 
 
 plt.show()
