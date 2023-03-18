@@ -37,6 +37,7 @@ paramNames = ["mass", "area"]
 yearsToRun = 25
 yearInSeconds = 365 * 24 * 3600
 targetAltitude = 0.48
+deepestAltitude = 0.4
 
 combinations = list(product(masses, sailAreas))
 
@@ -55,7 +56,7 @@ for combination in tqdm(combinations):
         sailArea=combination[1],
         targetAltitude=targetAltitude,
         targetInclination=68,
-        deepestAltitude=0.35,
+        deepestAltitude=deepestAltitude,
         fastTransferOptimiseParameter=0.04
     )
 

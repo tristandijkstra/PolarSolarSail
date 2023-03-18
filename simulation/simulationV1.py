@@ -131,7 +131,7 @@ def simulate(
         aberration_corrections="NONE",
         ephemeris_time=simulation_start_epoch,
     )
-
+    # system_initial_state = np.array([ 149598023000, 0, 0,   0, 29715.60, 0])
     # Define required outputs  panelled_radiation_pressure_acceleration_type
     # acctype = propagation_setup.acceleration.panelled_radiation_pressure_acceleration_type
     acctype = propagation_setup.acceleration.thrust_acceleration_type
