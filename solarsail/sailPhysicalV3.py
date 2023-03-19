@@ -1,7 +1,9 @@
 from .base import SolarSailGuidanceBase
+from .transform import simplifiedSailToInertial
 
 
 import numpy as np
+import math
 
 from tudatpy.kernel import constants
 from tudatpy.kernel.numerical_simulation import environment
@@ -88,10 +90,10 @@ class SolarSailGuidance(SolarSailGuidanceBase):
 
     def computeSail(self, current_time) -> np.ndarray:
         current_cartesian_state = (
-            self.bodies.get(self.sailName).state - self.bodies.get("Sun").state
+            self.bodies.get(self.sailName).state
         )
         current_cartesian_position = (
-            self.bodies.get(self.sailName).position - self.bodies.get("Sun").position
+            self.bodies.get(self.sailName).position
         )
 
         current_alt = np.sqrt(np.square(current_cartesian_position).sum())
@@ -103,7 +105,7 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         )
 
         inclination = current_keplerian_state[2]
-        semimajoraxis = current_keplerian_state[0]
+        # semimajoraxis = current_keplerian_state[0]
 
         trueAnomaly = current_keplerian_state[5]
         argPeriapsis = current_keplerian_state[3]
@@ -209,77 +211,16 @@ class SolarSailGuidance(SolarSailGuidanceBase):
 
         nVecAlt = np.array(
             [
-                np.cos(self.alpha),
-                np.sin(self.alpha) * np.sin(self.delta),
-                np.sin(self.alpha) * np.cos(self.delta),
+                math.cos(self.alpha),
+                math.sin(self.alpha) * math.sin(self.delta),
+                math.sin(self.alpha) * math.cos(self.delta),
             ]
         )
 
         F0 = (SolarSailGuidanceBase.AU / current_alt) ** 2 * self.charAccel
 
-        ForceRTN = F0 * (np.cos(self.alpha) ** 2) * nVecAlt
+        forceRTN = F0 * (math.cos(self.alpha) * math.cos(self.alpha)) * nVecAlt
 
-        A1 = np.array(
-            [
-                [
-                    np.cos(argPeriapsis + trueAnomaly),
-                    np.sin(argPeriapsis + trueAnomaly),
-                    0,
-                ],
-                [
-                    -np.sin(argPeriapsis + trueAnomaly),
-                    np.cos(argPeriapsis + trueAnomaly),
-                    0,
-                ],
-                [
-                    0,
-                    0,
-                    1
-                ],
-            ]
-        )
+        forceINERTIAl = simplifiedSailToInertial(inclination, argPeriapsis, trueAnomaly, RAAN) @ forceRTN
 
-        A2 = np.array(
-            [
-                [
-                    1,
-                    0,
-                    0,
-                ],
-                [
-                    0,
-                    np.cos(inclination),
-                    np.sin(inclination),
-                ],
-                [
-                    0,
-                    -np.sin(inclination),
-                    np.cos(inclination),
-                ],
-            ]
-        )
-        A3 = np.array(
-            [
-                [
-                    np.cos(RAAN),
-                    np.sin(RAAN),
-                    0,
-                ],
-                [
-                    -np.sin(RAAN),
-                    np.cos(RAAN),
-                    0,
-                ],
-                [
-                    0,
-                    0,
-                    1,
-                ],
-            ]
-        )
-
-        AtotalInv = np.linalg.inv(A1 @ A2 @ A3)
-
-        b = AtotalInv @ ForceRTN
-
-        return b
+        return forceINERTIAl

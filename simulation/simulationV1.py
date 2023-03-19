@@ -14,6 +14,10 @@ from tudatpy.kernel.numerical_simulation import propagation_setup
 from typing import Union
 # from solarsail.sailBasic import SolarSailGuidance
 
+# Load spice kernels.
+spice.load_standard_kernels()
+
+
 
 def simulate(
     spacecraftName,
@@ -27,27 +31,24 @@ def simulate(
     # INPUTS ##################################################################
     ###########################################################################
 
-    daysToRun = 365 * yearsToRun
-    spacecraftMass = sailGuidanceObject.mass  # kg
+    secondsToRun = 365 * yearsToRun * constants.JULIAN_DAY
+    # spacecraftMass =   # kg
 
     ###########################################################################
 
     # Retrieve current directory
-    current_directory = os.getcwd()
+    # current_directory = os.getcwd()
 
     simulation_start_epoch = (
         30 * constants.JULIAN_YEAR
         + 0 * 7.0 * constants.JULIAN_DAY
         - 0.5 * constants.JULIAN_DAY
     )
-    simulation_end_epoch = simulation_start_epoch + (daysToRun * constants.JULIAN_DAY)
+    simulation_end_epoch = simulation_start_epoch + secondsToRun
 
     ###########################################################################
     # CREATE ENVIRONMENT ######################################################
     ###########################################################################
-
-    # Load spice kernels.
-    spice.load_standard_kernels()
 
     # Create settings for celestial bodies
     bodies_to_create = ["Sun"]
@@ -67,7 +68,7 @@ def simulate(
 
     # Create vehicle object
     bodies.create_empty_body(spacecraftName)
-    bodies.get(spacecraftName).mass = spacecraftMass
+    bodies.get(spacecraftName).mass = sailGuidanceObject.mass
 
     ###########################################################################
     # CREATE THRUST MODEL #####################################################
@@ -135,20 +136,24 @@ def simulate(
     # system_initial_state = np.array([ 149598023000, 0, 0,   0, 29715.60, 0])
     # Define required outputs  panelled_radiation_pressure_acceleration_type
     # acctype = propagation_setup.acceleration.panelled_radiation_pressure_acceleration_type
-    acctype = propagation_setup.acceleration.thrust_acceleration_type
-    dependent_variables_to_save = [
-        propagation_setup.dependent_variable.single_acceleration(
-            acctype, spacecraftName, spacecraftName
-        ),
-        propagation_setup.dependent_variable.single_acceleration_norm(
-            acctype, spacecraftName, spacecraftName
-        ),
-        propagation_setup.dependent_variable.keplerian_state(spacecraftName, "Sun"),
-        propagation_setup.dependent_variable.custom_dependent_variable(
-            sailGuidanceObject.dependantVariables,
-            sailGuidanceObject.extraDependentVariables,
-        ),
-    ]
+
+    if saveFile is not None:
+        acctype = propagation_setup.acceleration.thrust_acceleration_type
+        dependent_variables_to_save = [
+            propagation_setup.dependent_variable.single_acceleration(
+                acctype, spacecraftName, spacecraftName
+            ),
+            propagation_setup.dependent_variable.single_acceleration_norm(
+                acctype, spacecraftName, spacecraftName
+            ),
+            propagation_setup.dependent_variable.keplerian_state(spacecraftName, "Sun"),
+            propagation_setup.dependent_variable.custom_dependent_variable(
+                sailGuidanceObject.dependantVariables,
+                sailGuidanceObject.extraDependentVariables,
+            ),
+        ]
+    else:
+        dependent_variables_to_save = []
 
     # Create numerical integrator settings.
     integrator_settings = propagation_setup.integrator.runge_kutta_4(simStepSize)

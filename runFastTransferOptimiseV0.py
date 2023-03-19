@@ -55,7 +55,6 @@ def runSim(
     w = w[0]
     spacecraftName = "sc_w=" + str(w)
 
-    start = time.perf_counter()
 
     guidanceObject = SolarSailGuidance(
         None,
@@ -69,6 +68,7 @@ def runSim(
         verbose=False
     )
 
+    start = time.perf_counter()
     finalGuidanceObj, save, saveDep = sim.simulate(
         spacecraftName=spacecraftName,
         sailGuidanceObject=guidanceObject,
