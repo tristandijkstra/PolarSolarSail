@@ -11,42 +11,44 @@ from tudatpy.kernel import numerical_simulation
 from tudatpy.kernel.numerical_simulation import environment_setup
 from tudatpy.kernel.numerical_simulation import propagation_setup
 
+from typing import Union
 # from solarsail.sailBasic import SolarSailGuidance
+
+# Load spice kernels.
+spice.load_standard_kernels()
+
 
 
 def simulate(
     spacecraftName,
     sailGuidanceObject,
-    saveFile: str,
+    saveFile: Union[str, None],
     yearsToRun: float = 7,
     simStepSize: float = 100.0,
+    verbose:bool = True
 ):
     ###########################################################################
     # INPUTS ##################################################################
     ###########################################################################
 
-    daysToRun = 365 * yearsToRun
-    spacecraftMass = sailGuidanceObject.mass  # kg
+    secondsToRun = 365 * yearsToRun * constants.JULIAN_DAY
+    # spacecraftMass =   # kg
 
     ###########################################################################
 
     # Retrieve current directory
-    current_directory = os.getcwd()
-    print(current_directory)
+    # current_directory = os.getcwd()
 
     simulation_start_epoch = (
         30 * constants.JULIAN_YEAR
         + 0 * 7.0 * constants.JULIAN_DAY
         - 0.5 * constants.JULIAN_DAY
     )
-    simulation_end_epoch = simulation_start_epoch + (daysToRun * constants.JULIAN_DAY)
+    simulation_end_epoch = simulation_start_epoch + secondsToRun
 
     ###########################################################################
     # CREATE ENVIRONMENT ######################################################
     ###########################################################################
-
-    # Load spice kernels.
-    spice.load_standard_kernels()
 
     # Create settings for celestial bodies
     bodies_to_create = ["Sun"]
@@ -66,7 +68,7 @@ def simulate(
 
     # Create vehicle object
     bodies.create_empty_body(spacecraftName)
-    bodies.get(spacecraftName).mass = spacecraftMass
+    bodies.get(spacecraftName).mass = sailGuidanceObject.mass
 
     ###########################################################################
     # CREATE THRUST MODEL #####################################################
@@ -131,23 +133,27 @@ def simulate(
         aberration_corrections="NONE",
         ephemeris_time=simulation_start_epoch,
     )
-
+    # system_initial_state = np.array([ 149598023000, 0, 0,   0, 29715.60, 0])
     # Define required outputs  panelled_radiation_pressure_acceleration_type
     # acctype = propagation_setup.acceleration.panelled_radiation_pressure_acceleration_type
-    acctype = propagation_setup.acceleration.thrust_acceleration_type
-    dependent_variables_to_save = [
-        propagation_setup.dependent_variable.single_acceleration(
-            acctype, spacecraftName, spacecraftName
-        ),
-        propagation_setup.dependent_variable.single_acceleration_norm(
-            acctype, spacecraftName, spacecraftName
-        ),
-        propagation_setup.dependent_variable.keplerian_state(spacecraftName, "Sun"),
-        propagation_setup.dependent_variable.custom_dependent_variable(
-            sailGuidanceObject.dependantVariables,
-            sailGuidanceObject.extraDependentVariables,
-        ),
-    ]
+
+    if saveFile is not None:
+        acctype = propagation_setup.acceleration.thrust_acceleration_type
+        dependent_variables_to_save = [
+            propagation_setup.dependent_variable.single_acceleration(
+                acctype, spacecraftName, spacecraftName
+            ),
+            propagation_setup.dependent_variable.single_acceleration_norm(
+                acctype, spacecraftName, spacecraftName
+            ),
+            propagation_setup.dependent_variable.keplerian_state(spacecraftName, "Sun"),
+            propagation_setup.dependent_variable.custom_dependent_variable(
+                sailGuidanceObject.dependantVariables,
+                sailGuidanceObject.extraDependentVariables,
+            ),
+        ]
+    else:
+        dependent_variables_to_save = []
 
     # Create numerical integrator settings.
     integrator_settings = propagation_setup.integrator.runge_kutta_4(simStepSize)
@@ -177,7 +183,7 @@ def simulate(
         output_variables=dependent_variables_to_save,
     )
 
-    propagator_settings.print_settings.print_initial_and_final_conditions = True
+    propagator_settings.print_settings.print_initial_and_final_conditions = verbose
 
     ###########################################################################
     # PROPAGATE ORBIT #########################################################
@@ -199,21 +205,23 @@ def simulate(
     # SAVE RESULTS ############################################################
     ###########################################################################
 
-    # fileName = current_directory + "data/" + saveFile + ".dat"
-    # fileNameDep = current_directory + "data/" + saveFile + "_dep" + ".dat"
-    fileName = "data/" + saveFile + ".dat"
-    fileNameDep = "data/" + saveFile + "_dep" + ".dat"
-    save2txt(
-        solution=state_history,
-        filename=fileName,
-        directory="./",
-    )
+    if saveFile is not None:
+        fileName = "data/" + saveFile + ".dat"
+        fileNameDep = "data/" + saveFile + "_dep" + ".dat"
+        save2txt(
+            solution=state_history,
+            filename=fileName,
+            directory="./",
+        )
 
-    save2txt(
-        solution=dependent_variables,
-        filename=fileNameDep,
-        directory="./",
-    )
+        save2txt(
+            solution=dependent_variables,
+            filename=fileNameDep,
+            directory="./",
+        )
+    else:
+        fileName = None
+        fileNameDep = None
 
     return sailGuidanceObject, fileName, fileNameDep
 
@@ -266,17 +274,18 @@ def plotSimulation(
     time = (data2.time - data.time.iloc[0]) / yearInSeconds
     ax.plot(data.iloc[:, 1], data.iloc[:, 2], data.iloc[:, 3])
 
-    ax.quiver(
-        data.x[::quiverEvery],
-        data.y[::quiverEvery],
-        data.z[::quiverEvery],
-        data2.ThrustX[::quiverEvery],
-        data2.ThrustY[::quiverEvery],
-        data2.ThrustZ[::quiverEvery],
-        length=0.1 * AU,
-        normalize=True,
-        color="tab:orange",
-    )
+    if quiverEvery != 0:
+        ax.quiver(
+            data.x[::quiverEvery],
+            data.y[::quiverEvery],
+            data.z[::quiverEvery],
+            data2.ThrustX[::quiverEvery],
+            data2.ThrustY[::quiverEvery],
+            data2.ThrustZ[::quiverEvery],
+            length=0.1 * AU,
+            normalize=True,
+            color="tab:orange",
+        )
     ax.set_ylim(-AU, AU)
     ax.set_xlim(-AU, AU)
     ax.set_zlim(-0.5 * AU, 0.5 * AU)

@@ -1,5 +1,5 @@
 from simulation import simulationV1 as sim
-from solarsail.sailPhysicalV2 import SolarSailGuidance
+from solarsail.sailPhysicalV3 import SolarSailGuidance
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -25,16 +25,19 @@ logging.basicConfig(
 masses = [500]
 sailAreas = [10000, 12500, 15000, 17500, 20000, 22500]
 sailAreas = [10000]
+# sailAreas = [7000,10000]
 sailAreas = sailAreas[::-1]
 
 stepSize = 3600
 stepSize = 36000
+# stepSize = 18000
 
 paramNames = ["mass", "area"]
 
 yearsToRun = 25
 yearInSeconds = 365 * 24 * 3600
 targetAltitude = 0.48
+deepestAltitude = 0.4
 
 combinations = list(product(masses, sailAreas))
 
@@ -52,7 +55,9 @@ for combination in tqdm(combinations):
         mass=combination[0],
         sailArea=combination[1],
         targetAltitude=targetAltitude,
-        targetInclination=90,
+        targetInclination=68,
+        deepestAltitude=deepestAltitude,
+        fastTransferOptimiseParameter=0.04
     )
 
     finalGuidanceObj, save, saveDep = sim.simulate(
@@ -91,7 +96,7 @@ for combination in tqdm(combinations):
     )
 
 for u in saveFiles:
-    sim.plotSimulation(*u, quiverEvery=10)
+    sim.plotSimulation(*u, quiverEvery=1000)
 
 
 plt.show()

@@ -26,11 +26,13 @@ class SolarSailGuidanceBase:
         deepestAltitude: float = 0.48,
         targetInclination: float = 90,
         characteristicAcceleration = None,
+        verbose=True,
     ):
         self.bodies = bodies
         self.sailName = sailName
         self.targetAltitude = targetAltitude
         self.deepestAltitude = deepestAltitude
+        self.verbose = verbose
 
         self.mass = mass
         # self.sigmaC = 2 * (
@@ -43,12 +45,14 @@ class SolarSailGuidanceBase:
             self.sigma = mass / sailArea
             self.charAccel = ((9.08 * reflectivity) / (self.sigma * 1000)) / 1000
         else:
-            print(f"Characteristic acceleration overide: {characteristicAcceleration}")
+            if verbose:
+                print(f"Characteristic acceleration overide: {characteristicAcceleration}")
             self.charAccel = characteristicAcceleration
             self.sigma = ((9.08 * reflectivity) / characteristicAcceleration) / 1e6
        
-        print(f"Characteristic acceleration = {round(self.charAccel*1000, 4)}")
-        print(f"Mass = {self.mass} | sigma = {round(self.sigma,4)}")
+        if verbose:
+            print(f"Characteristic acceleration = {round(self.charAccel*1000, 4)}")
+            print(f"Mass = {self.mass} | sigma = {round(self.sigma,4)}")
             #    | sigmaC = {round(self.sigmaC, 4)}")
 
         self.targetInclination = np.radians(targetInclination)
