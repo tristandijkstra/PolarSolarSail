@@ -35,6 +35,7 @@ class Properties():
         self.passive_thermal_mass = self.insulation() + self.heat_shield(layers)    # mass of passive thermal elements
         return self.passive_thermal_mass
     
+    
     def cost(self):
         unit_cost = self.passive_thermal_mass * 22800                               # FY10 unit cost in $K/kg
         avg_inflation = 0.0228                                                      # average inflation rate

@@ -4,66 +4,88 @@ materials.py
 This file includes properties for all material options, to ease
 tradeoff analysis.
 
+ 
 '''
 
 ### Sail Materials
 
-aluminum = {'name': 'aluminum', 'emissivity': 0.10, 'reflectivity': 0.98, 'absorptivity': 0.02}
+aluminum = {'name': 'aluminum', 'emissivity': 0.10, 'reflectivity': 0.98, 'absorptivity': 0.02, 'density': 2810}
 # Emissivity source: https://www.engineeringtoolbox.com/radiation-heat-emissivity-aluminum-d_433.html
 # Reflectivity source: https://laserbeamproducts.wordpress.com/2014/06/19/reflectivity-of-aluminium-uv-visible-and-infrared/
 # Absorptivity taken as 1 - Reflectivity.
 
-chromium = {'name': 'chromium', 'emissivity': 0.36, 'reflectivity': 0.90, 'absorptivity': 0.10}
+chromium = {'name': 'chromium', 'emissivity': 0.36, 'reflectivity': 0.90, 'absorptivity': 0.10, 'density': 7150}
 # Emissivity source: https://neutrium.net/heat-transfer/total-normal-emissivities-of-selected-materials/
 
 ### Spacecraft Bus Materials
-aluminum_alloy = {'name': 'aluminum alloy', 'emissivity': 0.08, 'reflectivity': 0.98, 'absorptivity': 0.02}
+aluminum_alloy = {'name': 'aluminum alloy', 'emissivity': 0.08, 'reflectivity': 0.98, 'absorptivity': 0.02, 'density': 2810}
 # Emissivity source: https://www.engineeringtoolbox.com/radiation-heat-emissivity-aluminum-d_433.html
 
-titanium = {'name': 'titanium', 'emissivity': 0.19, 'reflectivity': 0.70, 'absorptivity': 0.30}
+titanium = {'name': 'titanium', 'emissivity': 0.19, 'reflectivity': 0.70, 'absorptivity': 0.30, 'density': 4540}
 # Emissivity source: https://www.engineeringtoolbox.com/emissivity-coefficients-d_447.html
 # Reflectivity source: https://refractiveindex.info/?shelf=3d&book=metals&page=titanium
 
-cfrp = {'name': 'carbon fibre', 'emissivity': , 'reflectivity': , 'absorptivity': }
-
+cfrp = {'name': 'carbon fibre', 'emissivity': 0.77, 'reflectivity': 0.17, 'absorptivity': 0.83, 'density': 1800}
+# Emissivity source: https://www.engineeringtoolbox.com/emissivity-coefficients-d_447.html
+# Reflectivity source: https://refractiveindex.info/?shelf=main&book=C&page=Phillip
 
 ### Coating Materials
-mli = {'name': 'multi-layer insulation', 'emissivity': , 'reflectivity': , 'absorptivity': }
-solar_black = {'name': 'solar black', 'emissivity': , 'reflectivity': , 'absorptivity': 0.96}
-az93 = {'name': 'az93 white paint', 'emissivity': 0.92, 'reflectivity': , 'absorptivity': 0.13}
-mag_oxide = {'name': 'magnesium oxide white paint', 'emissivity': 0.90, 'reflectivity': , 'absorptivity': 0.09}
-osr = {'name': 'optical solar reflectors', 'emissivity': , 'reflectivity': , 'absorptivity': }
+mli = {'name': 'multi-layer insulation', 'emissivity': 0.03, 'reflectivity': 0.98, 'absorptivity': 0.02, 'density': 19}
+# Emissivity source: http://www.thermalengineer.com/library/effective_emittance.htm
+# Reflectivity: this assumes the outer surface is aluminum for reflection
 
+solar_black = {'name': 'solar black', 'emissivity': 0.78, 'reflectivity': 0.04, 'absorptivity': 0.96, 'density': 3200}
+# Emissivity and absorptivity sources: https://enbio.eu/wp-content/uploads/2018/10/SolarBlack.pdf
+
+az93 = {'name': 'az93 white paint', 'emissivity': 0.92, 'reflectivity': 0.87, 'absorptivity': 0.13, 'density': 3600}
+# Density: Assumed same of magnesium oxide due to lack of available data.
+# Emissivity, Reflectivity, Absorptivity: https://www.aztechnology.com/product/1/az-93
+
+mag_oxide = {'name': 'magnesium oxide white paint', 'emissivity': 0.90, 'reflectivity': 0.91, 'absorptivity': 0.09, 'density': 3600}
+# Thermal properties: http://solarmirror.com/fom/fom-serve/cache/43.html
+# Density: https://en.wikipedia.org/wiki/Magnesium_oxide
+
+osr = {'name': 'optical solar reflectors', 'emissivity': 0.93, 'reflectivity': 0.98, 'absorptivity': 0.02, 'density': 2600}
+# Reflectivity source: (assuming quartz outer layer over metal) 
+# Density: search "optical solar reflectors density", the source is a downloadable PDF from Excelitas.
 
 ### Solar Panel Materials
-gallium_arsenide = {'name': 'gallium arsenide', 'emissivity': , 'reflectivity': , 'absorptivity': }
+gallium_arsenide = {'name': 'gallium arsenide', 'emissivity': 0.75, 'reflectivity': 0.38, 'absorptivity': 0.62, 'density': 1.76}
+# Emissivity: http://eprints.gla.ac.uk/150163/
+# Reflectivity: https://phys.org/news/2017-08-solar-cells-optics-micro-nanoscale.html
+# Density: https://www.spectrolab.com/DataSheets/Panel/panels.pdf
+# Note that the density is in kg/m^2, not kg/m^3 as is true for the other values.
+
 
 ### Heat Shield Materials
-ceramic_cloth = {'name': 'ceramic cloth', 'emissivity': , 'reflectivity': , 'absorptivity': }
+ceramic_cloth = {'name': 'ceramic cloth', 'emissivity': 0.73, 'reflectivity': 0.19, 'absorptivity': 0.81, 'density': 96}
+# Emissivity: https://www.coleparmer.com/tech-article/emissivity-of-specific-materials#anchor12
+# Reflectivity: https://refractiveindex.info/?shelf=main&book=Bi12SiO20&page=Gospodinov
+# Reflectivity and absorptivity taken from another member of the silicate family.
+# Density: https://www.ceceramicfiber.com/Article/Ceramicfiberblanketd_1.html
+
 
 ### Boom Materials
-carbon_fibre = {'name': 'carbon fibre', 'emissivity': , 'reflectivity': , 'absorptivity': }
+carbon_fibre = {'name': 'carbon fibre', 'emissivity': 0.77, 'reflectivity': 0.17, 'absorptivity': 0.83, 'density': 1800}
 
 
 def sail_material(choice):
-    if choice == 'standard':
-        return aluminum, chromium
+    if choice == 'aluminum':
+        return aluminum
+    elif choice == 'chromium':
+        return chromium
     else:
-        raise Exception("The only currently supported option is 'standard'.")
+        raise Exception("The only currently supported options are 'aluminum' and 'chromium'.")
 
 
-def structural_material(choice):
+def bus_material(choice):
     if choice == 'aluminum':
         return aluminum_alloy
     elif choice == 'titanium':
         return titanium
     elif choice == 'carbon fibre':
         return cfrp
-    else:
-        raise Exception("The only currently supported options are 'aluminum', 'titanium', and 'carbon fibre'.")
-    
-def coating_material(choice):
-    if choice == 'multi-layer insulation':
+    elif choice == 'multi-layer insulation':
         return mli
     elif choice == 'solar black':
         return solar_black
@@ -73,20 +95,22 @@ def coating_material(choice):
         return mag_oxide
     elif choice == 'optical solar reflectors':
         return osr
-    elif choice == None:
-        return
     else:
-        raise Exception("The only currently supported options are 'multi-layer insulation' and 'solar black'.")
+        raise Exception("The only currently supported options are 'aluminum', 'titanium', 'carbon fibre', 'multi-layer insulation', 'solarblack', 'az93 white paint', 'magnesium oxide paint', or 'osr'.")
     
 def panel_material(choice):
     if choice == 'gallium arsenide':
-        return osr, gallium_arsenide
+        return gallium_arsenide
+    elif choice == 'osr':
+        return osr
     else:
-        raise Exception("The only currently supported option is 'gallium arsenide'.")
+        raise Exception("The only currently supported option is 'gallium arsenide' and 'osr'.")
     
 def shield_material(choice):
     if choice == 'ceramic cloth':
-        return ceramic_cloth, mli
+        return ceramic_cloth
+    elif choice == 'multi-layer insulation':
+        return mli
     else:
         raise Exception("The only currently supported option is 'ceramic cloth'.")
     

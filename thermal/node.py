@@ -18,8 +18,6 @@ TODO:
     - Add more nodes for better localization of heat and cold centres in the model.
     - Add temporal changes to the thermal model based on the orbital model (can use animations if we would like to showoff)
     - Migrate this to software such as ANSYS for analysis once a 3D model is created.
-    - Add easier configurability for structural and coating materials
-    - Add structural mass calculation based on materials choice
 
 '''
 
@@ -28,7 +26,7 @@ import numpy as np
 
 
 class Node():
-    def __init__(self, name, skin_properties, area, case, n_shield=0):
+    def __init__(self, name, properties, case, n_shield=0, nodes=1):
         '''
         This sets up each Node class with the surface properties and the area.
         
@@ -41,18 +39,17 @@ class Node():
         n_shield [int]: The number of layers for the heat shield.
         '''
         self.name = name
-        self.emissivity = skin_properties[0]
-        self.absorptivity = skin_properties[1]
-        self.reflectivity = skin_properties[2]
-        self.emissivity_rad = skin_properties[3]
-        self.area_sun = area[0]
-        self.area_space = area[1]
-        self.area_radiator = area[2]
+        self.emissivity = properties[0]
+        self.absorptivity = properties[1]
+        self.reflectivity = properties[2]
+        self.density = properties[3]
+        self.area = properties[4]
         self.distance = case[0]
         self.angle = case[1]
         self.SB = 5.67e-8
         self.solar_luminosity = 3.83e26
         self.n_shield = n_shield
+        self.nodes = nodes
     
     def solar_heat_in(self):
         '''
@@ -70,7 +67,7 @@ class Node():
         self.solar_q_in [float]: Incoming heat from the sun in W.
         '''
         self.solar_flux = (np.cos(self.angle) * self.solar_luminosity * self.absorptivity) / (4 * np.pi * (self.distance * 1.496e11)**2)
-        self.solar_q_in = self.solar_flux * self.area_sun
+        self.solar_q_in = self.solar_flux * self.area
         return self.solar_q_in
     
     def internal_heat(self, heater_power, electrical_heat):
@@ -105,7 +102,7 @@ class Node():
         
             self.q_absorbed [float]: The total heat absorbed by the node.
         '''
-        self.q_absorbed = self.absorptivity * self.SB * self.area_sun * eq_temp**4
+        self.q_absorbed = self.absorptivity * self.SB * self.area * eq_temp**4
         return self.q_absorbed
 
     def heat_radiated(self, eq_temp):
@@ -125,7 +122,7 @@ class Node():
         
             self.q_radiated [float]: The total heat radiated by the node.
         '''
-        self.q_radiated = self.emissivity * self.SB * self.area_space * eq_temp**4
+        self.q_radiated = self.emissivity * self.SB * self.area * eq_temp**4
         return self.q_radiated
 
     def thermal_balance(self):
@@ -182,8 +179,8 @@ def temperatures(bus, sail, shield):
         '''
     if shield != None:
         therm_resistance = ((shield.n_shield / shield.emissivity) + (1 / bus.emissivity) - shield.n_shield)
-        temp_bus = ((bus.q_internal + (bus.solar_q_in / therm_resistance)) / ((bus.area_space * bus.emissivity * bus.SB) + (bus.emissivity_rad * bus.SB * bus.area_radiator)))**(1/4)
-        term_4 = ((bus.area_sun / shield.area_space) * temp_bus**4)
+        temp_bus = ((bus.q_internal + (bus.solar_q_in / therm_resistance)) / ((bus.area * bus.emissivity * bus.SB) + (bus.emissivity_rad * bus.SB * bus.area)))**(1/4)
+        term_4 = ((bus.area / shield.area) * temp_bus**4)
         term_5 = shield.solar_q_in * ((1/shield.emissivity) + (1/bus.emissivity) - 1)
         term_6 = shield.SB * shield.area_space
         temp_shield = (term_4 + (term_5 / term_6))**(1/4)
