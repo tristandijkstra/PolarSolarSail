@@ -10,7 +10,7 @@ from tudatpy.kernel.numerical_simulation import environment
 from tudatpy.kernel.astro import element_conversion
 from scipy.optimize import fsolve
 
-from typing import Union
+from typing import Union, Tuple
 
 
 def lambdFunc(alpha, lamd=0):
@@ -27,13 +27,32 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         mass: float = 100,
         sailArea: float = 22500,
         targetAltitude: float = 0.48,
-        # TODO: add fast transfer stuff
         deepestAltitude: float = 0.2,
         targetInclination: float = 90,
         fastTransferOptimiseParameter: float = 0.0,
         characteristicAcceleration: Union[None, float] = None,
         verbose=True,
     ):
+        """V3 of the sail guidance model:
+            - Semi-Physical sail model
+            - Fast Transfers
+            - Compatible with optimisers
+            - Outputs alpha and delta
+            - Faster computation time
+
+        Args:
+            bodies (environment.SystemOfBodies): tudat bodies object
+            sailName (str, optional): name of the sailcraft for tudat. Defaults to "Sail".
+            mass (float, optional): mass in kg. Defaults to 100.
+            sailArea (float, optional): sail area in m^2. Defaults to 22500.
+            targetAltitude (float, optional): target final altitude above the sun in AU. Defaults to 0.48.
+            deepestAltitude (float, optional): deepest altitude to spiral to. Defaults to 0.48.
+            targetInclination (float, optional): target final inclination. Defaults to 90.
+            fastTransferOptimiseParameter (float, optional): mixing value. Defaults to 0.0.
+            characteristicAcceleration (_type_, optional): optional set characteristic acceleration isntead of area. Defaults to None.
+            verbose (bool, optional): print outputs, disable to improve performance. Defaults to True.
+        """
+
         super().__init__(
             bodies,
             sailName,
@@ -62,7 +81,15 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         self.timesOutwards = 0
 
         
-    def stopPropagation(self, time):
+    def stopPropagation(self, time:float) -> bool:
+        """Stop Tudat propagation
+
+        Args:
+            time (float): environment time
+
+        Returns:
+            bool: True if stopping, false otherwise
+        """
         if self.currentPhase == 10:
             if self.verbose:
                 print(f"Stopping Propagation.")
@@ -81,14 +108,30 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         return self.charAccel, spiralDuration, inclinationChangeDuration, self.lastInclination
     
 
-    def getOptimiseOutput(self):
+    def getOptimiseOutput(self) -> Tuple[float, float, float]:
+        """Returns a set of parameters to the the optimiser
+
+        Returns:
+            Tuple[float, float, float]: inclination change duration (yrs), final inclination (deg), times going outwards
+        """
         inclinationChangeDuration = (
             self.inclinationChangeEnd - self.inclinationChangeStart
         )
         return inclinationChangeDuration, self.lastInclination, self.timesOutwards
 
 
-    def computeSail(self, current_time) -> np.ndarray:
+    def computeSail(self, current_time:float) -> np.ndarray:
+        """The core of the sail object, gives guidance based on environment and calculates thrust vector.
+            The flight is split into multiple phases:
+                1. TODO
+            The result is served to the thrust direction and thrust magnitude function.
+
+        Args:
+            current_time (float): current time from integrator
+
+        Returns:
+            np.ndarray: Thrust vector
+        """
         current_cartesian_state = (
             self.bodies.get(self.sailName).state
         )
@@ -116,20 +159,26 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         ###########################################
         ############## Flight Phases ##############
         ###########################################
+
+        # This is just to record the start time
         if self.currentPhase == -1:
             self.startTime = current_time
             self.currentPhase = 0
-            if self.verbose:
-                print("Spiraling")
 
-        # Transfer
+            if self.verbose:
+                print("Spiraling to deepest altitude")
+
+
+        # Phase 0: Spiraling inwards
         elif self.currentPhase == 0:
+            # if we're just past our target altitude start spiraling
             if current_altAU < self.deepestAltitude:
-                if self.verbose:
-                    print("Altitude reached -> Inclination Change")
                 self.inclinationChangeStart = current_time
                 self.currentPhase = 2
-                self.timesOutwards += 1
+                # self.timesOutwards += 1
+            
+                if self.verbose:
+                    print("Deepest altitude reached -> Inclination Change")
 
             self.delta = 1.5 * np.pi
             self.alpha = self.spiralAlpha
@@ -140,75 +189,93 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         #     self.alpha = 0
         #     self.delta = 0
 
-        # inclination change + spiral back out
+
+        # Phase 2: Inclination change + spiral back out
         elif self.currentPhase == 2:
             self.inclinationChangeEnd = current_time
             self.lastInclination = np.degrees(inclination)
 
+            # if we reach target inclination go to end
             if inclination > self.targetInclination:
-                if self.verbose:
-                    print("Inclination Change complete -> Science")
                 self.currentPhase = 9
 
-            if current_altAU > self.targetAltitude:
                 if self.verbose:
-                    print("Spiraling In")
+                    print("Inclination Change complete -> Spiraling to target")
+
+            # If we are past outmost altitude, spiral back in
+            if current_altAU > self.targetAltitude:
                 self.currentPhase = 3
                 self.timesOutwards += 1
 
+                if self.verbose:
+                    print("Inclination change + Spiraling In")
+
             self.alpha = self.inclinationChangeAlpha
 
+            # Switching cone angle based depending on ascending/descending
             if np.cos(argPeriapsis + trueAnomaly) >= 0:
                 self.delta = np.pi * (self.fastTransferOptimiseParameter)
             else:
                 self.delta = np.pi * (1 - self.fastTransferOptimiseParameter)
 
-        # spiral back in
+
+        # Phase 3: Inclination change + spiral back in
         elif self.currentPhase == 3:
             self.inclinationChangeEnd = current_time
             self.lastInclination = np.degrees(inclination)
 
+            # if we reach target inclination go to end
             if inclination > self.targetInclination:
-                if self.verbose:
-                    print("Inclination Change complete -> Science")
                 self.currentPhase = 9
 
-            if current_altAU < self.deepestAltitude:
                 if self.verbose:
-                    print("Spiraling out")
+                    print("Inclination Change complete -> Spiraling to target")
+
+            # If we are past innermost altitude, spiral back in
+            if current_altAU < self.deepestAltitude:
                 self.currentPhase = 2
+
+                if self.verbose:
+                    print("Inclination change + Spiraling out")
 
             self.alpha = self.inclinationChangeAlpha
 
+            # Switching cone angle based depending on ascending/descending
             if np.cos(argPeriapsis + trueAnomaly) >= 0:
                 self.delta = np.pi * (2 - self.fastTransferOptimiseParameter)
             else:
                 self.delta = np.pi * (1 + self.fastTransferOptimiseParameter)
 
-        # Transfer
+
+        # Spiral back out to target altitude.
         elif self.currentPhase == 9:
             if current_altAU > self.targetAltitude:
-                # print("Inclination reached -> spiraling back out")
-                # self.inclinationChangeStart = current_time
-                if self.verbose:
-                    print("finished spiraling")
                 self.currentPhase = 10
+
+                if self.verbose:
+                    print("Starting Science Phase")
 
             self.delta = 0.5 * np.pi
             self.alpha = self.spiralAlpha
 
 
-        # post-inclination change
+        # Ending, set everything to 0 thrust, 
+        # this also calls the termination function
         elif self.currentPhase == 10:
             # TODO
-            self.alpha = 0
+            self.alpha = 0.5 * np.pi
             self.delta = 0
+
+
+        # If the phase is unbounded, print a bunch of errors
         else:
             print(f"Error: current phase unbounded = {self.currentPhase}")
-            self.alpha = 0
+            self.alpha = 0.5 * np.pi
             self.delta = 0
 
 
+        # Normal vector.
+        # Simplified physics -> normal vec = thrust vec
         nVecAlt = np.array(
             [
                 math.cos(self.alpha),
@@ -217,10 +284,14 @@ class SolarSailGuidance(SolarSailGuidanceBase):
             ]
         )
 
-        F0 = (SolarSailGuidanceBase.AU / current_alt) ** 2 * self.charAccel
+        # Force Magnitude scaled on altitude
+        # F0 = ((SolarSailGuidanceBase.AU / current_alt) ** 2) * self.charAccel
+        F0 = (1/(current_altAU * current_altAU)) * self.charAccel
 
+        # Force Vector in radial tangential normal reference frame
         forceRTN = F0 * (math.cos(self.alpha) * math.cos(self.alpha)) * nVecAlt
 
+        # Transform to inertial reference frame
         forceINERTIAl = simplifiedSailToInertial(inclination, argPeriapsis, trueAnomaly, RAAN) @ forceRTN
 
         return forceINERTIAl

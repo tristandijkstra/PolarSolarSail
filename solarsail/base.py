@@ -28,6 +28,19 @@ class SolarSailGuidanceBase:
         characteristicAcceleration = None,
         verbose=True,
     ):
+        """Base sail model object
+
+        Args:
+            bodies (environment.SystemOfBodies): tudat bodies object
+            sailName (str, optional): name of the sailcraft for tudat. Defaults to "Sail".
+            mass (float, optional): mass in kg. Defaults to 100.
+            sailArea (float, optional): sail area in m^2. Defaults to 22500.
+            targetAltitude (float, optional): target altitude above the sun in AU. Defaults to 0.48.
+            deepestAltitude (float, optional): deepest altitude to spiral to. Defaults to 0.48.
+            targetInclination (float, optional): target final inclination. Defaults to 90.
+            characteristicAcceleration (_type_, optional): optional set characteristic acceleration isntead of area. Defaults to None.
+            verbose (bool, optional): print outputs, disable to improve performance. Defaults to True.
+        """
         self.bodies = bodies
         self.sailName = sailName
         self.targetAltitude = targetAltitude
@@ -70,21 +83,30 @@ class SolarSailGuidanceBase:
         self.inclinationChangeEnd = 0
         self.lastInclination = 0
 
-    def dependantVariables(self):
+    def dependantVariables(self) -> np.ndarray:
         return np.array([self.alpha, self.delta])
 
-    def norm(self, vec: np.ndarray):
+    def norm(self, vec: np.ndarray) -> float:
         return np.sqrt(np.square(vec).sum())
 
     def computeSail(self, current_time) -> np.ndarray:
         return np.zeros([3, 1])
 
-    def stopPropagation(self, time):
+    def stopPropagation(self, time) -> bool:
         return False
 
     def compute_thrust_direction(self, current_time: float) -> np.ndarray:
+        """Uses the computesail function to calculate the thrust direction
+
+        Args:
+            current_time (float): current time from env
+
+        Returns:
+            np.ndarray: normalised thrust direction
+        """
         # Check if computation is to be done
         if current_time == current_time:
+            # This if/else is to avoid duplicate compute sail calls
             if self.lastTimeMeasured == current_time:
                 acc = self.lastAccelVector
                 return acc / np.sqrt(np.square(acc).sum())
@@ -107,8 +129,17 @@ class SolarSailGuidanceBase:
             return np.zeros([3, 1])
 
     def compute_thrust_magnitude(self, current_time: float) -> float:
+        """Uses the computesail function to calculate the thrust direction
+
+        Args:
+            current_time (float): current time from env
+
+        Returns:
+            float: thrust magnitude in newton
+        """
         # Check if computation is to be done
         if current_time == current_time:
+            # This if/else is to avoid duplicate compute sail calls
             if self.lastTimeMeasured == current_time:
                 acc = self.lastAccelVector
                 return np.sqrt(np.square(acc).sum()) * self.mass
