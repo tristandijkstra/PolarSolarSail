@@ -78,7 +78,8 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         
         self.currentPhase:int = -1
         self.startTime = 0
-        self.timesOutwards = 0
+        self.timesOutwardsCompleted = 0
+        self.goingOutwards = False
 
         
     def stopPropagation(self, time:float) -> bool:
@@ -93,7 +94,7 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         if self.currentPhase == 10:
             if self.verbose:
                 print(f"Stopping Propagation.")
-                print(f"Times outwards: {self.timesOutwards}")
+                print(f"Times outwards: {self.timesOutwardsCompleted}")
             return True
         else:
             return False
@@ -117,7 +118,7 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         inclinationChangeDuration = (
             self.inclinationChangeEnd - self.inclinationChangeStart
         )
-        return inclinationChangeDuration, self.lastInclination, self.timesOutwards
+        return inclinationChangeDuration, self.lastInclination, self.timesOutwardsCompleted
 
 
     def computeSail(self, current_time:float) -> np.ndarray:
@@ -175,7 +176,7 @@ class SolarSailGuidance(SolarSailGuidanceBase):
             if current_altAU < self.deepestAltitude:
                 self.inclinationChangeStart = current_time
                 self.currentPhase = 2
-                # self.timesOutwards += 1
+                self.goingOutwards = True
             
                 if self.verbose:
                     print("Deepest altitude reached -> Inclination Change")
@@ -197,7 +198,10 @@ class SolarSailGuidance(SolarSailGuidanceBase):
 
             # if we reach target inclination go to end
             if inclination > self.targetInclination:
-                self.currentPhase = 9
+                if current_altAU > self.targetAltitude:
+                    self.currentPhase = 10
+                else:
+                    self.currentPhase = 9
 
                 if self.verbose:
                     print("Inclination Change complete -> Spiraling to target")
@@ -205,7 +209,9 @@ class SolarSailGuidance(SolarSailGuidanceBase):
             # If we are past outmost altitude, spiral back in
             if current_altAU > self.targetAltitude:
                 self.currentPhase = 3
-                self.timesOutwards += 1
+                if self.goingOutwards:
+                    self.timesOutwardsCompleted += 1
+                self.goingOutwards = False
 
                 if self.verbose:
                     print("Inclination change + Spiraling In")
@@ -231,9 +237,10 @@ class SolarSailGuidance(SolarSailGuidanceBase):
                 if self.verbose:
                     print("Inclination Change complete -> Spiraling to target")
 
-            # If we are past innermost altitude, spiral back in
+            # If we are past innermost altitude, spiral back out
             if current_altAU < self.deepestAltitude:
                 self.currentPhase = 2
+                self.goingOutwards = True
 
                 if self.verbose:
                     print("Inclination change + Spiraling out")
@@ -247,10 +254,11 @@ class SolarSailGuidance(SolarSailGuidanceBase):
                 self.delta = np.pi * (1 + self.fastTransferOptimiseParameter)
 
 
-        # Spiral back out to target altitude.
+        # Phase 9: Spiral back out to target altitude.
         elif self.currentPhase == 9:
             if current_altAU > self.targetAltitude:
                 self.currentPhase = 10
+                # self.timesOutwardsCompleted = 100
 
                 if self.verbose:
                     print("Starting Science Phase")
@@ -259,7 +267,7 @@ class SolarSailGuidance(SolarSailGuidanceBase):
             self.alpha = self.spiralAlpha
 
 
-        # Ending, set everything to 0 thrust, 
+        # Phase 10: Ending, set everything to 0 thrust, 
         # this also calls the termination function
         elif self.currentPhase == 10:
             # TODO

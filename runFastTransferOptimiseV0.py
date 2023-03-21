@@ -99,15 +99,15 @@ def runSim(
     # resultslst.append({str(w): [spacecraftName, inclinationChangeDuration / yearInSeconds, save, saveDep]})
 
     if lastInclination < 90:
-        return incldur + 100
+        return incldur + 1e9
     elif timesOutward != timesOutwardMax:
-        return incldur + 100
+        return incldur + 1e9
     else:
         return incldur
 
 
 res = scipy.optimize.minimize(
-    runSim, np.array([0.001]), method="Powell", bounds=[(0.001, 0.2)]
+    runSim, np.array([0.14]), method="Powell", bounds=[(0.001, 0.3)]
 )
 # res = scipy.optimize.minimize(
 #     runSim, np.array([0.1]), method="Nelder-Mead", bounds=[(0.001, 0.2)]
