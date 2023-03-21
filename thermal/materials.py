@@ -9,48 +9,52 @@ tradeoff analysis.
 
 ### Sail Materials
 
-aluminum = {'name': 'aluminum', 'emissivity': 0.10, 'reflectivity': 0.98, 'absorptivity': 0.02, 'density': 2810}
+aluminum = {'name': 'aluminum', 'emissivity': 0.10, 'reflectivity': 0.98, 'absorptivity': 0.02, 'conductivity': 237, 'density': 2810, 'specific_heat': 900}
 # Emissivity source: https://www.engineeringtoolbox.com/radiation-heat-emissivity-aluminum-d_433.html
 # Reflectivity source: https://laserbeamproducts.wordpress.com/2014/06/19/reflectivity-of-aluminium-uv-visible-and-infrared/
+# Conductivity source: https://www.periodic-table.org/aluminium-thermal-conductivity/
 # Absorptivity taken as 1 - Reflectivity.
 
-chromium = {'name': 'chromium', 'emissivity': 0.36, 'reflectivity': 0.90, 'absorptivity': 0.10, 'density': 7150}
+chromium = {'name': 'chromium', 'emissivity': 0.36, 'reflectivity': 0.90, 'absorptivity': 0.10, 'conductivity': 93.7, 'density': 7150, 'specific_heat': 450}
 # Emissivity source: https://neutrium.net/heat-transfer/total-normal-emissivities-of-selected-materials/
+# Conductivity source: https://material-properties.org/chromium-thermal-properties-melting-point-thermal-conductivity-expansion/
 
 ### Spacecraft Bus Materials
-aluminum_alloy = {'name': 'aluminum alloy', 'emissivity': 0.08, 'reflectivity': 0.98, 'absorptivity': 0.02, 'density': 2810}
+aluminum_alloy = {'name': 'aluminum alloy', 'emissivity': 0.08, 'reflectivity': 0.98, 'absorptivity': 0.02, 'conductivity': 150, 'density': 2810, 'specific_heat': 960}
 # Emissivity source: https://www.engineeringtoolbox.com/radiation-heat-emissivity-aluminum-d_433.html
+# Conductivity source: https://en.wikipedia.org/wiki/7075_aluminium_alloy
 
-titanium = {'name': 'titanium', 'emissivity': 0.19, 'reflectivity': 0.70, 'absorptivity': 0.30, 'density': 4540}
+
+titanium = {'name': 'titanium', 'emissivity': 0.19, 'reflectivity': 0.70, 'absorptivity': 0.30, 'conductivity': 21.9, 'density': 4540, 'specific_heat': 520}
 # Emissivity source: https://www.engineeringtoolbox.com/emissivity-coefficients-d_447.html
 # Reflectivity source: https://refractiveindex.info/?shelf=3d&book=metals&page=titanium
 
-cfrp = {'name': 'carbon fibre', 'emissivity': 0.77, 'reflectivity': 0.17, 'absorptivity': 0.83, 'density': 1800}
+cfrp = {'name': 'carbon fibre', 'emissivity': 0.77, 'reflectivity': 0.17, 'absorptivity': 0.83, 'conductivity': 100, 'density': 1800, 'specific_heat': 800}
 # Emissivity source: https://www.engineeringtoolbox.com/emissivity-coefficients-d_447.html
 # Reflectivity source: https://refractiveindex.info/?shelf=main&book=C&page=Phillip
 
 ### Coating Materials
-mli = {'name': 'multi-layer insulation', 'emissivity': 0.03, 'reflectivity': 0.98, 'absorptivity': 0.02, 'density': 19}
+mli = {'name': 'multi-layer insulation', 'emissivity': 0.03, 'reflectivity': 0.98, 'absorptivity': 0.02, 'conductivity': 1e-5, 'density': 19, 'specific_heat': 1000}
 # Emissivity source: http://www.thermalengineer.com/library/effective_emittance.htm
 # Reflectivity: this assumes the outer surface is aluminum for reflection
 
-solar_black = {'name': 'solar black', 'emissivity': 0.78, 'reflectivity': 0.04, 'absorptivity': 0.96, 'density': 3200}
+solar_black = {'name': 'solar black', 'emissivity': 0.78, 'reflectivity': 0.04, 'absorptivity': 0.96, 'conductivity': 0, 'density': 3200, 'specific_heat': 0}
 # Emissivity and absorptivity sources: https://enbio.eu/wp-content/uploads/2018/10/SolarBlack.pdf
 
-az93 = {'name': 'az93 white paint', 'emissivity': 0.92, 'reflectivity': 0.87, 'absorptivity': 0.13, 'density': 3600}
+az93 = {'name': 'az93 white paint', 'emissivity': 0.92, 'reflectivity': 0.87, 'absorptivity': 0.13, 'conductivity': 0, 'density': 3600, 'specific_heat': 0}
 # Density: Assumed same of magnesium oxide due to lack of available data.
 # Emissivity, Reflectivity, Absorptivity: https://www.aztechnology.com/product/1/az-93
 
-mag_oxide = {'name': 'magnesium oxide white paint', 'emissivity': 0.90, 'reflectivity': 0.91, 'absorptivity': 0.09, 'density': 3600}
+mag_oxide = {'name': 'magnesium oxide white paint', 'emissivity': 0.90, 'reflectivity': 0.91, 'absorptivity': 0.09, 'conductivity': 0, 'density': 3600, 'specific_heat': 0}
 # Thermal properties: http://solarmirror.com/fom/fom-serve/cache/43.html
 # Density: https://en.wikipedia.org/wiki/Magnesium_oxide
 
-osr = {'name': 'optical solar reflectors', 'emissivity': 0.93, 'reflectivity': 0.98, 'absorptivity': 0.02, 'density': 2600}
+osr = {'name': 'optical solar reflectors', 'emissivity': 0.93, 'reflectivity': 0.98, 'absorptivity': 0.02, 'conductivity': 3, 'density': 2600, 'specific_heat': 741}
 # Reflectivity source: (assuming quartz outer layer over metal) 
 # Density: search "optical solar reflectors density", the source is a downloadable PDF from Excelitas.
 
 ### Solar Panel Materials
-gallium_arsenide = {'name': 'gallium arsenide', 'emissivity': 0.75, 'reflectivity': 0.38, 'absorptivity': 0.62, 'density': 1.76}
+gallium_arsenide = {'name': 'gallium arsenide', 'emissivity': 0.75, 'reflectivity': 0.38, 'absorptivity': 0.62, 'conductivity': 56, 'density': 1.76, 'specific_heat': 327}
 # Emissivity: http://eprints.gla.ac.uk/150163/
 # Reflectivity: https://phys.org/news/2017-08-solar-cells-optics-micro-nanoscale.html
 # Density: https://www.spectrolab.com/DataSheets/Panel/panels.pdf
@@ -58,15 +62,13 @@ gallium_arsenide = {'name': 'gallium arsenide', 'emissivity': 0.75, 'reflectivit
 
 
 ### Heat Shield Materials
-ceramic_cloth = {'name': 'ceramic cloth', 'emissivity': 0.73, 'reflectivity': 0.19, 'absorptivity': 0.81, 'density': 96}
+ceramic_cloth = {'name': 'ceramic cloth', 'emissivity': 0.73, 'reflectivity': 0.19, 'absorptivity': 0.81, 'conductivity': 0.35, 'density': 96, 'specific_heat': 1130}
 # Emissivity: https://www.coleparmer.com/tech-article/emissivity-of-specific-materials#anchor12
 # Reflectivity: https://refractiveindex.info/?shelf=main&book=Bi12SiO20&page=Gospodinov
 # Reflectivity and absorptivity taken from another member of the silicate family.
 # Density: https://www.ceceramicfiber.com/Article/Ceramicfiberblanketd_1.html
+# Conductivity: https://www.researchgate.net/publication/320443315_High-Temperature_Thermal_Conductivity_of_Ceramic_Fibers/figures?lo=1&utm_source=bing&utm_medium=organic
 
-
-### Boom Materials
-carbon_fibre = {'name': 'carbon fibre', 'emissivity': 0.77, 'reflectivity': 0.17, 'absorptivity': 0.83, 'density': 1800}
 
 
 def sail_material(choice):
@@ -116,6 +118,6 @@ def shield_material(choice):
     
 def boom_material(choice):
     if choice == 'carbon fibre':
-        return carbon_fibre
+        return cfrp
     else:
         raise Exception("The only currently supported option is 'carbon fibre'.")
