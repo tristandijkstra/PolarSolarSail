@@ -26,7 +26,7 @@ logging.basicConfig(
 stepSize = 3600
 stepSize = 36000
 stepSizes = [360, 720, 3600, 7200, 36000, 72000,]
-stepSizes = [9000, 18000, 36000, 72000, 144000, 288000]
+stepSizes = [2250, 4500, 9000, 18000, 36000, 72000, 144000, 288000]
 # skipSizes = [int(x/min(stepSizes)) for x in stepSizes]
 skipSizes = [int(x/min(stepSizes)) for x in stepSizes][::-1]
 # stepSize = 18000
@@ -118,7 +118,7 @@ datasmallest = pd.read_csv(
     names=cols,
     header=None,
     skiprows=lambda i: i % skipSizes[0],
-    ).iloc[0:520]
+    ).iloc[1:520]
 for idx, u in enumerate(saveFiles):
 
     spacecraftName, save, saveDep, extraTxt = u
@@ -129,9 +129,9 @@ for idx, u in enumerate(saveFiles):
         header=None,
         skiprows=lambda i: i % skipSizes[idx],
     )
-    ax[0].plot(data.time.iloc[0:520], (data.x - datasmallest.x).iloc[0:520].abs(), label=spacecraftName)
-    ax[1].plot(data.time.iloc[0:520], (data.y - datasmallest.y).iloc[0:520].abs(), label=spacecraftName)
-    ax[2].plot(data.time.iloc[0:520], (data.z - datasmallest.z).iloc[0:520].abs(), label=spacecraftName)
+    ax[0].plot(data.time.iloc[1:520], (data.x - datasmallest.x).iloc[1:520].abs(), label=spacecraftName)
+    ax[1].plot(data.time.iloc[1:520], (data.y - datasmallest.y).iloc[1:520].abs(), label=spacecraftName)
+    ax[2].plot(data.time.iloc[1:520], (data.z - datasmallest.z).iloc[1:520].abs(), label=spacecraftName)
 
     ax3.plot(data.x, data.y, data.z)
     print(len(data))
@@ -152,7 +152,10 @@ fig.set_tight_layout(True)
 fig2, ax2 = plt.subplots(1,1)
 print(np.array(resultslst)[:,0])
 print(np.array(resultslst)[:,2])
-ax2.bar(x=[str(x) for x in stepSizes], height=np.array(resultslst)[:,2]-np.array(resultslst)[0,2])
+ax2.bar(x=["dt="+str(x) for x in stepSizes], height=(np.array(resultslst)[:,2]-np.array(resultslst)[0,2])*365)
+ax2.set_ylabel("Transfer time error (days)")
+ax2.set_xlabel("Timestep (seconds)")
+ax2.grid()
 plt.show()
 
 # things = np.array(resultslst)
