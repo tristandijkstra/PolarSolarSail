@@ -27,7 +27,7 @@ solar_luminosity = 3.83e26
 
 
 class Node():
-    def __init__(self, name, properties, case, n_shield=0):
+    def __init__(self, name, properties, n_shield=0):
         '''
         This sets up each Node class with the surface properties and the area.
         
@@ -47,12 +47,11 @@ class Node():
         self.area = properties[4]
         self.sun_vf = properties[5]
         self.space_vf = properties[6]
-        self.distance = case[0]
-        self.angle = case[1]
+        self.temp_range = properties[7]
         self.n_shield = n_shield
-        self.temp = 273
+        self.temp = 300
     
-    def solar_heat_in(self):
+    def solar_heat_in(self, thermal_case):
         '''
         This computes the solar heat that the outer surface sees.
 
@@ -68,7 +67,7 @@ class Node():
         
         self.solar_q_in [float]: Incoming heat from the sun in W.
         '''
-        self.solar_flux = (np.cos(self.angle) * solar_luminosity * self.absorptivity * self.sun_vf) / (4 * np.pi * (self.distance * AU)**2)
+        self.solar_flux = (np.cos(thermal_case[1]) * solar_luminosity * self.absorptivity * self.sun_vf) / (4 * np.pi * (thermal_case[0] * AU)**2)
         self.solar_q_in = self.solar_flux * self.area
         return self.solar_q_in
     
@@ -112,7 +111,7 @@ def heat(nodes, R_ij, G_ij, solar_q, internal_q, radiated_q):
     q_total = q_rad + q_cond + solar_q + internal_q - radiated_q
     return q_total
 
-def temperatures(nodes, relationships, dt, heater_power=400, electrical_power=800):
+def temperatures(nodes, relationships, dt, thermal_case, heater_power=400, electrical_power=800):
     '''
         Computes the equilibrium temperatures for each node.
 
@@ -162,7 +161,7 @@ def temperatures(nodes, relationships, dt, heater_power=400, electrical_power=80
                 capacity = capacities[i]
                 G_ij = conductive[i, j]
                 R_ij = radiative[i, j]
-                solar_q = nodes[i].solar_heat_in()
+                solar_q = nodes[i].solar_heat_in(thermal_case)
                 internal_q = nodes[i].internal_heat(heater_power, electrical_power)
                 radiated_q = nodes[i].heat_radiated()
                 nodes_examined = [nodes[i], nodes[j]]

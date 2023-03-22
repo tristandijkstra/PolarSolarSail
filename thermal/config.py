@@ -17,6 +17,10 @@ boom_length = 70
 boom_diameter = 0.029
 sail_area = 10000
 panel_area = 18
+heaters_power = 0
+coolers_power = 0 
+electrical_heat = 800
+log_file = 'data/thermal.log'
 
 ### Structure Nodes
 node_1 = {'name': 'Spacecraft +X', 'area': np.pi*spacecraft_radius*spacecraft_length, 'sun_vf': 1,
@@ -27,12 +31,15 @@ node_3 = {'name': 'Spacecraft +Z', 'area': np.pi*spacecraft_radius**2, 'sun_vf':
           'space_vf': 0.5, 'external': 'multi-layer insulation', 'temp_range': [-100, 100]}
 node_4 = {'name': 'Spacecraft -Z', 'area': np.pi*spacecraft_radius**2, 'sun_vf': 0.5,
           'space_vf': 0.5, 'external': 'multi-layer insulation', 'temp_range': [-100, 100]}
-nodes = [node_1, node_2, node_3, node_4]
+bus_nodes = [node_1, node_2, node_3, node_4]
 
 ### Sail Nodes
-node_front = {'name': 'Sail Front', 'area': sail_area, 'sun_vf': 1, 'space_vf': 0, 'external': 'aluminum', 'temp_range': [-100, 100]}
-node_back = {'name': 'Sail Back', 'area': sail_area, 'sun_vf': 0, 'space_vf': 1, 'external': 'chromium', 'temp_range': [-100, 100]}
+node_front = {'name': 'Sail Front', 'area': sail_area, 'sun_vf': 1, 'space_vf': 0, 
+              'external': 'aluminum', 'temp_range': [-100, 100]}
+node_back = {'name': 'Sail Back', 'area': sail_area, 'sun_vf': 0, 'space_vf': 1, 
+             'external': 'chromium', 'temp_range': [-100, 100]}
 sail_nodes = [node_front, node_back]
+
 ### External Nodes
 booms = {'name': 'Booms', 'area': 4*np.pi*(boom_diameter / 2)*boom_length, 'sun_vf': 0.5, 'space_vf': 0.5,
          'external': 'carbon fibre', 'temp_range': [-100, 100]}
@@ -40,6 +47,9 @@ solar_panels = {'name': 'Solar Panels', 'area': panel_area, 'sun_vf': 1, 'space_
                 'external': 'osr', 'temp_range': [-100, 100]}
 shield = {'name': 'Heat Shield', 'area': node_1['area'], 'sun_vf': 1, 'space_vf': 0,
           'external': 'ceramic cloth', 'temp_range': [-100, 100], 'layers': 7}
+
+
+nodes = [node_1, node_2, node_3, node_4, node_front, node_back, booms, solar_panels, shield]
 
 ### Node Relationships Matrix.
 '''
