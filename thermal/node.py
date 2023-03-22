@@ -106,8 +106,8 @@ class Node():
         return self.q_radiated
 
 def heat(nodes, R_ij, G_ij, solar_q, internal_q, radiated_q):
-    q_rad = R_ij * SB * (nodes[0].temp**4 - nodes[1].temp**4)
-    q_cond = G_ij * (nodes[0].temp - nodes[1].temp)
+    q_rad = R_ij * SB * (nodes[1].temp**4 - nodes[0].temp**4)
+    q_cond = G_ij * (nodes[1].temp - nodes[0].temp)
     q_total = q_rad + q_cond + solar_q + internal_q - radiated_q
     return q_total
 
@@ -156,6 +156,7 @@ def temperatures(nodes, relationships, dt, thermal_case, heater_power=400, elect
     conductive = np.where(conductive, conductive, conductive.T)
     capacities = np.diagonal(relationships)
     for i in range(0, len(nodes)):
+        q_total = 0
         for j in range(0, len(nodes)):
             if i != j:
                 capacity = capacities[i]
@@ -165,8 +166,10 @@ def temperatures(nodes, relationships, dt, thermal_case, heater_power=400, elect
                 internal_q = nodes[i].internal_heat(heater_power, electrical_power)
                 radiated_q = nodes[i].heat_radiated()
                 nodes_examined = [nodes[i], nodes[j]]
-
-                node_temperatures[i] = node_temperatures[i] + ((dt / capacity) * heat(nodes_examined, G_ij, R_ij, solar_q, internal_q, radiated_q))
-                nodes[i].temp = node_temperatures[i]
+                q_total += heat(nodes_examined, R_ij, G_ij, solar_q, internal_q, radiated_q)
+        
+        node_temperatures[i] = node_temperatures[i] + (dt / capacity) * q_total
+        nodes[i].temp = node_temperatures[i]
+        
     return node_temperatures
 
