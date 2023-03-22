@@ -1,11 +1,15 @@
 '''
 thermal_model.py
 
-This code runs the single-node thermal analysis at different time steps throughout the orbit.
+This code presents a callable version of thermal_script.py that the orbital simulation can
+use to properly optimize the orbit.
 
 -TODO:
-
+    - Containerize outputs as dictionary containing each node and whether it has passed or 
+      failed the thermal constraints.
+    - Also consider sending temperature outputs to the orbital simulation as well.
 '''
+
 import node as nd
 import numpy as np
 import pandas as pd
@@ -16,235 +20,128 @@ from budget_properties import Properties
 import materials
 import config
 
-AU = 149.6e9
-yearInSeconds = 365 * 24 * 3600
-solar_luminosity = 3.83e26
+class Thermal():
+    def __init__(self): 
+        '''
+        Necessary inputs:
 
-################################################################################################################
-#############################################  EDITABLE PARAMETERS #############################################
-################################################################################################################
-dt = 1000                                   # How much to timeskip the orbital sim (to save computational time)
-heaters_power = 0                           # How much heat power is coming from heaters [W]
-coolers_power = 0                           # How much heat is being rejected by coolers [W]
-electrical_heat = 800                       # How much electrical waste heat is being generated [W]
-data_file = 'data/mass500_area10000.dat'    # Main data file
-data_dep_file = 'data/mass500_area10000_dep.dat' # Dependent data file
-log_file = 'data/thermal.log'               # Logging file path
+            - Thermal case
+            - Time step
+        '''
+        self.AU = 1.496e11
+        self.SB = 5.67e-8
+        self.yearInSeconds = 365 * 24 * 3600
+        self.solar_luminosity = 3.83e26
+        initial_node_temp = 300
 
-################################################################################################################
-#########################################  END OF EDITABLE PARAMETERS ##########################################
-################################################################################################################
+        bus_materials = []
+        self.bus_properties = []
+        sail_materials = []
+        self.sail_properties = []
+        self.total_properties = []
 
-logging.basicConfig(filename=log_file, encoding='utf-8', level=logging.INFO, format='%(asctime)s | %(message)s')
+        self.shield_layers = config.shield['layers']
 
-# By default, the solar sail, spacecraft structure, booms, heat shield, and solar panels are written as nodes.
-# The main spacecraft structure can then be split into additional nodes (up to 4).
-node_structure = len(config.nodes)          # The number of nodes you would like placed on the spacecraft structure
-
-shield_layers = config.shield['layers']     # How many layers of shielding would you like to analyze?
-logging.info("**********************************")
-logging.info("==================================")
-logging.info("New Configuration")
-logging.info("==================================")
-logging.info("**********************************")
-# Splitting the spacecraft into nodes
-bus_materials = []
-str_properties = []
-sail_materials = []
-sail_properties = []
-total_properties = []
-logging.info("Configuration Order: [emissivity, reflectivity, absorptivity, density, area]")
-for i, node in enumerate(config.nodes):
-    bus_materials.append(materials.bus_material(node['external']))
-    str_properties.append([bus_materials[i]['emissivity'], bus_materials[i]['reflectivity'], 
+        for i, node in enumerate(config.bus_nodes):
+            bus_materials.append(materials.bus_material(node['external']))
+            self.bus_properties.append([bus_materials[i]['emissivity'], bus_materials[i]['reflectivity'], 
                           bus_materials[i]['absorptivity'], bus_materials[i]['density'], 
-                          node['area'], node['sun_vf'], node['space_vf']])
-    logging.info("==================================")
-    logging.info("Spacecraft Structure Configuration")
-    logging.info("==================================")
-    logging.info(str_properties[i])
-total_properties.append(str_properties)
-for i, node in enumerate(config.sail_nodes):
-    sail_materials.append(materials.sail_material(node['external']))
-    sail_properties.append([sail_materials[i]['emissivity'], sail_materials[i]['reflectivity'], 
+                          node['area'], node['sun_vf'], node['space_vf'], node['temp_range']])
+            
+        self.total_properties.append(self.bus_properties)
+        for i, node in enumerate(config.sail_nodes):
+            sail_materials.append(materials.sail_material(node['external']))
+            self.sail_properties.append([sail_materials[i]['emissivity'], sail_materials[i]['reflectivity'], 
                             sail_materials[i]['absorptivity'], sail_materials[i]['density'], 
-                            node['area'], node['sun_vf'], node['space_vf']])
-    logging.info("==================================")
-    logging.info("Solar Sail Configuration")
-    logging.info("==================================")
-    logging.info(sail_properties[i])
-total_properties.append(sail_properties)
-panel = materials.panel_material(config.solar_panels['external'])
-panel_properties = [panel['emissivity'], panel['reflectivity'], panel['absorptivity'], 
+                            node['area'], node['sun_vf'], node['space_vf'], node['temp_range']])
+
+        self.total_properties.append(self.sail_properties)
+        panel = materials.panel_material(config.solar_panels['external'])
+        self.panel_properties = [panel['emissivity'], panel['reflectivity'], panel['absorptivity'], 
                     panel['density'], config.solar_panels['area'], config.solar_panels['sun_vf'],
-                    config.solar_panels['space_vf']]
-logging.info("==================================")
-logging.info("Panel Configuration")
-logging.info("==================================")
-logging.info(panel_properties)
-total_properties.append(panel_properties)
-boom = materials.boom_material(config.booms['external'])
-boom_properties = [boom['emissivity'], boom['reflectivity'], boom['absorptivity'], boom['density'], 
-                   config.booms['area'], config.booms['sun_vf'], config.booms['space_vf']]
-logging.info("==================================")
-logging.info("Boom Configuration")
-logging.info("==================================")
-logging.info(boom_properties)
-total_properties.append(boom_properties)
-shield = materials.shield_material(config.shield['external'])
-shield_properties = [shield['emissivity'], shield['reflectivity'], shield['absorptivity'],
+                    config.solar_panels['space_vf'], config.solar_panels['temp_range']]
+        
+        self.total_properties.append(self.panel_properties)
+        boom = materials.boom_material(config.booms['external'])
+        self.boom_properties = [boom['emissivity'], boom['reflectivity'], boom['absorptivity'], boom['density'], 
+                   config.booms['area'], config.booms['sun_vf'], config.booms['space_vf'], config.booms['temp_range']]
+        self.total_properties.append(self.boom_properties)
+        
+        self.total_properties.append(self.boom_properties)
+        shield = materials.shield_material(config.shield['external'])
+        self.shield_properties = [shield['emissivity'], shield['reflectivity'], shield['absorptivity'],
                      shield['density'], config.shield['area'], config.shield['sun_vf'], 
-                     config.shield['space_vf']]
-logging.info("==================================")
-logging.info("Shield Configuration")
-logging.info("==================================")
-logging.info(shield_properties)
-total_properties.append(shield_properties)
+                     config.shield['space_vf'], config.shield['temp_range']]
+        self.total_properties.append(self.shield_properties)
 
-relationships = np.asarray(config.node_relationship)
-logging.info("=============================================")
-logging.info("Relationship Matrix")
-logging.info("=============================================")
-logging.info(relationships)
+        self.relationships = np.asarray(config.node_relationship)
+        self.total_nodes = len(self.relationships)
 
-logging.info("**********************************")
+        self.spacecraft = []
+        self.spacecraft_bus = []
+        self.solar_sail = [] 
+
+        for node, node_properties in enumerate(self.bus_properties):
+            self.spacecraft_bus.append(nd.Node("Spacecraft Bus", node_properties))
+        self.spacecraft.append(self.spacecraft_bus)
+        for node, node_properties in enumerate(self.sail_properties):
+            self.solar_sail.append(nd.Node("Solar Sail", node_properties))
+        self.spacecraft.append(self.solar_sail)
+        self.spacecraft = [item for sublist in self.spacecraft for item in sublist]
+        solar_panel = nd.Node("Solar Panel", self.panel_properties)
+        self.spacecraft.append(solar_panel)
+        boom = nd.Node("Boom", self.boom_properties)
+        self.spacecraft.append(boom)
+        if self.shield_layers > 0:
+            heat_shield = nd.Node("Heat Shield", self.shield_properties, self.shield_layers)
+        else:
+            heat_shield = None
+        self.spacecraft.append(heat_shield)
 
 
-total_nodes = len(relationships)
+        self.node_keys = [config.nodes[i]['name'] for i in range(0, len(config.nodes))]
+        self.node_temp_ranges = [config.nodes[i]['temp_range'] for i in range(0, len(config.nodes))]
+        self.node_fail_step = [False]*len(self.node_keys)
 
-if shield == None:
-    heat_shield_A = 0
-    shield_layers = 0
+        self.node_failure = []
+        self.node_temperatures = []
 
-if shield_layers == 0:
-    heat_shield_A = 0
 
-data = pd.read_csv(
-    data_file, delimiter="	", names=["time", "x", "y", "z", "vx", "vy", "vz"], header=None,
-    skiprows=lambda i: i % dt,
-).assign(altitude=lambda x: np.sqrt(x.x**2 + x.y**2 + x.z**2) / AU)
-depVars = [
-    "time",
-    "ThrustX",
-    "ThrustY",
-    "ThrustZ",
-    "ThrustMagnitude",
-    "a",
-    "e",
-    "i",
-    "omega",
-    "RAAN",
-    "theta",
-    "cone",
-    "clock",
-]
-data2 = pd.read_csv(
-        data_dep_file,
-        delimiter="	",
-        names=depVars,
-        header=None,
-        skiprows=lambda i: i % dt,
-    )
+        
+    def step(self):
+        '''
+        Steps forward in time and runs the thermal nodal model again.
 
-time = (data.time - data.time.iloc[0])/yearInSeconds
-time_interp = time
-sun_dist = data.altitude
-angle = data2.cone
+        Necessary inputs:
+            - time_step: time step in seconds.
+            - thermal_case [arr]: includes distance from the sun and angle to the sun as [dist, angle].
+        '''
+        for node in self.spacecraft:
+            if node != None:
+                flux_in = node.solar_heat_in(self.thermal_case)
+        node_temp_step = nd.temperatures(self.spacecraft, self.relationships, self.time_step, self.thermal_case)
+        node_fail_step = [False]*self.total_nodes
 
-node_temperatures = np.zeros((len(time_interp), total_nodes))
+        for idx, temp in enumerate(node_temp_step):
+            if temp not in range(self.node_temp_ranges[idx][0], self.node_temp_ranges[idx][1]):
+                node_fail_step[idx] = True
+        
+        self.node_failure.append(self.node_fail_step)
+        self.node_temperatures.append(node_temp_step)
+        
 
-for idx, time_step in enumerate(tqdm(time_interp)):
-    thermal_case = [sun_dist[idx], angle[idx]]
-    spacecraft = []
-    spacecraft_bus = []
-    solar_sail = []  
-    for node, node_properties in enumerate(str_properties):
-        spacecraft_bus.append(nd.Node("Spacecraft Bus", node_properties, thermal_case))
-    spacecraft.append(spacecraft_bus)
-    for node, node_properties in enumerate(sail_properties):
-        solar_sail.append(nd.Node("Solar Sail", node_properties, thermal_case))
-    spacecraft.append(solar_sail)
-    spacecraft = [item for sublist in spacecraft for item in sublist]
-    solar_panel = nd.Node("Solar Panel", panel_properties, thermal_case)
-    spacecraft.append(solar_panel)
-    boom = nd.Node("Boom", boom_properties, thermal_case)
-    spacecraft.append(boom)
-    if shield_layers > 0:
-        heat_shield = nd.Node("Heat Shield", shield_properties, thermal_case, shield_layers)
-    else:
-        heat_shield = None
-    spacecraft.append(heat_shield)
-    for node in spacecraft:
-        if node != None:
-            flux_in = node.solar_heat_in()
-    node_temp_step = nd.temperatures(spacecraft, relationships, dt)
-    node_temperatures[idx, :] = node_temp_step
-
-# Plotting Results
-fig, ax = plt.subplots(3, 2)
-ax[0][0].set_title(f"Spacecraft Bus Temperatures")
-ax[0][0].plot(time_interp, node_temperatures[:, 0], label='Spacecraft +X')
-ax[0][0].plot(time_interp, node_temperatures[:, 1], label='Spacecraft -X')
-ax[0][0].plot(time_interp, node_temperatures[:, 2], label='Spacecraft +Z')
-ax[0][0].plot(time_interp, node_temperatures[:, 3], label='Spacecraft -Z')
-ax[0][0].plot(time_interp, config.node_1['temp_range'][0]*np.ones(np.shape(time_interp)), 'r', linestyle='dashed', label='Temperature Limit')
-ax[0][0].plot(time_interp, config.node_1['temp_range'][1]*np.ones(np.shape(time_interp)), 'r', linestyle='dashed')
-ax[0][0].set_ylabel("Temperature [K]")
-ax[0][0].set_xlabel("Time [years]")
-ax[0][0].legend()
-ax[0][1].set_title(f"Solar Sail Temperatures")
-ax[0][1].plot(time_interp, node_temperatures[:, 4], label='Sail Front')
-ax[0][1].plot(time_interp, node_temperatures[:, 5], label='Sail Back')
-ax[0][1].plot(time_interp, config.node_front['temp_range'][0]*np.ones(np.shape(time_interp)), 'r', linestyle='dashed', label='Temperature Limit')
-ax[0][1].plot(time_interp, config.node_back['temp_range'][1]*np.ones(np.shape(time_interp)), 'r', linestyle='dashed')
-ax[0][1].set_ylabel("Temperature [K]")
-ax[0][1].set_xlabel("Time [years]")
-ax[0][1].legend()
-ax[1][0].set_title(f"Boom Temperatures")
-ax[1][0].plot(time_interp, node_temperatures[:, 6], label='Booms')
-ax[1][0].plot(time_interp, config.booms['temp_range'][0]*np.ones(np.shape(time_interp)), 'r', linestyle='dashed', label='Temperature Limit')
-ax[1][0].plot(time_interp, config.booms['temp_range'][1]*np.ones(np.shape(time_interp)), 'r', linestyle='dashed')
-ax[1][0].set_ylabel("Temperature [K]")
-ax[1][0].set_xlabel("Time [years]")
-ax[1][0].legend()
-ax[1][1].set_title(f"Solar Panel Temperatures")
-ax[1][1].plot(time_interp, node_temperatures[:, 7], label='Solar Panels')
-ax[1][1].plot(time_interp, config.solar_panels['temp_range'][0]*np.ones(np.shape(time_interp)), 'r', linestyle='dashed', label='Temperature Limit')
-ax[1][1].plot(time_interp, config.solar_panels['temp_range'][1]*np.ones(np.shape(time_interp)), 'r', linestyle='dashed')
-ax[1][1].set_ylabel("Temperature [K]")
-ax[1][1].set_xlabel("Time [years]")
-ax[1][1].legend()
-ax[2][1].set_title(f"Heat Shield Temperatures")
-ax[2][1].plot(time_interp, node_temperatures[:, 8], label='Heat Shield')
-ax[2][1].plot(time_interp, config.shield['temp_range'][0]*np.ones(np.shape(time_interp)), 'r', linestyle='dashed', label='Temperature Limit')
-ax[2][1].plot(time_interp, config.shield['temp_range'][1]*np.ones(np.shape(time_interp)), 'r', linestyle='dashed')
-ax[2][1].set_ylabel("Temperature [K]")
-ax[2][1].set_xlabel("Time [years]")
-ax[2][1].legend()
-fig.set_tight_layout(True)
-
-plt.savefig(f"data/thermal_{data_file[5:-4]}.png")
-
-plt.show()
-
-# Mass Estimation
-orbiter = Properties()
-passive_mass_estimate = orbiter.passive_thermal_mass(shield_layers)
-cost_estimate = orbiter.cost()
-
-# Log Information
-logging.info("===========================================================")
-logging.info("======================= SUMMARY ===========================")
-logging.info("===========================================================")
-log_input = f"Shielding Layers: {shield_layers}"
-logging.info(log_input)
-log_mass = f"Total Thermal Passive Mass: {str(round(passive_mass_estimate, 2))} kg"
-log_cost = f"Total Materials Cost: € {str(round(cost_estimate, 2))} M"
-logging.info(log_mass)
-logging.info(log_cost)
-
-print("===========================================================")
-print("======================= SUMMARY ===========================")
-print("===========================================================")
-print(log_mass)
-print(log_cost)
+    def stop_propagation(self, time_step, thermal_case):
+        self.time_step = time_step
+        self.thermal_case = thermal_case
+        self.step()
+        if all(self.node_fail_step) == False:
+            return False
+        else:
+            return True
+        
+    def optimize_output(self):
+        self.temps_dict = {}
+        self.fail_dict = {}
+        self.temps_dict = dict(zip(self.node_keys, self.node_temperatures))
+        self.fail_dict = dict(zip(self.node_keys, self.node_failure))
+        return self.fail_dict, self.temps_dict
