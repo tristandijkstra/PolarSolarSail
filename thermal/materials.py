@@ -38,14 +38,14 @@ mli = {'name': 'multi-layer insulation', 'emissivity': 0.03, 'reflectivity': 0.9
 # Emissivity source: http://www.thermalengineer.com/library/effective_emittance.htm
 # Reflectivity: this assumes the outer surface is aluminum for reflection
 
-solar_black = {'name': 'solar black', 'emissivity': 0.78, 'reflectivity': 0.04, 'absorptivity': 0.96, 'conductivity': 0, 'density': 3200, 'specific_heat': 0}
+solar_black = {'name': 'solar black', 'emissivity': 0.78, 'reflectivity': 0.04, 'absorptivity': 0.96, 'conductivity': 0, 'density': 3200, 'specific_heat': 800}
 # Emissivity and absorptivity sources: https://enbio.eu/wp-content/uploads/2018/10/SolarBlack.pdf
 
-az93 = {'name': 'az93 white paint', 'emissivity': 0.92, 'reflectivity': 0.87, 'absorptivity': 0.13, 'conductivity': 0, 'density': 3600, 'specific_heat': 0}
+az93 = {'name': 'az93 white paint', 'emissivity': 0.92, 'reflectivity': 0.87, 'absorptivity': 0.13, 'conductivity': 0, 'density': 3600, 'specific_heat': 800}
 # Density: Assumed same of magnesium oxide due to lack of available data.
 # Emissivity, Reflectivity, Absorptivity: https://www.aztechnology.com/product/1/az-93
 
-mag_oxide = {'name': 'magnesium oxide white paint', 'emissivity': 0.90, 'reflectivity': 0.91, 'absorptivity': 0.09, 'conductivity': 0, 'density': 3600, 'specific_heat': 0}
+mag_oxide = {'name': 'magnesium oxide white paint', 'emissivity': 0.90, 'reflectivity': 0.91, 'absorptivity': 0.09, 'conductivity': 0, 'density': 3600, 'specific_heat': 800}
 # Thermal properties: http://solarmirror.com/fom/fom-serve/cache/43.html
 # Density: https://en.wikipedia.org/wiki/Magnesium_oxide
 
