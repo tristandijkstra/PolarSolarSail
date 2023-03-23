@@ -31,7 +31,7 @@ targetAltitude = 0.48
 deepestAltitude = 0.2
 sailArea = 10000
 mass = 500
-timesOutwardMax = 2
+timesOutwardMax = 1
 
 stepSize = 72000
 
@@ -55,7 +55,7 @@ udp = SailOptimise(
     deepestAltitude_max=deepestAltitude_max,
     solarSailGuidanceObject=SolarSailGuidance,  
     simuFunction=sim.simulate,
-    timesOutwardMax=3,
+    timesOutwardMax=timesOutwardMax,
     stepSize=144000
 )
 
