@@ -9,6 +9,7 @@ import time
 
 # Load pygmo library
 import pygmo as pg
+
 # from ..solarsail.base import SolarSailGuidanceBase
 
 from typing import Callable, Tuple, Union
@@ -19,6 +20,7 @@ from typing import Callable, Tuple, Union
 
 class SailOptimise:
     yearInSeconds = 31536000
+
     def __init__(
         self,
         FTOP_min: float,
@@ -26,17 +28,15 @@ class SailOptimise:
         deepestAltitude_min: float,
         deepestAltitude_max: float,
         solarSailGuidanceObject,
-        simuFunction:Callable,
+        simuFunction: Callable,
         timesOutwardMax,
-        thermalModelObject = None,
-        
+        thermalModelObject=None,
         mass=500,
         sailArea=10000,
         targetInclination=90,
         yearsToRun=25,
         stepSize=72000,
         targetAltitude=0.48,
-
     ):
         # Set input arguments as attributes, representaing the problem bounds for both design variables
         self.FTOP_min = FTOP_min
@@ -44,19 +44,19 @@ class SailOptimise:
         self.deepestAltitude_min = deepestAltitude_min
         self.deepestAltitude_max = deepestAltitude_max
         self.timesOutwardMax = timesOutwardMax
-        self.mass= mass
-        self.sailArea= sailArea
-        self.targetInclination= targetInclination
-        self.yearsToRun= yearsToRun
-        self.stepSize= stepSize
-        self.targetAltitude= targetAltitude
-        self.solarSailGuidanceObject= solarSailGuidanceObject
-        self.simuFunction= simuFunction
-        self.thermalModelObject= thermalModelObject
-        
-        self.resultsDict = {}
-    
+        self.mass = mass
+        self.sailArea = sailArea
+        self.targetInclination = targetInclination
+        self.yearsToRun = yearsToRun
+        self.stepSize = stepSize
+        self.targetAltitude = targetAltitude
+        self.solarSailGuidanceObject = solarSailGuidanceObject
+        self.simuFunction = simuFunction
+        self.thermalModelObject = thermalModelObject
 
+        self.resultsDict = {}
+
+        self.step = 0
 
     def get_bounds(self):
         return (
@@ -64,10 +64,7 @@ class SailOptimise:
             [self.FTOP_max, self.deepestAltitude_max],
         )
 
-    def fitness(
-        self,
-        x
-    ):
+    def fitness(self, x):
         FTOP = x[0]
         deepestAltitude = x[1]
         spacecraftName = "sc_w=" + str(FTOP)
@@ -100,8 +97,6 @@ class SailOptimise:
             timesOutward,
         ) = finalGuidanceObj.getOptimiseOutput()
 
-
-
         incldur = inclinationChangeDuration / SailOptimise.yearInSeconds
         # totdur = round((spiralDuration + inclinationChangeDuration) / yearInSeconds, 3)
         end = time.perf_counter()
@@ -120,13 +115,13 @@ class SailOptimise:
         if lastInclination < 90:
             fun = incldur + 1e9
         elif timesOutward != self.timesOutwardMax:
-            fun =  incldur + 1e9
+            fun = incldur + 1e9
         else:
             fun = incldur
 
         # logStr = f"duration = {runtime} s | run: {spacecraftName} | Final inclin. = {round(lastInclination, 3)} | Inclin. change duration = {incldur} years"
-        logStr = f"runtime = {runtime} s | FTOP = {FTOP} | deepestAltitude = {deepestAltitude} | fun = {round(fun, 3)}"
-
+        logStr = f"Eval {self.step} | runtime = {runtime} s | FTOP = {round(FTOP,5)} | deepestAltitude = {round(deepestAltitude, 5)} | fun = {round(fun, 3)}"
+        self.step += 1
         print(logStr)
 
         return [fun]
