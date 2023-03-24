@@ -31,6 +31,7 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         targetInclination: float = 90,
         fastTransferOptimiseParameter: float = 0.0,
         characteristicAcceleration: Union[None, float] = None,
+        thermalModel = None,
         verbose=True,
     ):
         """V3 of the sail guidance model:
@@ -81,6 +82,21 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         self.timesOutwardsCompleted = 0
         self.goingOutwards = False
 
+        if thermalModel is not None:
+            self.thermalAvailable = True
+            self.thermalModel = thermalModel
+            self.extraDependentVariables += len(thermalModel.node_keys)
+            # self.thermalStep = thermalModel.step
+        else:
+            self.thermalAvailable = False
+
+    def dependantVariables(self) -> np.ndarray:
+        if self.thermalAvailable:
+            temp = [self.alpha, self.delta] + list(self.thermalModel.node_temperatures[0])
+            # print(list(self.thermalModel.node_temperatures[0]))
+            return np.array(temp)
+        else:
+            return np.array([self.alpha, self.delta])
         
     def stopPropagation(self, time:float) -> bool:
         """Stop Tudat propagation
@@ -301,5 +317,10 @@ class SolarSailGuidance(SolarSailGuidanceBase):
 
         # Transform to inertial reference frame
         forceINERTIAl = simplifiedSailToInertial(inclination, argPeriapsis, trueAnomaly, RAAN) @ forceRTN
+
+
+        # Thermal 
+        if self.thermalAvailable:
+            self.thermalModel.step(current_time, current_altAU, self.alpha)
 
         return forceINERTIAl

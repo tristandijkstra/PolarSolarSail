@@ -10,16 +10,16 @@ use to properly optimize the orbit.
     - Also consider sending temperature outputs to the orbital simulation as well.
 """
 
-import node as nd
+# import node as nd
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import logging
-from tqdm import tqdm
-from budget_properties import Properties
-import materials
-import config
-
+# import pandas as pd
+# import matplotlib.pyplot as plt
+# import logging
+# from tqdm import tqdm
+from .budget_properties import Properties
+from . import materials
+from . import config
+from . import node as nd
 
 class Thermal:
     def __init__(self):
@@ -150,7 +150,7 @@ class Thermal:
         self.node_failure = []
         self.node_temperatures = []
 
-    def step(self):
+    def step(self, current_time, alt, coneAngle):
         """
         Steps forward in time and runs the thermal nodal model again.
 
@@ -159,7 +159,7 @@ class Thermal:
             - thermal_case [arr]: includes distance from the sun and angle to the sun as [dist, angle].
         """
         node_temp_step = nd.steady_state(
-            self.spacecraft, self.relationships, self.time_step, self.thermal_case
+            self.spacecraft, self.relationships, current_time, [alt, coneAngle]
         )
         node_fail_step = [False] * self.total_nodes
 
@@ -172,14 +172,13 @@ class Thermal:
         self.node_failure.append(self.node_fail_step)
         self.node_temperatures.append(node_temp_step)
 
-    def stop_propagation(self, time_step, thermal_case):
-        self.time_step = time_step
-        self.thermal_case = thermal_case
-        self.step()
-        if all(self.node_fail_step) == False:
-            return False
-        else:
+    def stopPropagation(self, time_step):
+        if any(self.node_fail_step) == True:
+            print(f"Stopping Propagation => Heat")
+            print(self.node_fail_step)
             return True
+        else:
+            return False
 
     def optimize_output(self):
         self.temps_dict = {}

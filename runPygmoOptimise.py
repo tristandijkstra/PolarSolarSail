@@ -8,13 +8,9 @@ import logging
 import os
 import pygmo
 
-
-from itertools import product
-from tqdm import tqdm
-
-import scipy
 import time
 
+from thermal.thermal_model import Thermal
 
 saveDirectory = "data"
 if not os.path.exists(saveDirectory):
@@ -53,10 +49,11 @@ udp = SailOptimise(
     FTOP_max=FTOPmax,
     deepestAltitude_min=deepestAltitude_min,
     deepestAltitude_max=deepestAltitude_max,
-    solarSailGuidanceObject=SolarSailGuidance,  
+    solarSailGuidanceObject=SolarSailGuidance,
+    # thermalModelObject=Thermal,
     simuFunction=sim.simulate,
     timesOutwardMax=timesOutwardMax,
-    stepSize=144000
+    stepSize=144000,
 )
 
 # Creation of the pygmo problem object
@@ -73,7 +70,7 @@ number_of_generations = 10
 current_seed = 171015
 
 # Create Differential Evolution object by passing the number of generations as input
-de_algo = pygmo.de(gen=number_of_generations, seed=current_seed)
+de_algo = pygmo.gwo(gen=number_of_generations, seed=current_seed)
 
 # Create pygmo algorithm object
 algo = pygmo.algorithm(de_algo)
@@ -94,24 +91,31 @@ if inspect_pop:
     print(pop)
 
 # Set number of evolutions
-number_of_evolutions = 10
+number_of_evolutions = 5
 
 # Initialize empty containers
 individuals_list = []
 fitness_list = []
 
+start = time.perf_counter()
 # Evolve population multiple times
 for i in range(number_of_evolutions):
     pop = algo.evolve(pop)
     individuals_list.append(pop.get_x()[pop.best_idx()])
     fitness_list.append(pop.get_f()[pop.best_idx()])
 
+end = time.perf_counter()
 # Extract the best individual
 print("\n########### PRINTING CHAMPION INDIVIDUALS ###########\n")
 print("Fitness (= function) value: ", pop.champion_f)
 print("Decision variable vector: ", pop.champion_x)
 print("Number of function evaluations: ", pop.problem.get_fevals())
 print("Difference wrt the minimum: ", pop.champion_x - np.array([3, 2]))
+print("\n########### RUN TIME ###########\n")
+print(
+    f"Run time = {round((end-start), 2)} seconds = {round((end-start)/60, 2)} minutes"
+)
+print()
 
 print(fitness_list)
 # Extract best individuals for each generation
@@ -145,7 +149,7 @@ guidanceObject = SolarSailGuidance(
     targetInclination=targetInclination,
     deepestAltitude=best_DEEPESTALT,
     fastTransferOptimiseParameter=best_FTOP,
-    verbose=True
+    verbose=True,
 )
 namee = "FTOP=" + str(best_FTOP) + "deepestAlt=" + str(best_DEEPESTALT)
 finalGuidanceObj, save, saveDep = sim.simulate(
