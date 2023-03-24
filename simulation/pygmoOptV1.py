@@ -37,6 +37,8 @@ class SailOptimise:
         yearsToRun=25,
         stepSize=72000,
         targetAltitude=0.48,
+        initialEpoch=1117886400,
+        C3BurnVector=np.array([0,0,0])
     ):
         # Set input arguments as attributes, representaing the problem bounds for both design variables
         self.FTOP_min = FTOP_min
@@ -53,6 +55,9 @@ class SailOptimise:
         self.solarSailGuidanceObject = solarSailGuidanceObject
         self.simuFunction = simuFunction
         self.thermalModelObject = thermalModelObject
+
+        self.initialEpoch = initialEpoch
+        self.C3BurnVector = C3BurnVector
 
         self.resultsDict = {}
 
@@ -96,6 +101,8 @@ class SailOptimise:
             yearsToRun=self.yearsToRun,
             simStepSize=self.stepSize,
             verbose=False,
+            initialEpoch = self.initialEpoch,
+            C3BurnVector = self.C3BurnVector,
         )
 
         (

@@ -37,7 +37,7 @@ paramNames = ["mass", "area"]
 yearsToRun = 25
 yearInSeconds = 365 * 24 * 3600
 targetAltitude = 0.48
-deepestAltitude = 0.4
+deepestAltitude = 0.3
 
 combinations = list(product(masses, sailAreas))
 
@@ -67,7 +67,7 @@ for combination in tqdm(combinations):
         yearsToRun=yearsToRun,
         simStepSize=stepSize,
         initialEpoch=1117886400,
-        C3BurnVector=np.array([0,0,5000])
+        C3BurnVector=np.array([0,0,6000])
     )
 
     (

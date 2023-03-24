@@ -23,24 +23,28 @@ logging.basicConfig(
     format="%(asctime)s | %(message)s",
 )
 
-targetAltitude = 0.48
+initialEpoch = 1117886400
+C3BurnVec = np.array([0,0,4000])
+
+targetAltitude = 0.42
 deepestAltitude = 0.2
 sailArea = 10000
 mass = 500
 timesOutwardMax = 1
 
-stepSize = 72000
+stepSize = 144000
 
 yearsToRun = 25
 yearInSeconds = 365 * 24 * 3600
 
-targetInclination = 90
+targetInclination = 65
 
 
 FTOPmin = 0.01
 FTOPmax = 0.2
 deepestAltitude_min = 0.2
-deepestAltitude_max = 0.4
+deepestAltitude_max = 0.35
+
 
 
 # Instantiation of the UDP problem
@@ -53,7 +57,9 @@ udp = SailOptimise(
     # thermalModelObject=Thermal,
     simuFunction=sim.simulate,
     timesOutwardMax=timesOutwardMax,
-    stepSize=144000,
+    stepSize=stepSize,
+    initialEpoch=initialEpoch,
+    C3BurnVector=C3BurnVec
 )
 
 # Creation of the pygmo problem object
@@ -91,7 +97,7 @@ if inspect_pop:
     print(pop)
 
 # Set number of evolutions
-number_of_evolutions = 5
+number_of_evolutions = 7
 
 # Initialize empty containers
 individuals_list = []
@@ -159,6 +165,8 @@ finalGuidanceObj, save, saveDep = sim.simulate(
     yearsToRun=yearsToRun,
     simStepSize=36000,
     verbose=True,
+    initialEpoch=initialEpoch,
+    C3BurnVector=C3BurnVec
 )
 sim.plotSimulation(satName=namee, dataFile=save, dataDepFile=saveDep, quiverEvery=1000)
 

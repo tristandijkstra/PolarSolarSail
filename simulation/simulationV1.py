@@ -52,6 +52,9 @@ def simulate(
         launchDate = datetime.utcfromtimestamp(simulation_start_epoch) + OFFSET
         print(f"\nLaunch Date = {launchDate}")
 
+    if (C3BurnVector is not None) and verbose:
+        print(f"C3 burn vector: {C3BurnVector}")
+
     simulation_end_epoch = simulation_start_epoch + secondsToRun
 
     ###########################################################################
