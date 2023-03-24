@@ -150,6 +150,14 @@ class Thermal:
         self.node_failure = []
         self.node_temperatures = []
 
+
+    def __repr__(self) -> str:
+        return "Thermal V1"
+    
+    def __str__(self) -> str:
+        return "Thermal V1"
+
+
     def step(self, current_time, alt, coneAngle):
         """
         Steps forward in time and runs the thermal nodal model again.

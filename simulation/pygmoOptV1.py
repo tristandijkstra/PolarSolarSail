@@ -38,7 +38,8 @@ class SailOptimise:
         stepSize=72000,
         targetAltitude=0.48,
         initialEpoch=1117886400,
-        C3BurnVector=np.array([0,0,0])
+        C3BurnVector=np.array([0,0,0]),
+        verbose=False
     ):
         # Set input arguments as attributes, representaing the problem bounds for both design variables
         self.FTOP_min = FTOP_min
@@ -62,12 +63,25 @@ class SailOptimise:
         self.resultsDict = {}
 
         self.step = 0
+        self.verbose = verbose
 
         if thermalModelObject is not None:
             self.thermalModel = thermalModelObject()
         else:
             self.thermalModel = None
 
+
+    def __repr__(self) -> str:
+        if self.thermalModel is not None:
+            return f"SailOptimise V1 | {self.solarSailGuidanceObject} | {self.thermalModel}"
+        else:
+            return f"SailOptimise V1 | {self.solarSailGuidanceObject}"
+        
+    def __str__(self) -> str:
+        if self.thermalModel is not None:
+            return f"SailOptimise V1 | {self.solarSailGuidanceObject} | {self.thermalModel}"
+        else:
+            return f"SailOptimise V1 | {self.solarSailGuidanceObject}"
 
     def get_bounds(self):
         return (
@@ -134,8 +148,9 @@ class SailOptimise:
             fun = incldur
 
         # logStr = f"duration = {runtime} s | run: {spacecraftName} | Final inclin. = {round(lastInclination, 3)} | Inclin. change duration = {incldur} years"
-        logStr = f"Eval {self.step} | runtime = {runtime} s | FTOP = {round(FTOP,5)} | deepestAltitude = {round(deepestAltitude, 5)} | fun = {round(fun, 3)}"
         self.step += 1
-        print(logStr)
+        if self.verbose:
+            logStr = f"Eval {self.step} | runtime = {runtime} s | FTOP = {round(FTOP,5)} | deepestAltitude = {round(deepestAltitude, 5)} | fun = {round(fun, 3)}"
+            print(logStr)
 
         return [fun]

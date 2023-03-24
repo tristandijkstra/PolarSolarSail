@@ -90,6 +90,12 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         else:
             self.thermalAvailable = False
 
+    def __repr__(self) -> str:
+        return "Sail Physical V3"
+    
+    def __str__(self) -> str:
+        return "Sail Physical V3"
+
     def dependantVariables(self) -> np.ndarray:
         if self.thermalAvailable:
             temp = [self.alpha, self.delta] + list(self.thermalModel.node_temperatures[0])

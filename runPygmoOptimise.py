@@ -23,13 +23,13 @@ logging.basicConfig(
     format="%(asctime)s | %(message)s",
 )
 
-initialEpoch = 1117886400
+initialEpoch = 1117886400 - (86400 * 4)
 C3BurnVec = np.array([0,0,4000])
 
 targetAltitude = 0.42
 deepestAltitude = 0.2
-sailArea = 10000
-mass = 500
+sailArea = 12000
+mass = 400
 timesOutwardMax = 1
 
 stepSize = 144000
@@ -54,6 +54,8 @@ udp = SailOptimise(
     deepestAltitude_min=deepestAltitude_min,
     deepestAltitude_max=deepestAltitude_max,
     solarSailGuidanceObject=SolarSailGuidance,
+    mass=mass,
+    sailArea=sailArea,
     # thermalModelObject=Thermal,
     simuFunction=sim.simulate,
     timesOutwardMax=timesOutwardMax,
@@ -76,7 +78,8 @@ number_of_generations = 10
 current_seed = 171015
 
 # Create Differential Evolution object by passing the number of generations as input
-de_algo = pygmo.gwo(gen=number_of_generations, seed=current_seed)
+# de_algo = pygmo.gwo(gen=number_of_generations, seed=current_seed)
+de_algo = pygmo.gaco(gen=number_of_generations, seed=current_seed)
 
 # Create pygmo algorithm object
 algo = pygmo.algorithm(de_algo)
@@ -86,7 +89,7 @@ print(algo)
 
 
 # Set population size
-pop_size = 10
+pop_size = 100
 
 # Create population
 pop = pygmo.population(prob, size=pop_size, seed=current_seed)
@@ -158,17 +161,32 @@ guidanceObject = SolarSailGuidance(
     verbose=True,
 )
 namee = "FTOP=" + str(best_FTOP) + "deepestAlt=" + str(best_DEEPESTALT)
-finalGuidanceObj, save, saveDep = sim.simulate(
+_, save, saveDep = sim.simulate(
     spacecraftName="best",
     sailGuidanceObject=guidanceObject,
     saveFile=namee,
     yearsToRun=yearsToRun,
-    simStepSize=36000,
+    simStepSize=3600,
     verbose=True,
     initialEpoch=initialEpoch,
     C3BurnVector=C3BurnVec
 )
-sim.plotSimulation(satName=namee, dataFile=save, dataDepFile=saveDep, quiverEvery=1000)
+
+(
+    characteristicacceleration,
+    spiralDuration,
+    inclinationChangeDuration,
+    finalInclination,
+) = guidanceObject.getInclinationChangeDuration()
+
+dur = round(inclinationChangeDuration / yearInSeconds, 3)
+totdur = round((spiralDuration + inclinationChangeDuration) / yearInSeconds, 3)
+    
+extraTxt = f"\nMass = {int(guidanceObject.mass)} kg | Area = {int(guidanceObject.mass/guidanceObject.sigma)} m^2"
+extraTxt2 = f"\nFinal inclin. = {round(finalInclination, 3)} |" + \
+            f"Characteristic Acceleration = {round(characteristicacceleration*1000, 4)} mm/s^2" + \
+            f"\nInclin. change duration = {dur} years | Total duration = {totdur} years"
+sim.plotSimulation(satName=namee, extraText=extraTxt+extraTxt2, dataFile=save, dataDepFile=saveDep, quiverEvery=1000)
 
 
 plt.show()
