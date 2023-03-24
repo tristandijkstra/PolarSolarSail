@@ -58,6 +58,12 @@ class SailOptimise:
 
         self.step = 0
 
+        if thermalModelObject is not None:
+            self.thermalModel = thermalModelObject()
+        else:
+            self.thermalModel = None
+
+
     def get_bounds(self):
         return (
             [self.FTOP_min, self.deepestAltitude_min],
@@ -78,6 +84,7 @@ class SailOptimise:
             targetInclination=self.targetInclination,
             deepestAltitude=deepestAltitude,
             fastTransferOptimiseParameter=FTOP,
+            thermalModel=self.thermalModel,
             verbose=False,
         )
 

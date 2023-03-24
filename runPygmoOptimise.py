@@ -8,13 +8,9 @@ import logging
 import os
 import pygmo
 
-
-from itertools import product
-from tqdm import tqdm
-
-import scipy
 import time
 
+from thermal.thermal_model import Thermal
 
 saveDirectory = "data"
 if not os.path.exists(saveDirectory):
@@ -53,10 +49,11 @@ udp = SailOptimise(
     FTOP_max=FTOPmax,
     deepestAltitude_min=deepestAltitude_min,
     deepestAltitude_max=deepestAltitude_max,
-    solarSailGuidanceObject=SolarSailGuidance,  
+    solarSailGuidanceObject=SolarSailGuidance,
+    # thermalModelObject=Thermal,
     simuFunction=sim.simulate,
     timesOutwardMax=timesOutwardMax,
-    stepSize=144000
+    stepSize=144000,
 )
 
 # Creation of the pygmo problem object
@@ -115,7 +112,9 @@ print("Decision variable vector: ", pop.champion_x)
 print("Number of function evaluations: ", pop.problem.get_fevals())
 print("Difference wrt the minimum: ", pop.champion_x - np.array([3, 2]))
 print("\n########### RUN TIME ###########\n")
-print(f"Run time = {round((end-start), 2)} seconds = {round((end-start)/60, 2)} minutes")
+print(
+    f"Run time = {round((end-start), 2)} seconds = {round((end-start)/60, 2)} minutes"
+)
 print()
 
 print(fitness_list)
@@ -150,7 +149,7 @@ guidanceObject = SolarSailGuidance(
     targetInclination=targetInclination,
     deepestAltitude=best_DEEPESTALT,
     fastTransferOptimiseParameter=best_FTOP,
-    verbose=True
+    verbose=True,
 )
 namee = "FTOP=" + str(best_FTOP) + "deepestAlt=" + str(best_DEEPESTALT)
 finalGuidanceObj, save, saveDep = sim.simulate(

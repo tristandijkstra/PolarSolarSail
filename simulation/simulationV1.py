@@ -163,12 +163,20 @@ def simulate(
         simulation_end_epoch
     )
 
-    termination_custom_settings = propagation_setup.propagator.custom_termination(
+    termination_finished_transfer = propagation_setup.propagator.custom_termination(
         sailGuidanceObject.stopPropagation
     )
 
+    terminationList = [termination_time_settings, termination_finished_transfer]
+
+    if sailGuidanceObject.thermalAvailable:
+        termination_heat = propagation_setup.propagator.custom_termination(
+            sailGuidanceObject.thermalModel.stopPropagation
+        )
+        terminationList.append(termination_heat)
+
     termination_settings = propagation_setup.propagator.hybrid_termination(
-        [termination_time_settings, termination_custom_settings],
+        terminationList,
         fulfill_single_condition=True,
     )
 
@@ -233,6 +241,7 @@ def plotSimulation(
     extraText: str = "",
     quiverEvery: int = 6000,
     skiprows: int = 10,
+    thermalOn:bool = False
 ):
     AU = constants.ASTRONOMICAL_UNIT  # m
     yearInSeconds = 365 * 24 * 3600
@@ -256,6 +265,9 @@ def plotSimulation(
         "clock",
     ]
 
+    if thermalOn:
+        depVars = depVars + ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+
     data = pd.read_csv(
         dataFile,
         delimiter="	",
@@ -271,7 +283,7 @@ def plotSimulation(
         skiprows=lambda i: i % skiprows,
     )
 
-    time = (data2.time - data.time.iloc[0]) / yearInSeconds
+    time = (data.time - data.time.iloc[0]) / yearInSeconds
     ax.plot(data.iloc[:, 1], data.iloc[:, 2], data.iloc[:, 3])
 
     if quiverEvery != 0:
@@ -291,7 +303,7 @@ def plotSimulation(
     ax.set_zlim(-0.5 * AU, 0.5 * AU)
     ax.set_aspect("equal")
 
-    fig2, ax2 = plt.subplots(3, 2, sharex=True, figsize=(18, 12))
+    fig2, ax2 = plt.subplots(3, 2, sharex=True, figsize=(16, 10))
 
     ax2[0][1].plot(time, data2.iloc[:, 1:4], label=["x", "y", "z"])
     ax2[0][1].plot(time, data2.iloc[:, 4], label="norm", linestyle="--")
@@ -331,3 +343,52 @@ def plotSimulation(
 
     fig.savefig(f"data/{satName}_3d.png")
     fig2.savefig(f"data/{satName}_var.png")
+
+
+def plotThermal(
+    satName,
+    dataDepFile: str,
+    thermalNodeNames: list
+):
+    yearInSeconds = 365 * 24 * 3600
+
+    depVars = [
+        "time",
+        "ThrustX",
+        "ThrustY",
+        "ThrustZ",
+        "ThrustMagnitude",
+        "a",
+        "e",
+        "i",
+        "omega",
+        "RAAN",
+        "theta",
+        "cone",
+        "clock",
+    ]
+
+    depVars = depVars + thermalNodeNames
+
+    data2 = pd.read_csv(
+        dataDepFile,
+        delimiter="	",
+        names=depVars,
+        header=None,
+    )
+
+    time = (data2.time - data2.time.iloc[0]) / yearInSeconds
+
+    fig3, ax3 = plt.subplots(1, 1, sharex=True, figsize=(12, 9))
+
+    for key in thermalNodeNames:
+        ax3.plot(time, data2[key], label=key)
+
+    ax3.set_ylabel(r"Temperature $[K]$")
+    ax3.set_xlabel("Time [years]")
+    ax3.grid()
+    ax3.legend()
+
+
+    fig3.set_tight_layout(True)
+    fig3.savefig(f"data/{satName}_thermal.png")

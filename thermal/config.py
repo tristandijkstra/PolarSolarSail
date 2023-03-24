@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-import materials
+from . import materials
 
 """
 config.py
