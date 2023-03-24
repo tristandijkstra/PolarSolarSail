@@ -137,8 +137,8 @@ def steady_state(
     node_initial = [1000 for i in range(0, len(nodes))]
     radiative = np.triu(relationships, 1)
     radiative = np.where(radiative, radiative, radiative.T)
-    cond_matrix = np.tril(relationships, -1)
-    cond_matrix = np.where(cond_matrix, cond_matrix, cond_matrix.T)
+    conductive = np.tril(relationships, -1)
+    conductive = np.where(conductive, conductive, conductive.T)
     capacities = np.diagonal(relationships)
     q_extra = []
     q_rad_coeff = []
@@ -149,8 +149,10 @@ def steady_state(
         )
         q_rad_coeff.append(nodes[i].radiated_heat_coeff())
 
-    rad_matrix = np.diag(q_rad_coeff) + radiative
-    node_temperatures = optimize.newton(
+    cond_matrix = conductive + np.diag(-np.sum(conductive, axis=1))
+
+    rad_matrix = np.diag(q_rad_coeff - np.sum(radiative, axis=1)) + radiative
+    node_temperatures = optimize.fsolve(
         equations, node_initial, args=(rad_matrix, cond_matrix, q_extra)
     )
     for idx, node in enumerate(nodes):

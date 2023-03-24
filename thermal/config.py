@@ -12,6 +12,7 @@ TODO:
 """
 
 ### General Parameters
+SB = 5.67e-8
 spacecraft_radius = 1.5
 spacecraft_length = 5
 shell_thickness = 0.002
@@ -341,7 +342,7 @@ effective_emissivities = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
 ]
 
-radiative_relationship = np.multiply(
+radiative_relationship = SB * np.multiply(
     np.multiply(view_factors, radiative_area), effective_emissivities
 )
 
