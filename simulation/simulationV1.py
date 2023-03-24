@@ -3,6 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+from datetime import datetime
 
 from tudatpy.io import save2txt
 from tudatpy.kernel import constants
@@ -10,6 +11,8 @@ from tudatpy.kernel.interface import spice
 from tudatpy.kernel import numerical_simulation
 from tudatpy.kernel.numerical_simulation import environment_setup
 from tudatpy.kernel.numerical_simulation import propagation_setup
+# from tudatpy.kernel.astro.time_conversion import julian_day_to_calendar_date
+
 
 from typing import Union
 # from solarsail.sailBasic import SolarSailGuidance
@@ -25,6 +28,8 @@ def simulate(
     saveFile: Union[str, None],
     yearsToRun: float = 7,
     simStepSize: float = 100.0,
+    initialEpoch: Union[float, None] = None,
+    C3BurnVector: Union[np.ndarray, None] = None,
     verbose:bool = True
 ):
     ###########################################################################
@@ -32,18 +37,21 @@ def simulate(
     ###########################################################################
 
     secondsToRun = 365 * yearsToRun * constants.JULIAN_DAY
-    # spacecraftMass =   # kg
 
     ###########################################################################
 
-    # Retrieve current directory
-    # current_directory = os.getcwd()
+    if initialEpoch is None:
+        simulation_start_epoch = (
+            30 * constants.JULIAN_YEAR
+        )
+    else:
+        simulation_start_epoch = initialEpoch
 
-    simulation_start_epoch = (
-        30 * constants.JULIAN_YEAR
-        + 0 * 7.0 * constants.JULIAN_DAY
-        - 0.5 * constants.JULIAN_DAY
-    )
+    if verbose:
+        OFFSET = datetime(2000,1,1,12) - datetime(1970,1,1)
+        launchDate = datetime.utcfromtimestamp(simulation_start_epoch) + OFFSET
+        print(f"\nLaunch Date = {launchDate}")
+
     simulation_end_epoch = simulation_start_epoch + secondsToRun
 
     ###########################################################################
@@ -133,9 +141,12 @@ def simulate(
         aberration_corrections="NONE",
         ephemeris_time=simulation_start_epoch,
     )
+
     # system_initial_state = np.array([ 149598023000, 0, 0,   0, 29715.60, 0])
-    # Define required outputs  panelled_radiation_pressure_acceleration_type
-    # acctype = propagation_setup.acceleration.panelled_radiation_pressure_acceleration_type
+
+    if C3BurnVector is not None:
+        C3BurnState = np.hstack([np.zeros([3]), C3BurnVector])
+        system_initial_state = system_initial_state + C3BurnState
 
     if saveFile is not None:
         acctype = propagation_setup.acceleration.thrust_acceleration_type
