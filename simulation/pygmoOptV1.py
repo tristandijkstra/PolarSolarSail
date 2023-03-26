@@ -37,6 +37,9 @@ class SailOptimise:
         yearsToRun=25,
         stepSize=72000,
         targetAltitude=0.48,
+        initialEpoch=1117886400,
+        C3BurnVector=np.array([0,0,0]),
+        verbose=False
     ):
         # Set input arguments as attributes, representaing the problem bounds for both design variables
         self.FTOP_min = FTOP_min
@@ -54,15 +57,31 @@ class SailOptimise:
         self.simuFunction = simuFunction
         self.thermalModelObject = thermalModelObject
 
+        self.initialEpoch = initialEpoch
+        self.C3BurnVector = C3BurnVector
+
         self.resultsDict = {}
 
         self.step = 0
+        self.verbose = verbose
 
         if thermalModelObject is not None:
             self.thermalModel = thermalModelObject()
         else:
             self.thermalModel = None
 
+
+    def __repr__(self) -> str:
+        if self.thermalModel is not None:
+            return f"SailOptimise V1 | {self.solarSailGuidanceObject} | {self.thermalModel}"
+        else:
+            return f"SailOptimise V1 | {self.solarSailGuidanceObject}"
+        
+    def __str__(self) -> str:
+        if self.thermalModel is not None:
+            return f"SailOptimise V1 | {self.solarSailGuidanceObject} | {self.thermalModel}"
+        else:
+            return f"SailOptimise V1 | {self.solarSailGuidanceObject}"
 
     def get_bounds(self):
         return (
@@ -96,6 +115,8 @@ class SailOptimise:
             yearsToRun=self.yearsToRun,
             simStepSize=self.stepSize,
             verbose=False,
+            initialEpoch = self.initialEpoch,
+            C3BurnVector = self.C3BurnVector,
         )
 
         (
@@ -127,8 +148,9 @@ class SailOptimise:
             fun = incldur
 
         # logStr = f"duration = {runtime} s | run: {spacecraftName} | Final inclin. = {round(lastInclination, 3)} | Inclin. change duration = {incldur} years"
-        logStr = f"Eval {self.step} | runtime = {runtime} s | FTOP = {round(FTOP,5)} | deepestAltitude = {round(deepestAltitude, 5)} | fun = {round(fun, 3)}"
         self.step += 1
-        print(logStr)
+        if self.verbose:
+            logStr = f"Eval {self.step} | runtime = {runtime} s | FTOP = {round(FTOP,5)} | deepestAltitude = {round(deepestAltitude, 5)} | fun = {round(fun, 3)}"
+            print(logStr)
 
         return [fun]

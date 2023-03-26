@@ -21,7 +21,8 @@ git clone git@github.com:tristandijkstra/PolarSolarSail.git
    cd PolarSolarSail
    conda env create -f environment.yaml
    ```
-4. Run ```runSimV0.py```
+4. Activate the environment 'tudat-space-pygmo'
+5. Run ```runSimV1.py```
 
 ### Example:
 

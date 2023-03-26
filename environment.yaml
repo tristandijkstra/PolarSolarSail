@@ -1,4 +1,4 @@
-name: tudat-space
+name: tudat-space-pygmo
 channels:
   - tudat-team
   - conda-forge
