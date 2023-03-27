@@ -171,14 +171,10 @@ class Thermal:
             dt = current_time - self.start_time
             self.start_time = current_time
 
-            if alt < 0.5:
-                sail_deployed = 1
-                self.relationships = np.asarray(config.node_relationship_deployed)
-                self.total_nodes = len(self.relationships)
-            else:
-                sail_deployed = 0
-                self.relationships = np.asarray(config.node_relationship)
-                self.total_nodes = len(self.relationships)
+            self.total_nodes = len(self.spacecraft)
+
+            sail_deployed = 0
+            self.relationships = np.asarray(config.node_relationship_deployed)
 
             # node_temp_step = nd.steady_state(self.spacecraft, self.relationships, dt,
             #                                  sail_deployed, [alt, coneAngle])
@@ -193,6 +189,7 @@ class Thermal:
 
             self.node_failure.append(self.node_fail_step)
             self.node_temperatures.append(node_temp_step)
+
 
     def stopPropagation(self, time_step):
         if any(self.node_fail_step) == True:

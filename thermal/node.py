@@ -242,7 +242,7 @@ def time_variant(
     rad_matrix = np.diag(q_rad_coeff - np.sum(radiative, axis=1)) + radiative
     cond_matrix = conductive + np.diag(-np.sum(conductive, axis=1))
     
-    dt_interp = np.min(0.001 * capacities)
+    dt_interp = np.min(0.0001 * capacities)
     if dt_interp > 0:
         dt_arr = [dt_interp]*int(dt_original/dt_interp)
     else:
@@ -263,6 +263,15 @@ def time_variant(
         
     for i in range(0, len(nodes)):
         nodes[i].temp = node_temperatures[i]
-            
-    print(f"distance: {thermal_case[0]}, node temps: {node_temperatures}")
+
+    disp_temps = np.round(node_temperatures, 2)
+    dist = np.round(thermal_case[0], 2)
+
+    print("=======================================================")      
+    print(f"distance: {dist} AU")
+    print(f"Spacecraft +Z (sun-facing): {disp_temps[0]} K, Spacecraft -Z (space-facing): {disp_temps[1]} K")
+    print(f"Spacecraft +X: {disp_temps[2]} K, Spacecraft -X: {disp_temps[3]} K")
+    print(f"Spacecraft +Y: {disp_temps[4]} K, Spacecraft -Y: {disp_temps[5]} K")
+    print(f"Sails: {disp_temps[6]} K, Booms: {disp_temps[7]} K")
+    print(f"Panels: {disp_temps[8]} K, Shield: {disp_temps[9]} K")
     return node_temperatures
