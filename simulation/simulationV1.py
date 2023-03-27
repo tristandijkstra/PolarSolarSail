@@ -280,7 +280,7 @@ def plotSimulation(
     ]
 
     if thermalOn:
-        depVars = depVars + ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+        depVars = depVars + ["1", "2", "3", "4", "5", "6", "7", "8"]
 
     data = pd.read_csv(
         dataFile,

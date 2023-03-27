@@ -34,8 +34,8 @@ log_file = "data/thermal.log"
 node_1 = {
     "name": "Spacecraft +Z",
     "area": np.pi * spacecraft_radius**2,
-    "sun_vf": 0.25,
-    "space_vf": 0.05,
+    "sun_vf": 0.125,
+    "space_vf": 0.0025,
     "external": "multi-layer insulation",
     "internal": "carbon fibre",
     "temp_range": [0, 10000],
@@ -45,7 +45,7 @@ node_2 = {
     "name": "Spacecraft -Z",
     "area": 2*np.pi * spacecraft_radius**2,
     "sun_vf": 0,
-    "space_vf": 1,
+    "space_vf": 0.5,
     "external": "az93 white paint",
     "internal": "carbon fibre",
     "temp_range": [0, 10000],
@@ -54,8 +54,8 @@ node_2 = {
 node_3 = {
     "name": "Spacecraft +X",
     "area": np.pi * spacecraft_radius * spacecraft_length,
-    "sun_vf": 0.0379,
-    "space_vf": 0.7197,
+    "sun_vf": 0.0189,
+    "space_vf": 0.3599,
     "external": "aluminum",
     "internal": "carbon fibre",
     "temp_range": [0, 10000],
@@ -64,8 +64,8 @@ node_3 = {
 node_4 = {
     "name": "Spacecraft -X",
     "area": np.pi * spacecraft_radius * spacecraft_length,
-    "sun_vf": 0.0379,
-    "space_vf": 0.7197,
+    "sun_vf": 0.0189,
+    "space_vf": 0.3599,
     "external": "aluminum",
     "internal": "carbon fibre",
     "temp_range": [0, 10000],
@@ -193,9 +193,9 @@ masses = [
 
 
 view_factors = [
-    [0, 0, 0, 0, 0, 0, 0, 0.7],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0.1, 0.02],
+    [0, 0.33*0.5, 0.33*0.5, 0.33*0.5, 0, 0, 0, 0.7],
+    [0, 0, 0.33*0.5, 0.33*0.5, 0, 0, 0, 0],
+    [0, 0, 0, 0.33*0.5, 0, 0, 0.1, 0.02],
     [0, 0, 0, 0, 0, 0, 0.1, 0.02],
     [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],

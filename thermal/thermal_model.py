@@ -163,32 +163,36 @@ class Thermal:
         if self.start_time == False:
             self.start_time = current_time
             dt = 0
+            self.node_fail_step = [False] * len(self.spacecraft)
+            self.node_initial = np.asarray([self.spacecraft[i].temp for i in range(0, len(self.spacecraft))])
+            self.node_failure.append(self.node_fail_step)
+            self.node_temperatures.append(self.node_initial)
         else:
             dt = current_time - self.start_time
             self.start_time = current_time
 
-        if alt < 0.5:
-            sail_deployed = 1
-            self.relationships = np.asarray(config.node_relationship_deployed)
-            self.total_nodes = len(self.relationships)
-        else:
-            sail_deployed = 0
-            self.relationships = np.asarray(config.node_relationship)
-            self.total_nodes = len(self.relationships)
+            if alt < 0.5:
+                sail_deployed = 1
+                self.relationships = np.asarray(config.node_relationship_deployed)
+                self.total_nodes = len(self.relationships)
+            else:
+                sail_deployed = 0
+                self.relationships = np.asarray(config.node_relationship)
+                self.total_nodes = len(self.relationships)
 
-        # node_temp_step = nd.steady_state(self.spacecraft, self.relationships, dt,
-        #                                  sail_deployed, [alt, coneAngle])
-        node_temp_step = nd.time_variant(
-            self.spacecraft, self.relationships, dt, sail_deployed, [alt, coneAngle]
-        )
-        self.node_fail_step = [False] * self.total_nodes
+            # node_temp_step = nd.steady_state(self.spacecraft, self.relationships, dt,
+            #                                  sail_deployed, [alt, coneAngle])
+            node_temp_step = nd.time_variant(
+                self.spacecraft, self.relationships, dt, sail_deployed, [alt, coneAngle]
+            )
+            self.node_fail_step = [False] * self.total_nodes
 
-        for idx, temp in enumerate(node_temp_step):
-            if (temp < self.node_temp_ranges[idx][0]) and (temp > self.node_temp_ranges[idx][1]):
-                self.node_fail_step[idx] = True
+            for idx, temp in enumerate(node_temp_step):
+                if (temp < self.node_temp_ranges[idx][0]) and (temp > self.node_temp_ranges[idx][1]):
+                    self.node_fail_step[idx] = True
 
-        self.node_failure.append(self.node_fail_step)
-        self.node_temperatures.append(node_temp_step)
+            self.node_failure.append(self.node_fail_step)
+            self.node_temperatures.append(node_temp_step)
 
     def stopPropagation(self, time_step):
         if any(self.node_fail_step) == True:
