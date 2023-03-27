@@ -22,6 +22,7 @@ import pandas as pd
 import numpy as np
 from scipy import optimize
 from scipy import integrate
+import time
 
 SB = 5.67e-8
 AU = 1.496e11
@@ -221,6 +222,7 @@ def time_variant(
 
         self.q_absorbed - self.q_radiated [float]: The thermal balance of the node.
     """
+    t_start = time.perf_counter()
     dt_original = dt
     node_temperatures = np.asarray([nodes[i].temp for i in range(0, len(nodes))])
     radiative = np.triu(relationships, 1)
@@ -242,7 +244,7 @@ def time_variant(
     rad_matrix = np.diag(q_rad_coeff - np.sum(radiative, axis=1)) + radiative
     cond_matrix = conductive + np.diag(-np.sum(conductive, axis=1))
     
-    dt_interp = np.min(0.0001 * capacities)
+    dt_interp = np.min(0.0012 * capacities)
     if dt_interp > 0:
         dt_arr = [dt_interp]*int(dt_original/dt_interp)
     else:
@@ -267,6 +269,8 @@ def time_variant(
     disp_temps = np.round(node_temperatures, 2)
     dist = np.round(thermal_case[0], 2)
 
+    t_stop = time.perf_counter()
+
     print("=======================================================")      
     print(f"distance: {dist} AU")
     print(f"Spacecraft +Z (sun-facing): {disp_temps[0]} K, Spacecraft -Z (space-facing): {disp_temps[1]} K")
@@ -274,4 +278,5 @@ def time_variant(
     print(f"Spacecraft +Y: {disp_temps[4]} K, Spacecraft -Y: {disp_temps[5]} K")
     print(f"Sails: {disp_temps[6]} K, Booms: {disp_temps[7]} K")
     print(f"Panels: {disp_temps[8]} K, Shield: {disp_temps[9]} K")
+    print(f"Runtime: {round(t_stop - t_start, 2)} s")
     return node_temperatures
