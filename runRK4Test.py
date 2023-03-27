@@ -118,7 +118,7 @@ datasmallest = pd.read_csv(
     names=cols,
     header=None,
     skiprows=lambda i: i % skipSizes[0],
-    ).iloc[1:520]
+    ).iloc[1:1040]
 for idx, u in enumerate(saveFiles):
 
     spacecraftName, save, saveDep, extraTxt = u
@@ -129,9 +129,9 @@ for idx, u in enumerate(saveFiles):
         header=None,
         skiprows=lambda i: i % skipSizes[idx],
     )
-    ax[0].plot(data.time.iloc[1:520], (data.x - datasmallest.x).iloc[1:520].abs(), label=spacecraftName)
-    ax[1].plot(data.time.iloc[1:520], (data.y - datasmallest.y).iloc[1:520].abs(), label=spacecraftName)
-    ax[2].plot(data.time.iloc[1:520], (data.z - datasmallest.z).iloc[1:520].abs(), label=spacecraftName)
+    ax[0].plot(data.time.iloc[1:1040], (data.x - datasmallest.x).iloc[1:1040].abs(), label=spacecraftName)
+    ax[1].plot(data.time.iloc[1:1040], (data.y - datasmallest.y).iloc[1:1040].abs(), label=spacecraftName)
+    ax[2].plot(data.time.iloc[1:1040], (data.z - datasmallest.z).iloc[1:1040].abs(), label=spacecraftName)
 
     ax3.plot(data.x, data.y, data.z)
     print(len(data))

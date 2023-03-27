@@ -26,20 +26,19 @@ class Thermal:
         """
         Necessary inputs:
 
-            - Thermal case
-            - Time step
         """
         self.AU = 1.496e11
         self.SB = 5.67e-8
         self.yearInSeconds = 365 * 24 * 3600
         self.solar_luminosity = 3.83e26
-        initial_node_temp = 300
 
         bus_materials = []
         self.bus_properties = []
         sail_materials = []
         self.sail_properties = []
         self.total_properties = []
+        shield_materials = []
+        self.shield_properties = []
 
         self.shield_layers = config.shield["layers"]
 
@@ -55,39 +54,26 @@ class Thermal:
                     node["sun_vf"],
                     node["space_vf"],
                     node["temp_range"],
+                    node["internal_heat"],
                 ]
             )
 
         self.total_properties.append(self.bus_properties)
-        for i, node in enumerate(config.sail_nodes):
-            sail_materials.append(materials.sail_material(node["external"]))
-            self.sail_properties.append(
-                [
-                    sail_materials[i]["emissivity"],
-                    sail_materials[i]["reflectivity"],
-                    sail_materials[i]["absorptivity"],
-                    sail_materials[i]["density"],
-                    node["area"],
-                    node["sun_vf"],
-                    node["space_vf"],
-                    node["temp_range"],
-                ]
-            )
 
-        self.total_properties.append(self.sail_properties)
-        panel = materials.panel_material(config.solar_panels["external"])
-        self.panel_properties = [
-            panel["emissivity"],
-            panel["reflectivity"],
-            panel["absorptivity"],
-            panel["density"],
-            config.solar_panels["area"],
-            config.solar_panels["sun_vf"],
-            config.solar_panels["space_vf"],
-            config.solar_panels["temp_range"],
+        solar_sail = materials.sail_material(config.sail["external"])
+        self.sail_properties = [
+            solar_sail["emissivity"],
+            solar_sail["reflectivity"],
+            solar_sail["absorptivity"],
+            solar_sail["density"],
+            config.sail["area"],
+            config.sail["sun_vf"],
+            config.sail["space_vf"],
+            config.sail["temp_range"],
+            config.sail["internal_heat"],
         ]
 
-        self.total_properties.append(self.panel_properties)
+        self.total_properties.append(self.sail_properties)
         boom = materials.boom_material(config.booms["external"])
         self.boom_properties = [
             boom["emissivity"],
@@ -98,57 +84,65 @@ class Thermal:
             config.booms["sun_vf"],
             config.booms["space_vf"],
             config.booms["temp_range"],
+            config.booms["internal_heat"],
         ]
         self.total_properties.append(self.boom_properties)
 
-        self.total_properties.append(self.boom_properties)
-        shield = materials.shield_material(config.shield["external"])
+        panel = materials.panel_material(config.solar_panels["external"])
+        self.panel_properties = [
+            panel["emissivity"],
+            panel["reflectivity"],
+            panel["absorptivity"],
+            panel["density"],
+            config.solar_panels["area"],
+            config.solar_panels["sun_vf"],
+            config.solar_panels["space_vf"],
+            config.solar_panels["temp_range"],
+            config.solar_panels["internal_heat"],
+        ]
+
+        self.total_properties.append(self.panel_properties)
+        heat_shield = materials.shield_material(config.shield["external"])
         self.shield_properties = [
-            shield["emissivity"],
-            shield["reflectivity"],
-            shield["absorptivity"],
-            shield["density"],
+            heat_shield["emissivity"],
+            heat_shield["reflectivity"],
+            heat_shield["absorptivity"],
+            heat_shield["density"],
             config.shield["area"],
             config.shield["sun_vf"],
             config.shield["space_vf"],
             config.shield["temp_range"],
+            config.shield["internal_heat"],
         ]
         self.total_properties.append(self.shield_properties)
 
-        self.relationships = np.asarray(config.node_relationship)
-        self.total_nodes = len(self.relationships)
 
         self.spacecraft = []
         self.spacecraft_bus = []
-        self.solar_sail = []
 
         for node, node_properties in enumerate(self.bus_properties):
             self.spacecraft_bus.append(nd.Node("Spacecraft Bus", node_properties))
-        self.spacecraft.append(self.spacecraft_bus)
-        for node, node_properties in enumerate(self.sail_properties):
-            self.solar_sail.append(nd.Node("Solar Sail", node_properties))
+            self.spacecraft.append(self.spacecraft_bus[-1])
+        self.solar_sail = nd.Node("Solar Sail", self.sail_properties)
         self.spacecraft.append(self.solar_sail)
-        self.spacecraft = [item for sublist in self.spacecraft for item in sublist]
-        solar_panel = nd.Node("Solar Panel", self.panel_properties)
-        self.spacecraft.append(solar_panel)
         boom = nd.Node("Boom", self.boom_properties)
         self.spacecraft.append(boom)
+        solar_panel = nd.Node("Solar Panel", self.panel_properties)
+        self.spacecraft.append(solar_panel)
         if self.shield_layers > 0:
-            heat_shield = nd.Node(
-                "Heat Shield", self.shield_properties, self.shield_layers
-            )
+            self.heat_shield = nd.Node("Heat Shield", self.shield_properties, self.shield_layers)
+            self.spacecraft.append(self.heat_shield)
         else:
-            heat_shield = None
-        self.spacecraft.append(heat_shield)
+            self.heat_shield = None
 
         self.node_keys = [config.nodes[i]["name"] for i in range(0, len(config.nodes))]
         self.node_temp_ranges = [
             config.nodes[i]["temp_range"] for i in range(0, len(config.nodes))
         ]
-        self.node_fail_step = [False] * len(self.node_keys)
 
         self.node_failure = []
         self.node_temperatures = []
+        self.start_time = False
 
 
     def __repr__(self) -> str:
@@ -166,16 +160,32 @@ class Thermal:
             - time_step: time step in seconds.
             - thermal_case [arr]: includes distance from the sun and angle to the sun as [dist, angle].
         """
-        node_temp_step = nd.steady_state(
-            self.spacecraft, self.relationships, current_time, [alt, coneAngle]
+        if self.start_time == False:
+            self.start_time = current_time
+            dt = 0
+        else:
+            dt = current_time - self.start_time
+            self.start_time = current_time
+
+        if alt < 0.5:
+            sail_deployed = 1
+            self.relationships = np.asarray(config.node_relationship_deployed)
+            self.total_nodes = len(self.relationships)
+        else:
+            sail_deployed = 0
+            self.relationships = np.asarray(config.node_relationship)
+            self.total_nodes = len(self.relationships)
+
+        # node_temp_step = nd.steady_state(self.spacecraft, self.relationships, dt,
+        #                                  sail_deployed, [alt, coneAngle])
+        node_temp_step = nd.time_variant(
+            self.spacecraft, self.relationships, dt, sail_deployed, [alt, coneAngle]
         )
-        node_fail_step = [False] * self.total_nodes
+        self.node_fail_step = [False] * self.total_nodes
 
         for idx, temp in enumerate(node_temp_step):
-            if temp not in range(
-                self.node_temp_ranges[idx][0], self.node_temp_ranges[idx][1]
-            ):
-                node_fail_step[idx] = True
+            if (temp < self.node_temp_ranges[idx][0]) and (temp > self.node_temp_ranges[idx][1]):
+                self.node_fail_step[idx] = True
 
         self.node_failure.append(self.node_fail_step)
         self.node_temperatures.append(node_temp_step)
@@ -183,14 +193,12 @@ class Thermal:
     def stopPropagation(self, time_step):
         if any(self.node_fail_step) == True:
             print(f"Stopping Propagation => Heat")
-            print(self.node_fail_step)
+            print(self.node_failure[-1])
             return True
         else:
             return False
 
     def optimize_output(self):
-        self.temps_dict = {}
-        self.fail_dict = {}
         self.temps_dict = dict(zip(self.node_keys, self.node_temperatures))
         self.fail_dict = dict(zip(self.node_keys, self.node_failure))
         return self.fail_dict, self.temps_dict
