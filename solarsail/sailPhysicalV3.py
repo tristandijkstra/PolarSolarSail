@@ -98,7 +98,7 @@ class SolarSailGuidance(SolarSailGuidanceBase):
 
     def dependantVariables(self) -> np.ndarray:
         if self.thermalAvailable:
-            temp = [self.alpha, self.delta] + list(self.thermalModel.node_temperatures[0])
+            temp = [self.alpha, self.delta] + self.thermalModel.node_temp_state
             # print(list(self.thermalModel.node_temperatures[0]))
             return np.array(temp)
         else:

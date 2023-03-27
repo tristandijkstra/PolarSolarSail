@@ -23,7 +23,7 @@ logging.basicConfig(
 
 
 masses = [500]
-sailAreas = [10000]
+sailAreas = [25000]
 
 stepSize = 3600
 stepSize = 100000

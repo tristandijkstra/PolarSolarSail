@@ -142,6 +142,7 @@ class Thermal:
 
         self.node_failure = []
         self.node_temperatures = []
+        self.node_temp_state = [0 for _ in self.node_keys]
         self.start_time = False
 
 
@@ -189,6 +190,7 @@ class Thermal:
 
             self.node_failure.append(self.node_fail_step)
             self.node_temperatures.append(node_temp_step)
+            self.node_temp_state = list(node_temp_step)
 
 
     def stopPropagation(self, time_step):

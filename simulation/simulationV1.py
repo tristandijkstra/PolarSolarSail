@@ -389,6 +389,7 @@ def plotThermal(
         delimiter="	",
         names=depVars,
         header=None,
+        skiprows=[0]
     )
 
     time = (data2.time - data2.time.iloc[0]) / yearInSeconds
