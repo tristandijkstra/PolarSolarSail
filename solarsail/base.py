@@ -83,6 +83,8 @@ class SolarSailGuidanceBase:
         self.inclinationChangeEnd = 0
         self.lastInclination = 0
 
+        self.thermalAvailable = False
+
     def dependantVariables(self) -> np.ndarray:
         return np.array([self.alpha, self.delta])
 

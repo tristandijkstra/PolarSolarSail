@@ -67,7 +67,7 @@ for combination in tqdm(combinations):
         yearsToRun=yearsToRun,
         simStepSize=stepSize,
         initialEpoch=1117886400,
-        C3BurnVector=np.array([0,0,6000])
+        C3BurnVector=np.array([-5000,0,0])
     )
 
     (
