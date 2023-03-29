@@ -21,6 +21,8 @@ TODO:
 import pandas as pd
 import numpy as np
 from scipy import optimize
+from scipy import integrate
+import time
 
 SB = 5.67e-8
 AU = 1.496e11
@@ -135,6 +137,23 @@ def heat(nodes_examined, R_ij, G_ij):
     return q_nodes
 
 
+def temp_update(node_temperatures, rad_matrix, cond_matrix, capacities, q_extra):
+    q_rad = np.dot(rad_matrix, node_temperatures**4)
+    q_cond = np.dot(cond_matrix, node_temperatures)
+    q_total = (q_rad + q_cond + q_extra)
+    return np.divide(q_total, capacities)
+
+def runge_kutta(node_temperatures, time_step, capacities, rad_matrix, cond_matrix, q_extra):
+    k1 = time_step * temp_update(node_temperatures, rad_matrix, cond_matrix, capacities, q_extra)
+    k2 = time_step * temp_update(node_temperatures + (k1/2), rad_matrix, cond_matrix, capacities, q_extra)
+    k3 = time_step * temp_update(node_temperatures + (k2/2), rad_matrix, cond_matrix, capacities, q_extra)
+    k4 = time_step * temp_update(node_temperatures + k3, rad_matrix, cond_matrix, capacities, q_extra)
+    k = (k1 + (2*k2) + (2*k3) + k4) / 6
+    node_temperatures = node_temperatures + k
+    return node_temperatures
+
+
+
 def steady_state(nodes, relationships, sail_deployed, duty_cycle, thermal_case):
     node_initial = np.asarray([nodes[i].temp for i in range(0, len(nodes))])
     radiative = np.triu(relationships, 1)
@@ -203,6 +222,7 @@ def time_variant(
 
         self.q_absorbed - self.q_radiated [float]: The thermal balance of the node.
     """
+    t_start = time.perf_counter()
     dt_original = dt
     node_temperatures = np.asarray([nodes[i].temp for i in range(0, len(nodes))])
     radiative = np.triu(relationships, 1)
@@ -224,19 +244,19 @@ def time_variant(
     rad_matrix = np.diag(q_rad_coeff - np.sum(radiative, axis=1)) + radiative
     cond_matrix = conductive + np.diag(-np.sum(conductive, axis=1))
     
-    for i in range(0, len(nodes)):
-        while (dt / (0.0001 * capacities[i])) > 1:
-            dt = 0.9*dt
-        if dt > 0:
-            dt_arr = [dt]*int(dt_original/dt)
-        else:
-            dt_arr = [0]
+    dt_interp = np.min(0.0012 * capacities)
+    if dt_interp > 0:
+        dt_arr = [dt_interp]*int(dt_original/dt_interp)
+    else:
+        dt_arr = [0]
 
+    # integrator = integrate.RK45(fun = lambda self, node_temps: temp_update(node_temps, capacities, rad_matrix, cond_matrix, q_extra), t0 = dt_interp, y0 = node_initial, t_bound = dt_original, vectorized=True)
     for idx, time_step in enumerate(dt_arr):
-        q_rad = np.dot(rad_matrix, node_temperatures**4)
-        q_cond = np.dot(cond_matrix, node_temperatures)
-        q_total = q_rad + q_cond + q_extra
-        node_temperatures = node_temperatures + np.divide(time_step, capacities) * q_total
+        # q_rad = np.dot(rad_matrix, node_temperatures**4)
+        # q_cond = np.dot(cond_matrix, node_temperatures)
+        # q_total = q_rad + q_cond + q_extra
+        node_temperatures = runge_kutta(node_temperatures, time_step, capacities, rad_matrix, cond_matrix, q_extra)
+        # node_temperatures = node_temperatures + np.divide(time_step, capacities) * q_total
         # node_temperatures = node_temperatures + np.divide(time_step, capacities) * q_extra
         # q_cond = np.dot(cond_matrix, node_temperatures)
         # node_temperatures = node_temperatures + np.divide(time_step, capacities) * q_cond
@@ -245,6 +265,18 @@ def time_variant(
         
     for i in range(0, len(nodes)):
         nodes[i].temp = node_temperatures[i]
-            
-    print(f"distance: {thermal_case[0]}, node temps: {node_temperatures}")
+
+    disp_temps = np.round(node_temperatures, 2)
+    dist = np.round(thermal_case[0], 2)
+
+    t_stop = time.perf_counter()
+
+    print("=======================================================")      
+    print(f"distance: {dist} AU")
+    print(f"Spacecraft +Z (sun-facing): {disp_temps[0]} K, Spacecraft -Z (space-facing): {disp_temps[1]} K")
+    print(f"Spacecraft +X: {disp_temps[2]} K, Spacecraft -X: {disp_temps[3]} K")
+    print(f"Spacecraft +Y: {disp_temps[4]} K, Spacecraft -Y: {disp_temps[5]} K")
+    print(f"Sails: {disp_temps[6]} K, Booms: {disp_temps[7]} K")
+    print(f"Panels: {disp_temps[8]} K, Shield: {disp_temps[9]} K")
+    print(f"Runtime: {round(t_stop - t_start, 2)} s")
     return node_temperatures

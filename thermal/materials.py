@@ -240,6 +240,8 @@ def shield_material(choice):
         return ceramic_cloth
     elif choice == "multi-layer insulation":
         return mli
+    elif choice == "solar black":
+        return solar_black
     else:
         raise Exception("The only currently supported option is 'ceramic cloth'.")
 

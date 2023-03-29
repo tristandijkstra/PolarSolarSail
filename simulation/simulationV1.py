@@ -11,15 +11,16 @@ from tudatpy.kernel.interface import spice
 from tudatpy.kernel import numerical_simulation
 from tudatpy.kernel.numerical_simulation import environment_setup
 from tudatpy.kernel.numerical_simulation import propagation_setup
+
 # from tudatpy.kernel.astro.time_conversion import julian_day_to_calendar_date
 
 
 from typing import Union
+
 # from solarsail.sailBasic import SolarSailGuidance
 
 # Load spice kernels.
 spice.load_standard_kernels()
-
 
 
 def simulate(
@@ -30,7 +31,7 @@ def simulate(
     simStepSize: float = 100.0,
     initialEpoch: Union[float, None] = None,
     C3BurnVector: Union[np.ndarray, None] = None,
-    verbose:bool = True
+    verbose: bool = True,
 ):
     ###########################################################################
     # INPUTS ##################################################################
@@ -41,14 +42,12 @@ def simulate(
     ###########################################################################
 
     if initialEpoch is None:
-        simulation_start_epoch = (
-            30 * constants.JULIAN_YEAR
-        )
+        simulation_start_epoch = 30 * constants.JULIAN_YEAR
     else:
         simulation_start_epoch = initialEpoch
 
     if verbose:
-        OFFSET = datetime(2000,1,1,12) - datetime(1970,1,1)
+        OFFSET = datetime(2000, 1, 1, 12) - datetime(1970, 1, 1)
         launchDate = datetime.utcfromtimestamp(simulation_start_epoch) + OFFSET
         print(f"\nLaunch Date = {launchDate}")
 
@@ -255,7 +254,7 @@ def plotSimulation(
     extraText: str = "",
     quiverEvery: int = 6000,
     skiprows: int = 10,
-    thermalOn:bool = False
+    thermalOn: bool = False,
 ):
     AU = constants.ASTRONOMICAL_UNIT  # m
     yearInSeconds = 365 * 24 * 3600
@@ -280,7 +279,7 @@ def plotSimulation(
     ]
 
     if thermalOn:
-        depVars = depVars + ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+        depVars = depVars + ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
 
     data = pd.read_csv(
         dataFile,
@@ -347,8 +346,6 @@ def plotSimulation(
     ax2[2][0].set_xlabel("Time [years]")
     ax2[2][0].grid()
 
-
-
     fig.suptitle(f"{satName} | {extraText}")
     fig2.suptitle(f"{satName} | {extraText}")
 
@@ -359,11 +356,7 @@ def plotSimulation(
     fig2.savefig(f"data/{satName}_var.png")
 
 
-def plotThermal(
-    satName,
-    dataDepFile: str,
-    thermalNodeNames: list
-):
+def plotThermal(satName, dataDepFile: str, thermalNodeNames: list):
     yearInSeconds = 365 * 24 * 3600
 
     depVars = [
@@ -385,10 +378,7 @@ def plotThermal(
     depVars = depVars + thermalNodeNames
 
     data2 = pd.read_csv(
-        dataDepFile,
-        delimiter="	",
-        names=depVars,
-        header=None,
+        dataDepFile, delimiter="	", names=depVars, header=None, skiprows=[0]
     )
 
     time = (data2.time - data2.time.iloc[0]) / yearInSeconds
@@ -403,6 +393,71 @@ def plotThermal(
     ax3.grid()
     ax3.legend()
 
-
     fig3.set_tight_layout(True)
     fig3.savefig(f"data/{satName}_thermal.png")
+
+
+def simulatePlanet(
+    planet: str,
+    initialEpoch: float,
+    finalEpoch: float,
+    simStepSize: float = 100.0,
+):
+    bodies_to_create = ["Sun", planet]
+    global_frame_origin = "Sun"
+    global_frame_orientation = "ECLIPJ2000"
+    body_settings = environment_setup.get_default_body_settings(
+        bodies_to_create, global_frame_origin, global_frame_orientation
+    )
+    bodies = environment_setup.create_system_of_bodies(body_settings)
+
+    bodies_to_propagate = [planet]
+    central_bodies = ["Sun"]
+
+    acceleration_settings_on_vehicle = {
+        "Sun": [propagation_setup.acceleration.point_mass_gravity()],
+    }
+
+    acceleration_settings = {planet: acceleration_settings_on_vehicle}
+
+    acceleration_models = propagation_setup.create_acceleration_models(
+        bodies, acceleration_settings, bodies_to_propagate, central_bodies
+    )
+
+    system_initial_state = spice.get_body_cartesian_state_at_epoch(
+        target_body_name=planet,
+        observer_body_name="Sun",
+        reference_frame_name="ECLIPJ2000",
+        aberration_corrections="NONE",
+        ephemeris_time=initialEpoch,
+    )
+
+    integrator_settings = propagation_setup.integrator.runge_kutta_4(simStepSize)
+    termination_time_settings = propagation_setup.propagator.time_termination(
+        finalEpoch
+    )
+
+    propagator_settings = propagation_setup.propagator.translational(
+        central_bodies,
+        acceleration_models,
+        bodies_to_propagate,
+        system_initial_state,
+        initialEpoch,
+        integrator_settings,
+        termination_time_settings,
+    )
+    dynamics_simulator = numerical_simulation.create_dynamics_simulator(
+        bodies, propagator_settings
+    )
+    propagation_results = dynamics_simulator.propagation_results
+
+    state_history = propagation_results.state_history
+
+    fileName = "data/" + planet + ".dat"
+    save2txt(
+        solution=state_history,
+        filename=fileName,
+        directory="./",
+    )
+
+    return None
