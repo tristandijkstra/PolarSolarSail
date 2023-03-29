@@ -42,6 +42,7 @@ combinations = list(product(masses, sailAreas))
 
 saveFiles = []
 resultslst = []
+finalEpoch = 0
 
 logging.info(f"=== Starting run with {len(combinations)} combinations ===")
 for combination in tqdm(combinations):
@@ -75,6 +76,9 @@ for combination in tqdm(combinations):
         inclinationChangeDuration,
         finalInclination,
     ) = finalGuidanceObj.getInclinationChangeDuration()
+
+    finalEpoch = 1117886400 + spiralDuration + inclinationChangeDuration
+
     dur = round(inclinationChangeDuration / yearInSeconds, 3)
     totdur = round((spiralDuration + inclinationChangeDuration) / yearInSeconds, 3)
     print(f"Final inclination = {round(finalInclination, 3)} deg")
@@ -99,5 +103,10 @@ for combination in tqdm(combinations):
 for u in saveFiles:
     sim.plotSimulation(*u, quiverEvery=0)
 
+planets = ["Earth", "Venus", "Mercury"]
+
+for planet in planets:
+    print(f"Running {planet}")
+    sim.simulatePlanet(planet, 1117886400, finalEpoch, stepSize)
 
 plt.show()

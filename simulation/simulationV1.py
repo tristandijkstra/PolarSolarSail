@@ -403,14 +403,17 @@ def simulatePlanet(
     finalEpoch: float,
     simStepSize: float = 100.0,
 ):
-    bodies_to_create = ["Sun", planet]
+    bodies_to_create = [planet, "Sun"]
     global_frame_origin = "Sun"
     global_frame_orientation = "ECLIPJ2000"
+
     body_settings = environment_setup.get_default_body_settings(
         bodies_to_create, global_frame_origin, global_frame_orientation
     )
-    bodies = environment_setup.create_system_of_bodies(body_settings)
 
+    # Create environment
+    bodies = environment_setup.create_system_of_bodies(body_settings)
+    
     bodies_to_propagate = [planet]
     central_bodies = ["Sun"]
 
@@ -427,7 +430,7 @@ def simulatePlanet(
     system_initial_state = spice.get_body_cartesian_state_at_epoch(
         target_body_name=planet,
         observer_body_name="Sun",
-        reference_frame_name="ECLIPJ2000",
+        reference_frame_name=global_frame_orientation,
         aberration_corrections="NONE",
         ephemeris_time=initialEpoch,
     )
