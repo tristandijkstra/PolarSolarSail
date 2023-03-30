@@ -22,10 +22,11 @@ logging.basicConfig(
 )
 
 
-masses = [760]
+masses = [605]
 sailAreas = [10000]
 
-stepSize = 3600
+stepSize = 36000
+stepSize = 7200
 # stepSize = 100000
 
 paramNames = ["mass", "area"]
@@ -33,7 +34,7 @@ paramNames = ["mass", "area"]
 yearsToRun = 25
 yearInSeconds = 365 * 24 * 3600
 targetAltitude = 0.48
-deepestAltitude = 0.4
+deepestAltitude = 0.40
 
 combinations = list(product(masses, sailAreas))
 

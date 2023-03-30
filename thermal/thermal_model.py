@@ -229,12 +229,11 @@ class Thermal:
                 self.node_fail_step = [False] * self.total_nodes
 
                 for idx, temp in enumerate(node_temp_step):
-                    # print("hi", idx, temp, self.node_temp_ranges[idx])
-                    if (temp < self.node_temp_ranges[idx][0]) or (temp > self.node_temp_ranges[idx][1]):
+                    tempC = temp - 273.15
+                    if (tempC < self.node_temp_ranges[idx][0]) or (tempC > self.node_temp_ranges[idx][1]):
+                        print(self.node_keys[idx], round(tempC, 2), self.node_temp_ranges[idx])
                         self.node_fail_step[idx] = True
-                        # print(self.node_fail_step[idx])
                 self.node_temp_state = list(node_temp_step)
-                # print(self.node_fail_step)
         else:
             self.node_fail_step = [False] * self.total_nodes
             node_temp_step = [273.0]*self.total_nodes
@@ -244,9 +243,9 @@ class Thermal:
 
 
     def stopPropagation(self, time_step):
-        if any(self.node_fail_step) == True:
+        if sum(self.node_fail_step) > 0:
             print(f"Stopping Propagation => Heat")
-            print(self.node_failure[-1])
+            print(self.node_fail_step)
             return True
         else:
             return False
