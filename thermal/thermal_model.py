@@ -40,7 +40,7 @@ class Thermal:
         shield_materials = []
         self.shield_properties = []
 
-        self.shield_layers = config.shield["layers"]
+        self.shield_layers = config.shield_inner["layers"]
 
         for i, node in enumerate(config.bus_nodes):
             bus_materials.append(materials.bus_material(node["external"]))
@@ -102,20 +102,49 @@ class Thermal:
         ]
 
         self.total_properties.append(self.panel_properties)
-        heat_shield = materials.shield_material(config.shield["external"])
+
+        hga = materials.antenna_material(config.antenna["external"])
+        self.antenna_properties = [
+            hga["emissivity"],
+            hga["reflectivity"],
+            hga["absorptivity"],
+            hga["density"],
+            config.antenna["area"],
+            config.antenna["sun_vf"],
+            config.antenna["space_vf"],
+            config.antenna["temp_range"],
+            config.antenna["internal_heat"],
+        ]
+
+        self.total_properties.append(self.antenna_properties)
+        
+        front_shield = materials.shield_material(config.shield_front["external"])
         self.shield_properties = [
-            heat_shield["emissivity"],
-            heat_shield["reflectivity"],
-            heat_shield["absorptivity"],
-            heat_shield["density"],
-            config.shield["area"],
-            config.shield["sun_vf"],
-            config.shield["space_vf"],
-            config.shield["temp_range"],
-            config.shield["internal_heat"],
+            front_shield["emissivity"],
+            front_shield["reflectivity"],
+            front_shield["absorptivity"],
+            front_shield["density"],
+            config.shield_front["area"],
+            config.shield_front["sun_vf"],
+            config.shield_front["space_vf"],
+            config.shield_front["temp_range"],
+            config.shield_front["internal_heat"],
         ]
         self.total_properties.append(self.shield_properties)
 
+        inner_shield = materials.shield_material(config.shield_inner["external"])
+        self.innershield_properties = [
+            inner_shield["emissivity"],
+            inner_shield["reflectivity"],
+            inner_shield["absorptivity"],
+            inner_shield["density"],
+            config.shield_inner["area"],
+            config.shield_inner["sun_vf"],
+            config.shield_inner["space_vf"],
+            config.shield_inner["temp_range"],
+            config.shield_inner["internal_heat"],
+        ]
+        self.total_properties.append(self.innershield_properties)
 
         self.spacecraft = []
         self.spacecraft_bus = []
@@ -129,9 +158,13 @@ class Thermal:
         self.spacecraft.append(boom)
         solar_panel = nd.Node("Solar Panel", self.panel_properties)
         self.spacecraft.append(solar_panel)
+        antenna = nd.Node("Antenna", self.antenna_properties)
+        self.spacecraft.append(antenna)
         if self.shield_layers > 0:
             self.heat_shield = nd.Node("Heat Shield", self.shield_properties, self.shield_layers)
+            self.shield_inner = nd.Node("Heat Shield", self.innershield_properties, self.shield_layers)
             self.spacecraft.append(self.heat_shield)
+            self.spacecraft.append(self.shield_inner)
         else:
             self.heat_shield = None
 
@@ -161,33 +194,36 @@ class Thermal:
             - time_step: time step in seconds.
             - thermal_case [arr]: includes distance from the sun and angle to the sun as [dist, angle].
         """
-        if self.start_time == False:
-            self.start_time = current_time
-            dt = 0
-            self.node_fail_step = [False] * len(self.spacecraft)
-            self.node_initial = np.asarray([self.spacecraft[i].temp for i in range(0, len(self.spacecraft))])
-            self.node_failure.append(self.node_fail_step)
-            self.node_temperatures.append(self.node_initial)
+        self.total_nodes = len(self.spacecraft)
+
+        if alt < 1.0:
+            if self.start_time == False:
+                self.start_time = current_time
+                dt = 0
+                self.node_fail_step = [False] * len(self.spacecraft)
+                self.node_initial = np.asarray([self.spacecraft[i].temp for i in range(0, len(self.spacecraft))])
+                self.node_failure.append(self.node_fail_step)
+                self.node_temperatures.append(self.node_initial)
+            else:
+                dt = current_time - self.start_time
+                self.start_time = current_time
+
+                sail_deployed = 1
+                self.relationships = np.asarray(config.node_relationship_deployed)
+
+                # node_temp_step = nd.steady_state(self.spacecraft, self.relationships, dt,
+                #                                  sail_deployed, [alt, coneAngle])
+                node_temp_step = nd.time_variant(
+                    self.spacecraft, self.relationships, dt, sail_deployed, [alt, coneAngle]
+                )
+                self.node_fail_step = [False] * self.total_nodes
+
+                for idx, temp in enumerate(node_temp_step):
+                    if (temp < self.node_temp_ranges[idx][0]) and (temp > self.node_temp_ranges[idx][1]):
+                        self.node_fail_step[idx] = True
         else:
-            dt = current_time - self.start_time
-            self.start_time = current_time
-
-            self.total_nodes = len(self.spacecraft)
-
-            sail_deployed = 0
-            self.relationships = np.asarray(config.node_relationship_deployed)
-
-            # node_temp_step = nd.steady_state(self.spacecraft, self.relationships, dt,
-            #                                  sail_deployed, [alt, coneAngle])
-            node_temp_step = nd.time_variant(
-                self.spacecraft, self.relationships, dt, sail_deployed, [alt, coneAngle]
-            )
             self.node_fail_step = [False] * self.total_nodes
-
-            for idx, temp in enumerate(node_temp_step):
-                if (temp < self.node_temp_ranges[idx][0]) and (temp > self.node_temp_ranges[idx][1]):
-                    self.node_fail_step[idx] = True
-
+            node_temp_step = [273.0]*self.total_nodes
             self.node_failure.append(self.node_fail_step)
             self.node_temperatures.append(node_temp_step)
             self.node_temp_state = list(node_temp_step)

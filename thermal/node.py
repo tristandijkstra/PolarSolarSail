@@ -54,7 +54,6 @@ class Node:
         self.internal_heat = properties[8]
         self.n_shield = n_shield
         self.temp = 273.0
-
     def solar_heat_in(self, thermal_case, sail_deployed, duty_cycle):
         """
         This computes the solar heat that the outer surface sees.
@@ -230,7 +229,7 @@ def time_variant(
     conductive = np.tril(relationships, -1)
     conductive = np.where(conductive, conductive, conductive.T)
     capacities = np.diagonal(relationships)
-    duty_cycle = 0.03
+    duty_cycle = 1
 
     q_extra = []
     q_rad_coeff = []
@@ -244,7 +243,7 @@ def time_variant(
     rad_matrix = np.diag(q_rad_coeff - np.sum(radiative, axis=1)) + radiative
     cond_matrix = conductive + np.diag(-np.sum(conductive, axis=1))
     
-    dt_interp = np.min(0.0012 * capacities)
+    dt_interp = np.min(0.01*capacities)
     if dt_interp > 0:
         dt_arr = [dt_interp]*int(dt_original/dt_interp)
     else:
@@ -266,17 +265,18 @@ def time_variant(
     for i in range(0, len(nodes)):
         nodes[i].temp = node_temperatures[i]
 
-    disp_temps = np.round(node_temperatures, 2)
+    disp_temps = np.round(node_temperatures - 273.15, 2)
     dist = np.round(thermal_case[0], 2)
 
     t_stop = time.perf_counter()
 
     print("=======================================================")      
     print(f"distance: {dist} AU")
-    print(f"Spacecraft +Z (sun-facing): {disp_temps[0]} K, Spacecraft -Z (space-facing): {disp_temps[1]} K")
-    print(f"Spacecraft +X: {disp_temps[2]} K, Spacecraft -X: {disp_temps[3]} K")
-    print(f"Spacecraft +Y: {disp_temps[4]} K, Spacecraft -Y: {disp_temps[5]} K")
-    print(f"Sails: {disp_temps[6]} K, Booms: {disp_temps[7]} K")
-    print(f"Panels: {disp_temps[8]} K, Shield: {disp_temps[9]} K")
+    print(f"Spacecraft +Z (sun-facing): {disp_temps[0]} C, Spacecraft -Z (space-facing): {disp_temps[1]} C")
+    print(f"Spacecraft +X: {disp_temps[2]} C, Spacecraft -X: {disp_temps[3]} C")
+    print(f"Spacecraft +Y: {disp_temps[4]} C, Spacecraft -Y: {disp_temps[5]} C")
+    print(f"Sails: {disp_temps[6]} C, Booms: {disp_temps[7]} C")
+    print(f"Panels: {disp_temps[8]} C, Antenna: {disp_temps[9]} C")
+    print(f"Outer Shield: {disp_temps[10]} C, Inner Shield: {disp_temps[11]} C")
     print(f"Runtime: {round(t_stop - t_start, 2)} s")
     return node_temperatures

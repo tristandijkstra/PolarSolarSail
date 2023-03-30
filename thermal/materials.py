@@ -11,9 +11,9 @@ tradeoff analysis.
 
 standard = {
     "name": "standard",
-    "emissivity": 0.36,
-    "reflectivity": 0.98,
-    "absorptivity": 0.02,
+    "emissivity": 0.30,
+    "reflectivity": 0.92,
+    "absorptivity": 0.08,
     "conductivity": 0.155,
     "density": 1540,
     "specific_heat": 1172.3
@@ -22,8 +22,8 @@ standard = {
 aluminum = {
     "name": "aluminum",
     "emissivity": 0.10,
-    "reflectivity": 0.98,
-    "absorptivity": 0.02,
+    "reflectivity": 0.92,
+    "absorptivity": 0.08,
     "conductivity": 237,
     "density": 2810,
     "specific_heat": 900,
@@ -35,7 +35,7 @@ aluminum = {
 
 chromium = {
     "name": "chromium",
-    "emissivity": 0.36,
+    "emissivity": 0.30,
     "reflectivity": 0.90,
     "absorptivity": 0.10,
     "conductivity": 93.7,
@@ -106,6 +106,17 @@ mli = {
 # Emissivity source: http://www.thermalengineer.com/library/effective_emittance.htm
 # Reflectivity: this assumes the outer surface is aluminum for reflection
 
+solar_black_shield = {
+    "name": "solar black shield",
+    "emissivity": 0.03,
+    "reflectivity": 0.04,
+    "absorptivity": 0.96,
+    "conductivity": 0,
+    "density": 3200,
+    "specific_heat": 800,
+}
+# Emissivity and absorptivity sources: https://enbio.eu/wp-content/uploads/2018/10/SolarBlack.pdf
+
 solar_black = {
     "name": "solar black",
     "emissivity": 0.78,
@@ -119,7 +130,7 @@ solar_black = {
 
 az93 = {
     "name": "az93 white paint",
-    "emissivity": 0.92,
+    "emissivity": 0.99,
     "reflectivity": 0.87,
     "absorptivity": 0.13,
     "conductivity": 0,
@@ -172,7 +183,7 @@ gallium_arsenide = {
 ### Heat Shield Materials
 ceramic_cloth = {
     "name": "ceramic cloth",
-    "emissivity": 0.73,
+    "emissivity": 0.19,
     "reflectivity": 0.19,
     "absorptivity": 0.81,
     "conductivity": 0.35,
@@ -240,8 +251,8 @@ def shield_material(choice):
         return ceramic_cloth
     elif choice == "multi-layer insulation":
         return mli
-    elif choice == "solar black":
-        return solar_black
+    elif choice == "solar black shield":
+        return solar_black_shield
     else:
         raise Exception("The only currently supported option is 'ceramic cloth'.")
 
@@ -249,5 +260,18 @@ def shield_material(choice):
 def boom_material(choice):
     if choice == "carbon fibre":
         return cfrp
+    elif choice == "multi-layer insulation":
+        return mli
+    elif choice == "aluminum":
+        return aluminum
+    else:
+        raise Exception("The only currently supported option is 'carbon fibre'.")
+    
+
+def antenna_material(choice):
+    if choice == "solar black":
+        return solar_black
+    elif choice == "titanium":
+        return titanium
     else:
         raise Exception("The only currently supported option is 'carbon fibre'.")
