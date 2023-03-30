@@ -386,7 +386,7 @@ def plotThermal(satName, dataDepFile: str, thermalNodeNames: list):
     fig3, ax3 = plt.subplots(1, 1, sharex=True, figsize=(12, 9))
 
     for key in thermalNodeNames:
-        ax3.plot(time, data2[key], label=key)
+        ax3.plot(time, data2[key], label=key, alpha=0.7)
 
     ax3.set_ylabel(r"Temperature $[K]$")
     ax3.set_xlabel("Time [years]")

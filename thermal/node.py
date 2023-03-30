@@ -23,6 +23,7 @@ import numpy as np
 from scipy import optimize
 from scipy import integrate
 import time
+from tqdm import tqdm
 
 SB = 5.67e-8
 AU = 1.496e11
@@ -251,6 +252,7 @@ def time_variant(
 
     # integrator = integrate.RK45(fun = lambda self, node_temps: temp_update(node_temps, capacities, rad_matrix, cond_matrix, q_extra), t0 = dt_interp, y0 = node_initial, t_bound = dt_original, vectorized=True)
     for idx, time_step in enumerate(dt_arr):
+        # print(idx)
         # q_rad = np.dot(rad_matrix, node_temperatures**4)
         # q_cond = np.dot(cond_matrix, node_temperatures)
         # q_total = q_rad + q_cond + q_extra
