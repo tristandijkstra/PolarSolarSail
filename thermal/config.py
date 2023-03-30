@@ -125,7 +125,7 @@ solar_panels = {
     "sun_vf": 0.5,
     "space_vf": 0.2,
     "external": "osr",
-    "temp_range": [-65, 100],
+    "temp_range": [-65, 200],
     "internal_heat": 0,
 }
 
