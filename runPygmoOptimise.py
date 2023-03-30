@@ -24,7 +24,7 @@ logging.basicConfig(
 )
 
 initialEpoch = 1117886400 - (86400 * 4)
-C3BurnVec = np.array([0,0,4000])
+C3BurnVec = np.array([0,0,5000])
 
 targetAltitude = 0.42
 deepestAltitude = 0.2
@@ -41,9 +41,9 @@ targetInclination = 65
 
 
 FTOPmin = 0.01
-FTOPmax = 0.2
+FTOPmax = 0.1
 deepestAltitude_min = 0.2
-deepestAltitude_max = 0.35
+deepestAltitude_max = 0.3
 
 
 
@@ -61,7 +61,8 @@ udp = SailOptimise(
     timesOutwardMax=timesOutwardMax,
     stepSize=stepSize,
     initialEpoch=initialEpoch,
-    C3BurnVector=C3BurnVec
+    C3BurnVector=C3BurnVec,
+    verbose=True
 )
 
 # Creation of the pygmo problem object
@@ -78,8 +79,8 @@ number_of_generations = 10
 current_seed = 171015
 
 # Create Differential Evolution object by passing the number of generations as input
-# de_algo = pygmo.gwo(gen=number_of_generations, seed=current_seed)
-de_algo = pygmo.gaco(gen=number_of_generations, seed=current_seed)
+de_algo = pygmo.gwo(gen=number_of_generations, seed=current_seed)
+# de_algo = pygmo.gaco(gen=number_of_generations, seed=current_seed)
 
 # Create pygmo algorithm object
 algo = pygmo.algorithm(de_algo)
@@ -89,7 +90,7 @@ print(algo)
 
 
 # Set population size
-pop_size = 100
+pop_size = 7
 
 # Create population
 pop = pygmo.population(prob, size=pop_size, seed=current_seed)
@@ -100,7 +101,7 @@ if inspect_pop:
     print(pop)
 
 # Set number of evolutions
-number_of_evolutions = 7
+number_of_evolutions = 5
 
 # Initialize empty containers
 individuals_list = []
@@ -147,7 +148,7 @@ print(champion_n)
 best_FTOP = [ind[0] for ind in individuals_list][0]
 best_DEEPESTALT = [ind[1] for ind in individuals_list][0]
 
-print(best_FTOP, best_DEEPESTALT)
+print("FTOP:", best_FTOP, "deepestAlt:",  best_DEEPESTALT)
 saveFiel = "w=" + str(best_FTOP)
 guidanceObject = SolarSailGuidance(
     None,
@@ -160,7 +161,7 @@ guidanceObject = SolarSailGuidance(
     fastTransferOptimiseParameter=best_FTOP,
     verbose=True,
 )
-namee = "FTOP=" + str(best_FTOP) + "deepestAlt=" + str(best_DEEPESTALT)
+namee = "FTOP=" + str(best_FTOP) + " deepestAlt=" + str(best_DEEPESTALT)
 _, save, saveDep = sim.simulate(
     spacecraftName="best",
     sailGuidanceObject=guidanceObject,
