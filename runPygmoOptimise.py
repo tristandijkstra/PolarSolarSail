@@ -42,8 +42,8 @@ targetInclination = 65
 
 FTOPmin = 0.01
 FTOPmax = 0.1
-deepestAltitude_min = 0.2
-deepestAltitude_max = 0.3
+deepestAltitude_min = 0.4
+deepestAltitude_max = 0.45
 
 
 
@@ -56,7 +56,7 @@ udp = SailOptimise(
     solarSailGuidanceObject=SolarSailGuidance,
     mass=mass,
     sailArea=sailArea,
-    # thermalModelObject=Thermal,
+    thermalModelObject=Thermal,
     simuFunction=sim.simulate,
     timesOutwardMax=timesOutwardMax,
     stepSize=stepSize,
@@ -167,7 +167,7 @@ _, save, saveDep = sim.simulate(
     sailGuidanceObject=guidanceObject,
     saveFile=namee,
     yearsToRun=yearsToRun,
-    simStepSize=3600,
+    simStepSize=stepSize,
     verbose=True,
     initialEpoch=initialEpoch,
     C3BurnVector=C3BurnVec

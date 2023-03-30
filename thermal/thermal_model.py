@@ -229,12 +229,12 @@ class Thermal:
                 self.node_fail_step = [False] * self.total_nodes
 
                 for idx, temp in enumerate(node_temp_step):
-                    print("hi", idx, temp, self.node_temp_ranges[idx])
+                    # print("hi", idx, temp, self.node_temp_ranges[idx])
                     if (temp < self.node_temp_ranges[idx][0]) or (temp > self.node_temp_ranges[idx][1]):
                         self.node_fail_step[idx] = True
-                        print(self.node_fail_step[idx])
+                        # print(self.node_fail_step[idx])
                 self.node_temp_state = list(node_temp_step)
-                print(self.node_fail_step)
+                # print(self.node_fail_step)
         else:
             self.node_fail_step = [False] * self.total_nodes
             node_temp_step = [273.0]*self.total_nodes
