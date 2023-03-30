@@ -23,7 +23,9 @@ panel_density = 1.76
 boom_length = 70
 boom_radius = 0.229
 boom_thickness = 0.0003
+antenna_radius = 0.55
 sail_area = 10000
+antenna_mass = 28.0
 panel_area = 18
 heaters_power = 0
 coolers_power = 0
@@ -34,62 +36,62 @@ log_file = "data/thermal.log"
 node_1 = {
     "name": "Spacecraft +Z",
     "area": spacecraft_width**2,
-    "sun_vf": 0.125,
-    "space_vf": 0.0025,
-    "external": "aluminum",
+    "sun_vf": 0.0,
+    "space_vf": 0.200,
+    "external": "multi-layer insulation",
     "internal": "carbon fibre",
-    "temp_range": [0, 10000],
-    "internal_heat": 0,
+    "temp_range": [-200, 600],
+    "internal_heat": 400,
 }
 node_2 = {
     "name": "Spacecraft -Z",
-    "area": 1.5*spacecraft_width**2,
+    "area": 1.75*spacecraft_width**2,
     "sun_vf": 0,
-    "space_vf": 0.5,
+    "space_vf": 1,
     "external": "az93 white paint",
     "internal": "carbon fibre",
-    "temp_range": [0, 10000],
-    "internal_heat": 800,
+    "temp_range": [-200, 600],
+    "internal_heat": 1200,
 }
 node_3 = {
     "name": "Spacecraft +X",
     "area": spacecraft_width*spacecraft_length,
-    "sun_vf": 0.0189,
-    "space_vf": 0.3599,
-    "external": "solar black",
-    "internal": "aluminum",
-    "temp_range": [0, 10000],
-    "internal_heat": 0,
+    "sun_vf": 0.1,
+    "space_vf": 0.7098,
+    "external": "multi-layer insulation",
+    "internal": "carbon fibre",
+    "temp_range": [-200, 600],
+    "internal_heat": 400,
 }
 node_4 = {
     "name": "Spacecraft -X",
     "area": spacecraft_width*spacecraft_length,
-    "sun_vf": 0.0189,
-    "space_vf": 0.3599,
+    "sun_vf": 0.1,
+    "space_vf": 0.7098,
     "external": "multi-layer insulation",
-    "internal": "aluminum",
-    "temp_range": [0, 10000],
-    "internal_heat": 0,
+    "internal": "carbon fibre",
+    "temp_range": [-200, 600],
+    "internal_heat": 400,
 }
 node_5 = {
     "name": "Spacecraft +Y",
     "area": spacecraft_width*spacecraft_length,
-    "sun_vf": 0.0189,
-    "space_vf": 0.3599,
-    "external": "solar black",
-    "internal": "aluminum",
-    "temp_range": [0, 10000],
-    "internal_heat": 0,
+    "sun_vf": 0.1,
+    "space_vf": 0.7098,
+    "external": "az93 white paint",
+    "internal": "carbon fibre",
+    "temp_range": [-200, 600],
+    "internal_heat": 400,
 }
 node_6 = {
     "name": "Spacecraft -Y",
     "area": spacecraft_width*spacecraft_length,
-    "sun_vf": 0.0189,
-    "space_vf": 0.3599,
-    "external": "solar black",
-    "internal": "aluminum",
-    "temp_range": [0, 10000],
-    "internal_heat": 0,
+    "sun_vf": 0.1,
+    "space_vf": 0.7098,
+    "external": "az93 white paint",
+    "internal": "carbon fibre",
+    "temp_range": [-200, 600],
+    "internal_heat": 400,
 }
 
 bus_nodes = [node_1, node_2, node_3, node_4, node_5, node_6]
@@ -102,42 +104,64 @@ sail = {
     "space_vf": 0.4875,
     "external": "standard",
     "internal": "cp-1",
-    "temp_range": [0, 10000],
+    "temp_range": [-100, 260],
     "internal_heat": 0
 }
 
 ### External Nodes
 booms = {
     "name": "Booms",
-    "area": 4 * np.pi * (boom_radius) * boom_length,
+    "area": 2 * 4 * np.pi * (boom_radius) * boom_length,
     "sun_vf": 0.4874,
     "space_vf": 0.4874,
-    "external": "carbon fibre",
-    "temp_range": [0, 10000],
+    "external": "aluminum",
+    "internal": "carbon fibre",
+    "temp_range": [-100, 260],
     "internal_heat": 0,
 }
 solar_panels = {
     "name": "Solar Panels",
-    "area": panel_area,
-    "sun_vf": 0.7182,
-    "space_vf": 0,
+    "area": 2*panel_area,
+    "sun_vf": 0.5,
+    "space_vf": 0.2,
     "external": "osr",
-    "temp_range": [0, 10000],
+    "temp_range": [-65, 100],
     "internal_heat": 0,
 }
 
-shield = {
+antenna = {
+    "name": "Antenna",
+    "area": np.pi*antenna_radius**2,
+    "sun_vf": 0.5,
+    "space_vf": 0.4,
+    "external": "solar black",
+    "internal": "titanium",
+    "temp_range": [-200, 580],
+    "internal_heat": 0,
+}
+
+shield_front = {
     "name": "Heat Shield",
     "area": 2*node_1["area"],
-    "sun_vf": 0.5,
-    "space_vf": 0.15,
-    "external": "solar black",
-    "internal": "ceramic cloth",
-    "temp_range": [0, 10000],
+    "sun_vf": 0.40,
+    "space_vf": 0.20,
+    "external": "ceramic cloth",
+    "internal": "multi-layer insulation",
+    "temp_range": [-200, 600],
     "internal_heat": 0,
-    "layers": 7,
 }
 
+shield_inner = {
+    "name": "Heat Shield Inner",
+    "area": 2*node_1["area"],
+    "sun_vf": 0,
+    "space_vf": 0.30,
+    "external": "multi-layer insulation",
+    "internal": "multi-layer insulation",
+    "temp_range": [-200, 600],
+    "internal_heat": 0,
+    "layers": 20,
+}
 
 
 nodes = [
@@ -150,7 +174,9 @@ nodes = [
     sail,
     booms,
     solar_panels,
-    shield
+    antenna,
+    shield_front,
+    shield_inner
 ]
 
 
@@ -184,9 +210,9 @@ conductivities.append(materials.sail_material(sail["external"])["conductivity"])
 emissivities.append(materials.sail_material(sail["external"])["emissivity"])
 
 
-densities.append(materials.boom_material(booms["external"])["density"])
-capacities.append(materials.boom_material(booms["external"])["specific_heat"])
-conductivities.append(materials.boom_material(booms["external"])["conductivity"])
+densities.append(materials.boom_material(booms["internal"])["density"])
+capacities.append(materials.boom_material(booms["internal"])["specific_heat"])
+conductivities.append(materials.boom_material(booms["internal"])["conductivity"])
 emissivities.append(materials.boom_material(booms["external"])["emissivity"])
 
 densities.append(materials.panel_material(solar_panels["external"])["density"])
@@ -196,10 +222,20 @@ conductivities.append(
 )
 emissivities.append(materials.panel_material(solar_panels["external"])["emissivity"])
 
-densities.append(materials.shield_material(shield["internal"])["density"])
-capacities.append(materials.shield_material(shield["internal"])["specific_heat"])
-conductivities.append(materials.shield_material(shield["internal"])["conductivity"])
-emissivities.append(materials.shield_material(shield["external"])["emissivity"])
+densities.append(materials.antenna_material(antenna["internal"])["density"])
+capacities.append(materials.antenna_material(antenna["internal"])["specific_heat"])
+conductivities.append(materials.antenna_material(antenna["internal"])["conductivity"])
+emissivities.append(materials.antenna_material(antenna["external"])["emissivity"])
+
+densities.append(materials.shield_material(shield_front["internal"])["density"])
+capacities.append(materials.shield_material(shield_front["internal"])["specific_heat"])
+conductivities.append(materials.shield_material(shield_front["internal"])["conductivity"])
+emissivities.append(materials.shield_material(shield_front["external"])["emissivity"])
+
+densities.append(materials.shield_material(shield_inner["internal"])["density"])
+capacities.append(materials.shield_material(shield_inner["internal"])["specific_heat"])
+conductivities.append(materials.shield_material(shield_inner["internal"])["conductivity"])
+emissivities.append(materials.shield_material(shield_inner["external"])["emissivity"])
 
 masses = [
     node_1["area"] * shell_thickness * densities[0],
@@ -214,21 +250,24 @@ masses = [
     * ((boom_radius) ** 2 - (boom_radius - boom_thickness) ** 2)
     * boom_length,
     panel_density * solar_panels["area"],
-    shield["layers"] * densities[9] * shield["area"] * shield_thickness,
+    antenna_mass,
+    densities[9] * shield_front["area"] * shield_thickness,
+    shield_inner["area"]*shield_inner["layers"]*shield_thickness,
 ]
 
 
 view_factors = [
-    [0, 0.167*0.5, 0.167*0.5, 0.167*0.5, 0.167*0.5, 0.167*0.5, 0, 0, 0, 0.7*0.5],
-    [0, 0, 0.167*0.5, 0.167*0.5, 0.167*0.5, 0.167*0.5, 0, 0, 0, 0],
-    [0, 0, 0, 0.167*0.5, 0.167*0.5, 0.167*0.5, 0, 0, 0.1*0.25, 0.01*0.25],
-    [0, 0, 0, 0, 0.167*0.5, 0.167*0.5, 0, 0, 0.1*0.25, 0.01*0.25],
-    [0, 0, 0, 0, 0, 0.167*0.5, 0, 0, 0.1*0.25, 0.01*0.25],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0.1*0.25, 0.01*0.25],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    [0, 0.167*0.5, 0.167*0.5, 0.167*0.5, 0.167*0.5, 0.167*0.5, 0, 0, 0, 0, 0.7*0.5],
+    [0, 0, 0.167*0.5, 0.167*0.5, 0.167*0.5, 0.167*0.5, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0.167*0.5, 0.167*0.5, 0.167*0.5, 0, 0, 0.1*0.25, 0, 0.01*0.25],
+    [0, 0, 0, 0, 0.167*0.5, 0.167*0.5, 0, 0, 0.1*0.25, 0, 0.01*0.25],
+    [0, 0, 0, 0, 0, 0.167*0.5, 0, 0, 0.1*0.25, 0, 0.01*0.25],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0.1*0.25, 0, 0.01*0.25],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.35]
 ]
 
 view_factors_deployed = [
@@ -242,6 +281,21 @@ view_factors_deployed = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0.00178714, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+]
+
+view_factors_deployed = [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.35],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0.0424413*0.5, 0.00085*0.5, 0.01, 0.01, 0, 0.01*0.5],
+    [0, 0, 0, 0, 0, 0, 0.0424413*0.5, 0.00085*0.5, 0.01, 0.01, 0, 0.01*0.5],
+    [0, 0, 0, 0, 0, 0, 0.0424413*0.5, 0.00085*0.5, 0.01, 0.01, 0, 0.01*0.5],
+    [0, 0, 0, 0, 0, 0, 0.0424413*0.5, 0.00085*0.5, 0.01, 0.01, 0, 0.01*0.5],
+    [0, 0, 0, 0, 0, 0, 0, 0.002, 0.005, 0, 0, 0.0001],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0.0017814, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.35],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ]
 
 # view_factors_deployed = [
@@ -266,10 +320,12 @@ radiative_area = [
         node_1["area"]*node_4["area"],
         node_1["area"]*node_5["area"],
         node_1["area"]*node_6["area"],
-        node_1["area"]*sail["area"],
-        node_1["area"]*booms["area"],
+        node_1["area"]*0.125*sail["area"],
+        node_1["area"]*0.125*booms["area"],
         node_1["area"]*solar_panels["area"],
-        node_1["area"]*shield["area"],
+        node_1["area"]*antenna["area"],
+        node_1["area"]*0.5*shield_front["area"],
+        node_1["area"]*0.5*shield_inner["area"],
     ],
     [
         0,
@@ -278,10 +334,12 @@ radiative_area = [
         node_2["area"]*node_4["area"],
         node_2["area"]*node_5["area"],
         node_2["area"]*node_6["area"],
-        node_2["area"]*sail["area"],
-        node_2["area"]*booms["area"],
+        node_2["area"]*0.125*sail["area"],
+        node_2["area"]*0.125*booms["area"],
         node_2["area"]*solar_panels["area"],
-        node_2["area"]*shield["area"],
+        node_2["area"]*antenna["area"],
+        node_2["area"]*0.5*shield_front["area"],
+        node_2["area"]*0.5*shield_inner["area"]
     ],
     [
         0,
@@ -290,10 +348,12 @@ radiative_area = [
         node_3["area"]*node_4["area"],
         node_3["area"]*node_5["area"],
         node_3["area"]*node_6["area"],
-        node_3["area"]*sail["area"],
-        node_3["area"]*booms["area"],
+        node_3["area"]*0.125*sail["area"],
+        node_3["area"]*0.125*booms["area"],
         node_3["area"]*solar_panels["area"],
-        node_3["area"]*shield["area"],
+        node_3["area"]*antenna["area"],
+        node_3["area"]*0.5*shield_front["area"],
+        node_3["area"]*0.5*shield_inner["area"],
     ],
     [
         0,
@@ -302,10 +362,12 @@ radiative_area = [
         0,
         node_4["area"]*node_5["area"],
         node_4["area"]*node_6["area"],
-        node_4["area"]*sail["area"],
-        node_4["area"]*booms["area"],
+        node_4["area"]*0.125*sail["area"],
+        node_4["area"]*0.125*booms["area"],
         node_4["area"]*solar_panels["area"],
-        node_4["area"]*shield["area"]
+        node_4["area"]*antenna["area"],
+        node_4["area"]*0.5*shield_front["area"],
+        node_4["area"]*0.5*shield_inner["area"]
     ],
     [
         0,
@@ -314,16 +376,20 @@ radiative_area = [
         0,
         0,
         node_5["area"]*node_6["area"],
-        node_5["area"]*sail["area"],
-        node_5["area"]*booms["area"],
+        node_5["area"]*0.125*sail["area"],
+        node_5["area"]*0.125*booms["area"],
         node_5["area"]*solar_panels["area"],
-        node_5["area"]*shield["area"]
+        node_5["area"]*antenna["area"],
+        node_5["area"]*0.5*shield_front["area"],
+        node_5["area"]*0.5*shield_inner["area"]
     ],
-    [0, 0, 0, 0, 0, 0, node_6["area"]*sail["area"], node_6["area"]*booms["area"], node_6["area"]*solar_panels["area"], node_6["area"]*shield["area"]],
-    [0, 0, 0, 0, 0, 0, 0, sail["area"]*booms["area"], sail["area"]*solar_panels["area"], sail["area"]*shield["area"]],
-    [0, 0, 0, 0, 0, 0, 0, 0, booms["area"]*solar_panels["area"], booms["area"]*shield["area"]],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, solar_panels["area"]*shield["area"]],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    [0, 0, 0, 0, 0, 0, node_6["area"]*0.125*sail["area"], node_6["area"]*0.125*booms["area"], node_6["area"]*solar_panels["area"], node_6["area"]*antenna["area"], node_6["area"]*0.5*shield_front["area"], node_6["area"]*0.5*shield_inner["area"]],
+    [0, 0, 0, 0, 0, 0, 0, 0.5*sail["area"]*0.125*booms["area"], 0.5*sail["area"]*0.5*solar_panels["area"], 0.125*sail["area"]*antenna["area"], 0.125*sail["area"]*0.5*shield_front["area"], 0.125*sail["area"]*0.5*shield_inner["area"]],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0.125*booms["area"]*solar_panels["area"], 0.125*booms["area"]*antenna["area"], 0.125*booms["area"]*0.5*shield_front["area"],0.125*booms["area"]*0.5*shield_inner["area"]],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, solar_panels["area"]*antenna["area"], solar_panels["area"]*0.5*shield_front["area"], solar_panels["area"]*0.5*shield_inner["area"]],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, antenna["area"]*0.5*shield_front["area"], antenna["area"]*0.5*shield_front["area"]],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.5*shield_front["area"]*0.5*shield_inner["area"]],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ]
 
 # effective_emissivities = [
@@ -423,60 +489,72 @@ effective_emissivities = [[0,
                            emissivities[0]*emissivities[3],
                            emissivities[0]*emissivities[4],
                            emissivities[0]*emissivities[5],
-                           emissivities[0]*emissivities[6],
-                           emissivities[0]*emissivities[7],
+                           materials.bus_material(node_1["internal"])["absorptivity"]*emissivities[0]*emissivities[6],
+                           materials.bus_material(node_1["internal"])["absorptivity"]*emissivities[0]*emissivities[7],
                            emissivities[0]*emissivities[8],
-                           1/(shield["layers"]+1)*emissivities[0]*emissivities[9]], 
+                           emissivities[0]*emissivities[9],
+                           emissivities[0]*emissivities[10],
+                           emissivities[0]*emissivities[11]], 
                            [0, 
                             0,
                            emissivities[1]*emissivities[2],
                            emissivities[1]*emissivities[3],
                            emissivities[1]*emissivities[4],
                            emissivities[1]*emissivities[5],
-                           emissivities[1]*emissivities[6],
-                           emissivities[1]*emissivities[7],
+                           materials.bus_material(node_2["internal"])["absorptivity"]*emissivities[1]*emissivities[6],
+                           materials.bus_material(node_2["internal"])["absorptivity"]*emissivities[1]*emissivities[7],
                            emissivities[1]*emissivities[8],
-                           emissivities[1]*emissivities[9]],
+                           emissivities[1]*emissivities[9],
+                           emissivities[1]*emissivities[10],
+                           emissivities[1]*emissivities[11]],
                            [0, 
                             0,
                             0,
                            emissivities[2]*emissivities[3],
                            emissivities[2]*emissivities[4],
                            emissivities[2]*emissivities[5],
-                           emissivities[2]*emissivities[6],
-                           emissivities[2]*emissivities[7],
+                           materials.bus_material(node_3["internal"])["absorptivity"]*emissivities[2]*emissivities[6],
+                           materials.bus_material(node_3["internal"])["absorptivity"]*emissivities[2]*emissivities[7],
                            emissivities[2]*emissivities[8],
-                           emissivities[2]*emissivities[9]],
+                           emissivities[2]*emissivities[9],
+                           emissivities[2]*emissivities[10],
+                           emissivities[2]*emissivities[11]],
                            [0, 
                             0,
                             0,
                             0,
                            emissivities[3]*emissivities[4],
                            emissivities[3]*emissivities[5],
-                           emissivities[3]*emissivities[6],
-                           emissivities[3]*emissivities[7],
+                           materials.bus_material(node_4["internal"])["absorptivity"]*emissivities[2]*emissivities[6],
+                           materials.bus_material(node_4["internal"])["absorptivity"]*emissivities[2]*emissivities[7],
                            emissivities[3]*emissivities[8],
-                           emissivities[3]*emissivities[9]],
+                           emissivities[3]*emissivities[9],
+                           emissivities[3]*emissivities[10],
+                           emissivities[3]*emissivities[11]],
                            [0, 
                             0,
                             0,
                             0,
                             0,
                            emissivities[4]*emissivities[5],
-                           emissivities[4]*emissivities[6],
-                           emissivities[4]*emissivities[7],
+                           materials.bus_material(node_5["internal"])["absorptivity"]*emissivities[2]*emissivities[6],
+                           materials.bus_material(node_5["internal"])["absorptivity"]*emissivities[2]*emissivities[7],
                            emissivities[4]*emissivities[8],
-                           emissivities[4]*emissivities[9]],
+                           emissivities[4]*emissivities[9],
+                           emissivities[4]*emissivities[10],
+                           emissivities[4]*emissivities[11]],
                            [0, 
                             0,
                             0,
                             0,
                             0,
                             0,
-                           emissivities[5]*emissivities[6],
-                           emissivities[5]*emissivities[7],
+                           materials.bus_material(node_6["internal"])["absorptivity"]*emissivities[2]*emissivities[6],
+                           materials.bus_material(node_6["internal"])["absorptivity"]*emissivities[2]*emissivities[7],
                            emissivities[5]*emissivities[8],
-                           emissivities[5]*emissivities[9]],
+                           emissivities[5]*emissivities[9],
+                           emissivities[5]*emissivities[10],
+                           emissivities[5]*emissivities[11]],
                            [0, 
                             0,
                             0,
@@ -486,7 +564,9 @@ effective_emissivities = [[0,
                             0,
                             emissivities[6]*emissivities[7],
                             emissivities[6]*emissivities[8],
-                           emissivities[6]*emissivities[9]],
+                           emissivities[6]*emissivities[9],
+                           emissivities[6]*emissivities[10],
+                           emissivities[6]*emissivities[11]],
                            [0, 
                             0,
                             0,
@@ -496,7 +576,9 @@ effective_emissivities = [[0,
                             0,
                             0,
                             emissivities[7]*emissivities[8],
-                            emissivities[7]*emissivities[9]],
+                            emissivities[7]*emissivities[9],
+                            emissivities[7]*emissivities[10],
+                            emissivities[7]*emissivities[11]],
                             [0,
                              0, 
                              0, 
@@ -506,22 +588,31 @@ effective_emissivities = [[0,
                              0, 
                              0,
                              0, 
-                             emissivities[8]*emissivities[9]],
-                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+                             emissivities[8]*emissivities[9],
+                             emissivities[8]*emissivities[10],
+                             emissivities[8]*emissivities[11]],
+                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, emissivities[9]*emissivities[10], emissivities[9]*emissivities[11]],
+                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1/(shield_inner["layers"] + 1) *emissivities[10]*emissivities[11]],
+                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
-radiative_relationship = SB * np.multiply(
-    np.multiply(view_factors, radiative_area), effective_emissivities
+radiative_relationship_deployed = SB * np.multiply(
+    np.multiply(view_factors_deployed, radiative_area), effective_emissivities
 )
-conductive_coeff = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                          [130, 130, 0, 0, 0, 0, 0, 0, 0, 0],
-                          [130, 130, 0, 0, 0, 0, 0, 0, 0, 0],
-                          [130, 130, 130, 130, 0, 0, 0, 0, 0, 0],
-                          [130, 130, 130, 130, 0, 0, 0, 0, 0, 0],
-                          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                          [130, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+# radiative_relationship = SB * np.multiply(
+#     np.multiply(view_factors, radiative_area), effective_emissivities
+# )
+conductive_coeff = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                          [130, 130, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                          [130, 130, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                          [130, 130, 130, 130, 0, 0, 0, 0, 0, 0, 0, 0],
+                          [130, 130, 130, 130, 0, 0, 0, 0, 0, 0, 0, 0],
+                          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                          [130, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
 # conductive_coeff = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 #                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -535,9 +626,9 @@ conductive_coeff = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 #                           [0, 0, 0, 0, 0, 0, 0, 0, 0.15, 0]]
 
 
-conductive_area = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [shell_thickness*spacecraft_width, shell_thickness*spacecraft_width, 0, 0, 0, 0, 0, 0, 0, 0],
+conductive_area = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [shell_thickness*spacecraft_width, shell_thickness*spacecraft_width, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [shell_thickness*spacecraft_width, shell_thickness*spacecraft_width,
         0,
         0,
@@ -546,25 +637,27 @@ conductive_area = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         0,
         0,
         0,
-        0],
+        0, 0, 0],
     [shell_thickness*spacecraft_width,
      shell_thickness*spacecraft_width,
      shell_thickness*spacecraft_length,
-     shell_thickness*spacecraft_length, 0, 0, 0, 0, 0, 0],
+     shell_thickness*spacecraft_length, 0, 0, 0, 0, 0, 0, 0, 0],
     [shell_thickness*spacecraft_width,
      shell_thickness*spacecraft_width,
      shell_thickness*spacecraft_length,
-     shell_thickness*spacecraft_length, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [4*np.pi*0.01**2, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+     shell_thickness*spacecraft_length, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [4*np.pi*0.01**2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ]
 
 conductive_length = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [1 / (2 * shell_thickness), 1 / (2 * shell_thickness), 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [1 / (2 * shell_thickness), 1 / (2 * shell_thickness), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [
         1 / (2 * shell_thickness),
         1 / (2 * shell_thickness),
@@ -575,14 +668,18 @@ conductive_length = [
         0,
         0,
         0,
+        0,
+        0,
         0
     ],
-    [1 / (2 * shell_thickness), 1 / (2 * shell_thickness), 1 / (2 * shell_thickness), 1 / (2 * shell_thickness), 0, 0, 0, 0, 0, 0],
-    [1 / (2 * shell_thickness), 1 / (2 * shell_thickness), 1 / (2 * shell_thickness), 1 / (2 * shell_thickness), 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    [1 / (2 * shell_thickness), 1 / (2 * shell_thickness), 1 / (2 * shell_thickness), 1 / (2 * shell_thickness), 0, 0, 0, 0, 0, 0, 0, 0],
+    [1 / (2 * shell_thickness), 1 / (2 * shell_thickness), 1 / (2 * shell_thickness), 1 / (2 * shell_thickness), 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ]
 
 conductive_relationship = np.multiply(
@@ -592,9 +689,6 @@ conductive_relationship[conductive_relationship == np.nan] = 0
 
 capacities_matrix = np.diag(np.multiply(masses, capacities))
 
-node_relationship = conductive_relationship + capacities_matrix + radiative_relationship
+# node_relationship = conductive_relationship + capacities_matrix + radiative_relationship
 
-radiative_relationship_deployed = SB * np.multiply(
-    np.multiply(view_factors_deployed, radiative_area), effective_emissivities
-)
 node_relationship_deployed = conductive_relationship + capacities_matrix + radiative_relationship_deployed
