@@ -186,8 +186,7 @@ def steady_state(nodes, relationships, sail_deployed, duty_cycle, thermal_case):
 
 
 def time_variant(
-    nodes, relationships, dt, sail_deployed, thermal_case, heater_power=400, electrical_power=800
-):
+    nodes, relationships, dt, sail_deployed, thermal_case, temp_ranges, verbose):
     """
     Computes the equilibrium temperatures for each node.
 
@@ -234,10 +233,10 @@ def time_variant(
     conductive = np.where(conductive, conductive, conductive.T)
     capacities = np.diagonal(relationships)
     panel_duty_cycle = 0.01
-    payload_duty_cycle = 0
+    payload_duty_cycle = 0.3
 
-    q_extra = []
     q_rad_coeff = []
+    q_extra = []
     for i in range(0, len(nodes)):
         q_extra.append(
             nodes[i].solar_heat_in(thermal_case, sail_deployed, panel_duty_cycle, payload_duty_cycle)
@@ -267,6 +266,46 @@ def time_variant(
         # node_temperatures = node_temperatures + np.divide(time_step, capacities) * q_cond
         # q_rad = np.dot(rad_matrix, node_temperatures**4)
         # node_temperatures = node_temperatures + np.divide(time_step, capacities) * q_rad
+        for idx, temp in enumerate(node_temperatures):
+            if idx == 12:
+                tempC = temp - 273.15
+                if (tempC < temp_ranges[idx][0]+10):
+                    nodes[idx].internal_heat += 0.02
+                elif (tempC > temp_ranges[idx][1]-10):
+                    nodes[idx].internal_heat += 0.02
+                else:
+                    nodes[idx].internal_heat = 0
+            if idx == 13:
+                tempC = temp - 273.15
+                if (tempC < temp_ranges[idx][0]+10):
+                    nodes[idx].internal_heat += 0.05
+                elif (tempC > temp_ranges[idx][1]-10):
+                    nodes[idx].internal_heat -= 0.05
+                else:
+                    nodes[idx].internal_heat = 0
+            if idx == 14:
+                tempC = temp - 273.15
+                if (tempC < temp_ranges[idx][0]+10):
+                    nodes[idx].internal_heat += 0.1
+                elif (tempC > temp_ranges[idx][1]-10):
+                    nodes[idx].internal_heat -= 0.1
+                else:
+                    nodes[idx].internal_heat = 0
+            if idx == 15:
+                tempC = temp - 273.15
+                if (tempC < temp_ranges[idx][0]+10):
+                    nodes[idx].internal_heat += 0.01
+                elif (tempC > temp_ranges[idx][1]-10):
+                    nodes[idx].internal_heat -= 0.01
+                else:
+                    nodes[idx].internal_heat = 0
+            q_extra = []
+            for i in range(0, len(nodes)):
+                q_extra.append(
+                    nodes[i].solar_heat_in(thermal_case, sail_deployed, panel_duty_cycle, payload_duty_cycle)
+                    + nodes[i].internal_heat
+                )
+
         
     for i in range(0, len(nodes)):
         nodes[i].temp = node_temperatures[i]
@@ -276,15 +315,17 @@ def time_variant(
 
     t_stop = time.perf_counter()
 
-    print("=======================================================")      
-    print(f"distance: {dist} AU")
-    print(f"Spacecraft +Z (sun-facing): {disp_temps[0]} C, Spacecraft -Z (space-facing): {disp_temps[1]} C")
-    print(f"Spacecraft +X: {disp_temps[2]} C, Spacecraft -X: {disp_temps[3]} C")
-    print(f"Spacecraft +Y: {disp_temps[4]} C, Spacecraft -Y: {disp_temps[5]} C")
-    print(f"Sails: {disp_temps[6]} C, Booms: {disp_temps[7]} C")
-    print(f"Panels: {disp_temps[8]} C, Antenna: {disp_temps[9]} C")
-    print(f"Outer Shield: {disp_temps[10]} C, Inner Shield: {disp_temps[11]} C")
-    print(f"Batteries: {disp_temps[12]} C, Hydrazine: {disp_temps[13]} C")
-    print(f"METIS: {disp_temps[14]} C, CDM: {disp_temps[15]} C")
-    print(f"Runtime: {round(t_stop - t_start, 2)} s")
+    if verbose:
+        print("=======================================================")      
+        print(f"distance: {dist} AU")
+        print(f"Spacecraft +Z (sun-facing): {disp_temps[0]} C, Spacecraft -Z (space-facing): {disp_temps[1]} C")
+        print(f"Spacecraft +X: {disp_temps[2]} C, Spacecraft -X: {disp_temps[3]} C")
+        print(f"Spacecraft +Y: {disp_temps[4]} C, Spacecraft -Y: {disp_temps[5]} C")
+        print(f"Sails: {disp_temps[6]} C, Booms: {disp_temps[7]} C")
+        print(f"Panels: {disp_temps[8]} C, Antenna: {disp_temps[9]} C")
+        print(f"Outer Shield: {disp_temps[10]} C, Inner Shield: {disp_temps[11]} C")
+        print(f"Batteries: {disp_temps[12]} C, Hydrazine: {disp_temps[13]} C")
+        print(f"METIS: {disp_temps[14]} C, CDM: {disp_temps[15]} C")
+        print(f"Runtime: {round(t_stop - t_start, 2)} s")
+    
     return node_temperatures

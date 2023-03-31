@@ -288,7 +288,8 @@ class Thermal:
                 # node_temp_step = nd.steady_state(self.spacecraft, self.relationships, dt,
                 #                                  sail_deployed, [alt, coneAngle])
                 node_temp_step = nd.time_variant(
-                    self.spacecraft, self.relationships, dt, sail_deployed, [alt, coneAngle]
+                    self.spacecraft, self.relationships, dt, sail_deployed, [alt, coneAngle],
+                    self.node_temp_ranges, verbose=False
                 )
                 self.node_fail_step = [False] * self.total_nodes
 
