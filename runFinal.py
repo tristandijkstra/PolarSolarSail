@@ -22,19 +22,19 @@ logging.basicConfig(
 )
 
 
-masses = [500]
+masses = [590]
 # masses = [660, 760]
 # masses = [500]
 # masses = [660]
 # sailAreas = [6000, 6500, 7000, 7500, 8000, 9000, 9500]
-sailAreas = [6400]
+sailAreas = [10000]
 # sailAreas = [5000]
 # sailAreas = [120]
 # sailAreas = [7000,10000]
 sailAreas = sailAreas[::-1]
 
 stepSize = 3600
-stepSize = 14400
+# stepSize = 14400
 # stepSize = 18000
 
 paramNames = ["mass", "area"]
