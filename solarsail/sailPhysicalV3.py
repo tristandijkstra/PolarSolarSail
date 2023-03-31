@@ -187,6 +187,10 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         if self.currentPhase == -1:
             self.startTime = current_time
             self.currentPhase = 0
+                
+            # Thermal 
+            if self.thermalAvailable:
+                self.thermalModel.step(current_time, current_altAU, self.alpha)
 
             if self.verbose:
                 print("Spiraling to deepest altitude")
@@ -202,6 +206,9 @@ class SolarSailGuidance(SolarSailGuidanceBase):
             
                 if self.verbose:
                     print("Deepest altitude reached -> Inclination Change")
+                # Thermal 
+                if self.thermalAvailable:
+                    self.thermalModel.step(current_time, current_altAU, self.alpha)
 
             self.delta = 1.5 * np.pi
             self.alpha = self.spiralAlpha
@@ -266,6 +273,7 @@ class SolarSailGuidance(SolarSailGuidanceBase):
 
                 if self.verbose:
                     print("Inclination change + Spiraling out")
+                    
 
             self.alpha = self.inclinationChangeAlpha
 
@@ -284,6 +292,10 @@ class SolarSailGuidance(SolarSailGuidanceBase):
 
                 if self.verbose:
                     print("Starting Science Phase")
+                # Thermal 
+                if self.thermalAvailable:
+                    self.thermalModel.step(current_time, current_altAU, self.alpha)
+
 
             self.delta = 0.5 * np.pi
             self.alpha = self.spiralAlpha
@@ -323,10 +335,5 @@ class SolarSailGuidance(SolarSailGuidanceBase):
 
         # Transform to inertial reference frame
         forceINERTIAl = simplifiedSailToInertial(inclination, argPeriapsis, trueAnomaly, RAAN) @ forceRTN
-
-
-        # Thermal 
-        if self.thermalAvailable:
-            self.thermalModel.step(current_time, current_altAU, self.alpha)
 
         return forceINERTIAl

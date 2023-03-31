@@ -66,7 +66,7 @@ class SailOptimise:
         self.verbose = verbose
 
         if thermalModelObject is not None:
-            self.thermalModel = thermalModelObject()
+            self.thermalModel = thermalModelObject(stepSize)
         else:
             self.thermalModel = None
 

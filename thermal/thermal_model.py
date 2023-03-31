@@ -22,7 +22,7 @@ from . import config
 from . import node as nd
 
 class Thermal:
-    def __init__(self):
+    def __init__(self, dt=None):
         """
         Necessary inputs:
 
@@ -242,6 +242,12 @@ class Thermal:
         self.node_temp_state = [0 for _ in self.node_keys]
         self.start_time = False
 
+        if dt is not None:
+            self.customDT = True
+            self.dt = dt
+        else:
+            self.customDT = False
+
 
     def __repr__(self) -> str:
         return "Thermal V1"
@@ -269,7 +275,11 @@ class Thermal:
                 self.node_failure.append(self.node_fail_step)
                 self.node_temperatures.append(self.node_initial)
             else:
-                dt = current_time - self.start_time
+                if self.customDT:
+                    dt = self.dt
+                else:
+                    dt = current_time - self.start_time
+
                 self.start_time = current_time
 
                 sail_deployed = 1
@@ -283,8 +293,11 @@ class Thermal:
                 self.node_fail_step = [False] * self.total_nodes
 
                 for idx, temp in enumerate(node_temp_step):
-                    if (temp < self.node_temp_ranges[idx][0]) and (temp > self.node_temp_ranges[idx][1]):
+                    tempC = temp - 273.15
+                    if (tempC < self.node_temp_ranges[idx][0]) or (tempC > self.node_temp_ranges[idx][1]):
+                        print(self.node_keys[idx], round(tempC, 2), self.node_temp_ranges[idx])
                         self.node_fail_step[idx] = True
+                self.node_temp_state = list(node_temp_step)
         else:
             self.node_fail_step = [False] * self.total_nodes
             node_temp_step = [273.0]*self.total_nodes
@@ -294,9 +307,9 @@ class Thermal:
 
 
     def stopPropagation(self, time_step):
-        if any(self.node_fail_step) == True:
+        if sum(self.node_fail_step) > 0:
             print(f"Stopping Propagation => Heat")
-            print(self.node_failure[-1])
+            print(self.node_fail_step)
             return True
         else:
             return False
