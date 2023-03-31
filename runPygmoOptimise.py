@@ -1,5 +1,5 @@
 from simulation import simulationV1 as sim
-from solarsail.sailPhysicalV3 import SolarSailGuidance
+from solarsail.sailPhysicalV3_opt import SolarSailGuidance
 from simulation.pygmoOptV1 import SailOptimise
 import numpy as np
 import pandas as pd
@@ -40,12 +40,11 @@ yearInSeconds = 365 * 24 * 3600
 targetInclination = 52.75
 
 
-FTOPmin = 0.005
-FTOPmax = 0.01
-deepestAltitude_min = 0.4
-deepestAltitude_max = 0.45
+FTOPmin = 0.021
+FTOPmax = 0.055
 deepestAltitude_min = 0.3
 deepestAltitude_max = 0.4
+endPrecision = 0.02
 
 
 
@@ -64,7 +63,8 @@ udp = SailOptimise(
     stepSize=stepSize,
     initialEpoch=initialEpoch,
     C3BurnVector=C3BurnVec,
-    verbose=True
+    verbose=True,
+    endPrecision=endPrecision
 )
 
 # Creation of the pygmo problem object
@@ -75,12 +75,13 @@ print(prob)
 
 
 # Define number of generations
-number_of_generations = 10
+number_of_generations = 12
 
 # Fix seed
 current_seed = 171015
 
 # Create Differential Evolution object by passing the number of generations as input
+# de_algo = pygmo.gwo(gen=number_of_generations, seed=current_seed)
 de_algo = pygmo.gwo(gen=number_of_generations, seed=current_seed)
 # de_algo = pygmo.gaco(gen=number_of_generations, seed=current_seed)
 
@@ -92,7 +93,7 @@ print(algo)
 
 
 # Set population size
-pop_size = 7
+pop_size = 15
 
 # Create population
 pop = pygmo.population(prob, size=pop_size, seed=current_seed)
@@ -103,7 +104,7 @@ if inspect_pop:
     print(pop)
 
 # Set number of evolutions
-number_of_evolutions = 5
+number_of_evolutions = 10
 
 # Initialize empty containers
 individuals_list = []
