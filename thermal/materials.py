@@ -196,6 +196,46 @@ ceramic_cloth = {
 # Density: https://www.ceceramicfiber.com/Article/Ceramicfiberblanketd_1.html
 # Conductivity: https://www.researchgate.net/publication/320443315_High-Temperature_Thermal_Conductivity_of_Ceramic_Fibers/figures?lo=1&utm_source=bing&utm_medium=organic
 
+### Other Materials
+batteries = {
+    "name": "batteries",
+    "emissivity": 0.03,
+    "reflectivity": 0.98,
+    "absorptivity": 0.02,
+    "conductivity": 0.25,
+    "density": 8760,
+    "specific_heat": 820,
+}
+
+hydrazine = {
+    "name": "hydrazine",
+    "emissivity": 0.10,
+    "reflectivity": 0.92,
+    "absorptivity": 0.08,
+    "conductivity": 237,
+    "density": 1020,
+    "specific_heat": 100,
+}
+
+metis = {
+    "name": "metis",
+    "emissivity": 0.19,
+    "reflectivity": 0.70,
+    "absorptivity": 0.30,
+    "conductivity": 0.25,
+    "density": 24.55/0.192,
+    "specific_heat": 200,
+}
+
+cdm = {
+    "name": "cdm",
+    "emissivity": 0.10,
+    "reflectivity": 0.92,
+    "absorptivity": 0.08,
+    "conductivity": 2,
+    "density": 16/0.015,
+    "specific_heat": 500,
+}
 
 def sail_material(choice):
     if choice == "aluminum":
@@ -275,3 +315,15 @@ def antenna_material(choice):
         return titanium
     else:
         raise Exception("The only currently supported option is 'carbon fibre'.")
+    
+def internal_material(choice):
+    if choice == "battery":
+        return batteries
+    elif choice == "hydrazine":
+        return hydrazine
+    elif choice == "metis":
+        return metis
+    elif choice == "cdm":
+        return cdm
+    else:
+        raise Exception("The only currently supported options are 'batteries', 'hydrazine', 'metis', and 'cdm'.")

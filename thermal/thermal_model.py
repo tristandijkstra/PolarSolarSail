@@ -146,6 +146,62 @@ class Thermal:
         ]
         self.total_properties.append(self.innershield_properties)
 
+        battery = materials.internal_material(config.batteries["external"])
+        self.battery_properties = [
+            battery["emissivity"],
+            battery["reflectivity"],
+            battery["absorptivity"],
+            battery["density"],
+            config.batteries["area"],
+            config.batteries["sun_vf"],
+            config.batteries["space_vf"],
+            config.batteries["temp_range"],
+            config.batteries["internal_heat"],
+        ]
+        self.total_properties.append(self.battery_properties)
+
+        propellant = materials.internal_material(config.hydrazine["external"])
+        self.propellant_properties = [
+            propellant["emissivity"],
+            propellant["reflectivity"],
+            propellant["absorptivity"],
+            propellant["density"],
+            config.hydrazine["area"],
+            config.hydrazine["sun_vf"],
+            config.hydrazine["space_vf"],
+            config.hydrazine["temp_range"],
+            config.hydrazine["internal_heat"],
+        ]
+        self.total_properties.append(self.propellant_properties)
+
+        coronagraph = materials.internal_material(config.metis["external"])
+        self.coronagraph_properties = [
+            coronagraph["emissivity"],
+            coronagraph["reflectivity"],
+            coronagraph["absorptivity"],
+            coronagraph["density"],
+            config.metis["area"],
+            config.metis["sun_vf"],
+            config.metis["space_vf"],
+            config.metis["temp_range"],
+            config.metis["internal_heat"],
+        ]
+        self.total_properties.append(self.coronagraph_properties)
+
+        doppler = materials.internal_material(config.cdm["external"])
+        self.doppler_properties = [
+            doppler["emissivity"],
+            doppler["reflectivity"],
+            doppler["absorptivity"],
+            doppler["density"],
+            config.cdm["area"],
+            config.cdm["sun_vf"],
+            config.cdm["space_vf"],
+            config.cdm["temp_range"],
+            config.cdm["internal_heat"],
+        ]
+        self.total_properties.append(self.doppler_properties)
+
         self.spacecraft = []
         self.spacecraft_bus = []
 
@@ -167,6 +223,14 @@ class Thermal:
             self.spacecraft.append(self.shield_inner)
         else:
             self.heat_shield = None
+        batteries = nd.Node("Batteries", self.battery_properties)
+        hydrazine = nd.Node("Propellant", self.propellant_properties)
+        metis = nd.Node("Coronagraph", self.coronagraph_properties)
+        cdm = nd.Node("Doppler Magnetograph", self.doppler_properties)
+        self.spacecraft.append(batteries)
+        self.spacecraft.append(hydrazine)
+        self.spacecraft.append(metis)
+        self.spacecraft.append(cdm)
 
         self.node_keys = [config.nodes[i]["name"] for i in range(0, len(config.nodes))]
         self.node_temp_ranges = [

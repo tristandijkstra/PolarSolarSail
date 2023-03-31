@@ -54,7 +54,8 @@ class Node:
         self.internal_heat = properties[8]
         self.n_shield = n_shield
         self.temp = 273.0
-    def solar_heat_in(self, thermal_case, sail_deployed, duty_cycle):
+
+    def solar_heat_in(self, thermal_case, sail_deployed, panel_duty_cycle, payload_duty_cycle):
         """
         This computes the solar heat that the outer surface sees.
 
@@ -74,8 +75,10 @@ class Node:
             self.solar_flux = (sail_deployed * np.cos(thermal_case[1]) * solar_luminosity * self.absorptivity * self.sun_vf
             ) / (4 * np.pi * (thermal_case[0] * AU) ** 2)
         elif self.name == "Solar Panel":
-            self.solar_flux = (duty_cycle * np.cos(thermal_case[1]) * solar_luminosity * self.absorptivity * self.sun_vf
+            self.solar_flux = (panel_duty_cycle * np.cos(thermal_case[1]) * solar_luminosity * self.absorptivity * self.sun_vf
             ) / (4 * np.pi * (thermal_case[0] * AU) ** 2)
+        elif self.name == "Doppler Magnetograph" or self.name == "Coronagraph":
+            self.solar_flux = (payload_duty_cycle * np.cos(thermal_case[1]) * solar_luminosity * self.absorptivity * self.sun_vf) / (4 * np.pi * (thermal_case[0] * AU) ** 2)
         else:
             self.solar_flux = (np.cos(thermal_case[1]) * solar_luminosity * self.absorptivity * self.sun_vf) / (4 * np.pi * (thermal_case[0] * AU) ** 2)
         self.solar_q_in = self.solar_flux * self.area
@@ -229,13 +232,14 @@ def time_variant(
     conductive = np.tril(relationships, -1)
     conductive = np.where(conductive, conductive, conductive.T)
     capacities = np.diagonal(relationships)
-    duty_cycle = 1
+    panel_duty_cycle = 0.01
+    payload_duty_cycle = 0
 
     q_extra = []
     q_rad_coeff = []
     for i in range(0, len(nodes)):
         q_extra.append(
-            nodes[i].solar_heat_in(thermal_case, sail_deployed, duty_cycle)
+            nodes[i].solar_heat_in(thermal_case, sail_deployed, panel_duty_cycle, payload_duty_cycle)
             + nodes[i].internal_heat
         )
         q_rad_coeff.append(nodes[i].radiated_heat_coeff(sail_deployed))
@@ -243,7 +247,7 @@ def time_variant(
     rad_matrix = np.diag(q_rad_coeff - np.sum(radiative, axis=1)) + radiative
     cond_matrix = conductive + np.diag(-np.sum(conductive, axis=1))
     
-    dt_interp = np.min(0.01*capacities)
+    dt_interp = np.min(0.001*capacities)
     if dt_interp > 0:
         dt_arr = [dt_interp]*int(dt_original/dt_interp)
     else:
@@ -278,5 +282,7 @@ def time_variant(
     print(f"Sails: {disp_temps[6]} C, Booms: {disp_temps[7]} C")
     print(f"Panels: {disp_temps[8]} C, Antenna: {disp_temps[9]} C")
     print(f"Outer Shield: {disp_temps[10]} C, Inner Shield: {disp_temps[11]} C")
+    print(f"Batteries: {disp_temps[12]} C, Hydrazine: {disp_temps[13]} C")
+    print(f"METIS: {disp_temps[14]} C, CDM: {disp_temps[15]} C")
     print(f"Runtime: {round(t_stop - t_start, 2)} s")
     return node_temperatures
