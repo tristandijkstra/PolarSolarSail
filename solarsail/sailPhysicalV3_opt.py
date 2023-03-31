@@ -80,7 +80,7 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         
         self.currentPhase:int = -1
         self.startTime = 0
-        self.timesOutwardsCompleted = 1
+        self.spiralprecision = 1
         self.goingOutwards = False
         self.endPrecision = endPrecision
 
@@ -119,7 +119,7 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         if self.currentPhase == 10:
             if self.verbose:
                 print(f"Stopping Propagation.")
-                print(f"Times outwards: {self.timesOutwardsCompleted}")
+                print(f"Times outwards: {self.spiralprecision}")
             return True
         else:
             return False
@@ -143,7 +143,7 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         inclinationChangeDuration = (
             self.inclinationChangeEnd - self.inclinationChangeStart
         )
-        return inclinationChangeDuration, self.lastInclination, self.timesOutwardsCompleted
+        return inclinationChangeDuration, self.lastInclination, self.spiralprecision
 
 
     def computeSail(self, current_time:float) -> np.ndarray:
@@ -230,6 +230,7 @@ class SolarSailGuidance(SolarSailGuidanceBase):
 
             # if we reach target inclination go to end
             if inclination > self.targetInclination:
+                self.spiralprecision = abs(current_altAU-self.targetAltitude)
                 if current_altAU > self.targetAltitude:
                     self.currentPhase = 10
                 else:
@@ -240,6 +241,7 @@ class SolarSailGuidance(SolarSailGuidanceBase):
 
             if current_altAU > self.targetAltitude:
                 self.currentPhase = 9
+                self.spiralprecision = abs(current_altAU-self.targetAltitude)
 
                 if self.verbose:
                     print("end")
@@ -255,8 +257,7 @@ class SolarSailGuidance(SolarSailGuidanceBase):
         # Phase 9: Spiral back out to target altitude.
         elif self.currentPhase == 9:
             # print(abs(current_altAU-self.targetAltitude))
-            if abs(current_altAU-self.targetAltitude) > self.endPrecision:
-                self.timesOutwardsCompleted = abs(current_altAU-self.targetAltitude)
+            # if abs(current_altAU-self.targetAltitude) > self.endPrecision:
             if current_altAU > self.targetAltitude:
                 self.currentPhase = 10
 

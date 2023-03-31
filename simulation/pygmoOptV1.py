@@ -33,14 +33,14 @@ class SailOptimise:
         thermalModelObject=None,
         mass=500,
         sailArea=10000,
-        targetInclination=90,
+        targetInclination=90.0,
         yearsToRun=25,
         stepSize=72000,
         targetAltitude=0.48,
         initialEpoch=1117886400,
         C3BurnVector=np.array([0, 0, 0]),
         verbose=False,
-        endPrecision=0.01,
+        endPrecision=0.001,
     ):
         # Set input arguments as attributes, representaing the problem bounds for both design variables
         self.FTOP_min = FTOP_min
@@ -145,18 +145,22 @@ class SailOptimise:
             saveDep,
         ]
 
-        if lastInclination < 90:
-            fun = incldur + 1e9
-        elif spiralInclPrecision != 1:
-            fun = incldur / (spiralInclPrecision * 10)
-        else:
-            fun = incldur
+        expp = 0.7
+
+        precPen = (min(self.endPrecision / spiralInclPrecision, 1))**expp
+        fun = (incldur + max(0, abs(self.targetInclination - lastInclination))**2) / precPen
+        # if lastInclination < self.targetInclination:
+        #     fun = incldur + 1e9
+        # elif spiralInclPrecision != 1:
+        #     fun = incldur / (min(self.endPrecision / spiralInclPrecision, 1))**expp
+        # else:
+        #     fun = incldur
 
         # logStr = f"duration = {runtime} s | run: {spacecraftName} | Final inclin. = {round(lastInclination, 3)} | Inclin. change duration = {incldur} years"
         self.step += 1
         self.minSofar = min(fun, self.minSofar)
         if self.verbose:
-            logStr = f"Ev {self.step} | runtime = {runtime} s | FTOP = {round(FTOP,3)} | DA = {round(deepestAltitude, 3)} | prec = {round(spiralInclPrecision, 2)} | lastIncl = {round(lastInclination, 2)} | fun = {round(fun, 3)} | min = {round(self.minSofar, 3)}"
+            logStr = f"Ev {self.step} | runtime = {runtime} s | FTOP = {round(FTOP,3)} | DA = {round(deepestAltitude, 2)} | prec = {precPen} | lastIncl = {round(lastInclination, 1)} | fun = {round(fun, 5)} | min = {round(self.minSofar, 5)}"
             print(logStr)
 
         return [fun]

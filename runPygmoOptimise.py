@@ -40,8 +40,8 @@ yearInSeconds = 365 * 24 * 3600
 targetInclination = 52.75
 
 
-FTOPmin = 0.021
-FTOPmax = 0.055
+FTOPmin = 0.02
+FTOPmax = 0.06
 deepestAltitude_min = 0.3
 deepestAltitude_max = 0.4
 endPrecision = 0.02
@@ -57,6 +57,7 @@ udp = SailOptimise(
     solarSailGuidanceObject=SolarSailGuidance,
     mass=mass,
     sailArea=sailArea,
+    targetInclination=targetInclination,
     # thermalModelObject=Thermal,
     simuFunction=sim.simulate,
     timesOutwardMax=timesOutwardMax,
@@ -75,14 +76,14 @@ print(prob)
 
 
 # Define number of generations
-number_of_generations = 12
+number_of_generations = 20
 
 # Fix seed
-current_seed = 171015
+current_seed = 42
 
 # Create Differential Evolution object by passing the number of generations as input
 # de_algo = pygmo.gwo(gen=number_of_generations, seed=current_seed)
-de_algo = pygmo.gwo(gen=number_of_generations, seed=current_seed)
+de_algo = pygmo.bee_colony(gen=number_of_generations, seed=current_seed)
 # de_algo = pygmo.gaco(gen=number_of_generations, seed=current_seed)
 
 # Create pygmo algorithm object
@@ -93,7 +94,7 @@ print(algo)
 
 
 # Set population size
-pop_size = 15
+pop_size = 7
 
 # Create population
 pop = pygmo.population(prob, size=pop_size, seed=current_seed)
@@ -104,7 +105,7 @@ if inspect_pop:
     print(pop)
 
 # Set number of evolutions
-number_of_evolutions = 10
+number_of_evolutions = 7
 
 # Initialize empty containers
 individuals_list = []
@@ -140,16 +141,16 @@ best_y = [ind[1] for ind in individuals_list]
 
 # Plot fitness over generations
 fig, ax2 = plt.subplots(figsize=(9, 5))
-ax2.plot(np.arange(0, number_of_evolutions), fitness_list, label="Function value")
+ax2.plot(np.arange(0, number_of_evolutions), np.minimum(np.array(fitness_list),25), label="Function value")
 # plt.show()
 
 # Plot champion
 champion_n = np.argmin(np.array(fitness_list))
 
 
-print(champion_n)
-best_FTOP = [ind[0] for ind in individuals_list][0]
-best_DEEPESTALT = [ind[1] for ind in individuals_list][0]
+# print(champion_n)
+best_FTOP = pop.champion_x[0]
+best_DEEPESTALT = pop.champion_x[1]
 
 print("FTOP:", best_FTOP, "deepestAlt:",  best_DEEPESTALT)
 saveFiel = "w=" + str(best_FTOP)
@@ -170,7 +171,7 @@ _, save, saveDep = sim.simulate(
     sailGuidanceObject=guidanceObject,
     saveFile=namee,
     yearsToRun=yearsToRun,
-    simStepSize=3600,
+    simStepSize=7200,
     verbose=True,
     initialEpoch=initialEpoch,
     C3BurnVector=C3BurnVec
