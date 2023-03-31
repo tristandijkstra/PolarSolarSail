@@ -23,13 +23,13 @@ logging.basicConfig(
     format="%(asctime)s | %(message)s",
 )
 
-initialEpoch = 1117886400 - (86400 * 4)
-C3BurnVec = np.array([0,0,5000])
+initialEpoch = 1117800000
+C3BurnVec = np.array([0.084108927717811,0.240321913434112,4.946831358585164]) * 1000
 
-targetAltitude = 0.42
-deepestAltitude = 0.2
-sailArea = 12000
-mass = 400
+targetAltitude = 0.48
+# deepestAltitude = 0.4
+sailArea = 10000
+mass = 595
 timesOutwardMax = 1
 
 stepSize = 144000
@@ -37,13 +37,15 @@ stepSize = 144000
 yearsToRun = 25
 yearInSeconds = 365 * 24 * 3600
 
-targetInclination = 65
+targetInclination = 52.75
 
 
-FTOPmin = 0.01
-FTOPmax = 0.1
+FTOPmin = 0.005
+FTOPmax = 0.01
 deepestAltitude_min = 0.4
 deepestAltitude_max = 0.45
+deepestAltitude_min = 0.3
+deepestAltitude_max = 0.4
 
 
 
@@ -56,7 +58,7 @@ udp = SailOptimise(
     solarSailGuidanceObject=SolarSailGuidance,
     mass=mass,
     sailArea=sailArea,
-    thermalModelObject=Thermal,
+    # thermalModelObject=Thermal,
     simuFunction=sim.simulate,
     timesOutwardMax=timesOutwardMax,
     stepSize=stepSize,
@@ -167,7 +169,7 @@ _, save, saveDep = sim.simulate(
     sailGuidanceObject=guidanceObject,
     saveFile=namee,
     yearsToRun=yearsToRun,
-    simStepSize=stepSize,
+    simStepSize=3600,
     verbose=True,
     initialEpoch=initialEpoch,
     C3BurnVector=C3BurnVec
