@@ -67,7 +67,7 @@ class SailOptimise:
         self.verbose = verbose
 
         if thermalModelObject is not None:
-            self.thermalModel = thermalModelObject(360000)
+            self.thermalModel = thermalModelObject(36000)
         else:
             self.thermalModel = None
 
@@ -145,10 +145,13 @@ class SailOptimise:
             saveDep,
         ]
 
-        expp = 0.7
-
+        expp = 1
+            
         precPen = (min(self.endPrecision / spiralInclPrecision, 1))**expp
-        fun = (incldur + max(0, abs(self.targetInclination - lastInclination))**2) / precPen
+        precc = (0.5/precPen) - 0.5
+        fun = (incldur + max(0, abs(self.targetInclination - lastInclination))**1.5) + precc
+        if (self.thermalModel is not None) and self.thermalModel.thermalFailure:
+            fun += 10000
         # if lastInclination < self.targetInclination:
         #     fun = incldur + 1e9
         # elif spiralInclPrecision != 1:
@@ -160,7 +163,7 @@ class SailOptimise:
         self.step += 1
         self.minSofar = min(fun, self.minSofar)
         if self.verbose:
-            logStr = f"Ev {self.step} | runtime = {runtime} s | FTOP = {round(FTOP,3)} | DA = {round(deepestAltitude, 2)} | prec = {precPen} | lastIncl = {round(lastInclination, 1)} | fun = {round(fun, 5)} | min = {round(self.minSofar, 5)}"
-            print(logStr)
+            logStr = f"Ev {self.step} | runtime = {runtime} s | FTOP = {round(FTOP,3)} | DA = {round(deepestAltitude, 2)} | prec = {precc} | lastIncl = {round(lastInclination, 1)} | fun = {round(fun, 5)} | min = {round(self.minSofar, 5)}"
+            print(logStr + "\n")
 
         return [fun]

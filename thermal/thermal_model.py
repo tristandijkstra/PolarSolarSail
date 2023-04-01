@@ -248,6 +248,8 @@ class Thermal:
         else:
             self.customDT = False
 
+        self.thermalFailure = False
+
 
     def __repr__(self) -> str:
         return "Thermal V1"
@@ -311,6 +313,7 @@ class Thermal:
         if sum(self.node_fail_step) > 0:
             print(f"Stopping Propagation => Heat")
             print(self.node_fail_step)
+            self.thermalFailure = True
             return True
         else:
             return False

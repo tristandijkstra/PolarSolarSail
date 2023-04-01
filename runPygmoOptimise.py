@@ -42,8 +42,8 @@ targetInclination = 52.75
 
 FTOPmin = 0.02
 FTOPmax = 0.06
-deepestAltitude_min = 0.3
-deepestAltitude_max = 0.4
+deepestAltitude_min = 0.29
+deepestAltitude_max = 0.41
 endPrecision = 0.02
 
 
@@ -58,7 +58,7 @@ udp = SailOptimise(
     mass=mass,
     sailArea=sailArea,
     targetInclination=targetInclination,
-    # thermalModelObject=Thermal,
+    thermalModelObject=Thermal,
     simuFunction=sim.simulate,
     timesOutwardMax=timesOutwardMax,
     stepSize=stepSize,
@@ -76,14 +76,16 @@ print(prob)
 
 
 # Define number of generations
-number_of_generations = 20
+number_of_generations = 7
 
 # Fix seed
-current_seed = 42
+current_seed = 420
 
 # Create Differential Evolution object by passing the number of generations as input
 # de_algo = pygmo.gwo(gen=number_of_generations, seed=current_seed)
-de_algo = pygmo.bee_colony(gen=number_of_generations, seed=current_seed)
+de_algo = pygmo.de(gen=number_of_generations, seed=current_seed,CR=0.8)
+# de_algo = pygmo.sga(gen=number_of_generations, seed=current_seed)
+# de_algo = pygmo.bee_colony(gen=number_of_generations, seed=current_seed)
 # de_algo = pygmo.gaco(gen=number_of_generations, seed=current_seed)
 
 # Create pygmo algorithm object
@@ -94,7 +96,7 @@ print(algo)
 
 
 # Set population size
-pop_size = 7
+pop_size = 10
 
 # Create population
 pop = pygmo.population(prob, size=pop_size, seed=current_seed)
@@ -105,7 +107,7 @@ if inspect_pop:
     print(pop)
 
 # Set number of evolutions
-number_of_evolutions = 7
+number_of_evolutions = 5
 
 # Initialize empty containers
 individuals_list = []
