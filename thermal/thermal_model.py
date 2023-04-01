@@ -22,7 +22,7 @@ from . import config
 from . import node as nd
 
 class Thermal:
-    def __init__(self, dt=None):
+    def __init__(self, dt=None, verbose=False):
         """
         Necessary inputs:
 
@@ -250,6 +250,7 @@ class Thermal:
 
         self.thermalFailure = False
 
+        self.verbose = verbose
 
     def __repr__(self) -> str:
         return "Thermal V1"
@@ -291,7 +292,7 @@ class Thermal:
                 #                                  sail_deployed, [alt, coneAngle])
                 node_temp_step = nd.time_variant(
                     self.spacecraft, self.relationships, dt, sail_deployed, [alt, coneAngle],
-                    self.node_temp_ranges, verbose=True
+                    self.node_temp_ranges, verbose=self.verbose
                 )
                 self.node_fail_step = [False] * self.total_nodes
 
