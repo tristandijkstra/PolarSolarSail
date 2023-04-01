@@ -34,7 +34,7 @@ paramNames = ["mass", "area"]
 yearsToRun = 25
 yearInSeconds = 365 * 24 * 3600
 targetAltitude = 0.48
-deepestAltitude = 0.47
+deepestAltitude = 0.4
 
 combinations = list(product(masses, sailAreas))
 
@@ -55,7 +55,7 @@ for combination in tqdm(combinations):
         targetInclination=68,
         deepestAltitude=deepestAltitude,
         fastTransferOptimiseParameter=0.04,
-        thermalModel=Thermal(5*3600)
+        thermalModel=Thermal(10*3600)
     )
 
     finalGuidanceObj, save, saveDep = sim.simulate(
