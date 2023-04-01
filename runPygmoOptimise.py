@@ -1,5 +1,5 @@
 from simulation import simulationV1 as sim
-from solarsail.sailPhysicalV3 import SolarSailGuidance
+from solarsail.sailPhysicalV3_opt import SolarSailGuidance
 from simulation.pygmoOptV1 import SailOptimise
 import numpy as np
 import pandas as pd
@@ -40,12 +40,11 @@ yearInSeconds = 365 * 24 * 3600
 targetInclination = 52.75
 
 
-FTOPmin = 0.005
-FTOPmax = 0.01
-deepestAltitude_min = 0.4
-deepestAltitude_max = 0.45
-deepestAltitude_min = 0.3
-deepestAltitude_max = 0.4
+FTOPmin = 0.02
+FTOPmax = 0.06
+deepestAltitude_min = 0.29
+deepestAltitude_max = 0.41
+endPrecision = 0.02
 
 
 
@@ -58,13 +57,15 @@ udp = SailOptimise(
     solarSailGuidanceObject=SolarSailGuidance,
     mass=mass,
     sailArea=sailArea,
-    # thermalModelObject=Thermal,
+    targetInclination=targetInclination,
+    thermalModelObject=Thermal,
     simuFunction=sim.simulate,
     timesOutwardMax=timesOutwardMax,
     stepSize=stepSize,
     initialEpoch=initialEpoch,
     C3BurnVector=C3BurnVec,
-    verbose=True
+    verbose=True,
+    endPrecision=endPrecision
 )
 
 # Creation of the pygmo problem object
@@ -75,13 +76,16 @@ print(prob)
 
 
 # Define number of generations
-number_of_generations = 10
+number_of_generations = 7
 
 # Fix seed
-current_seed = 171015
+current_seed = 420
 
 # Create Differential Evolution object by passing the number of generations as input
-de_algo = pygmo.gwo(gen=number_of_generations, seed=current_seed)
+# de_algo = pygmo.gwo(gen=number_of_generations, seed=current_seed)
+de_algo = pygmo.de(gen=number_of_generations, seed=current_seed,CR=0.8)
+# de_algo = pygmo.sga(gen=number_of_generations, seed=current_seed)
+# de_algo = pygmo.bee_colony(gen=number_of_generations, seed=current_seed)
 # de_algo = pygmo.gaco(gen=number_of_generations, seed=current_seed)
 
 # Create pygmo algorithm object
@@ -92,7 +96,7 @@ print(algo)
 
 
 # Set population size
-pop_size = 7
+pop_size = 10
 
 # Create population
 pop = pygmo.population(prob, size=pop_size, seed=current_seed)
@@ -139,16 +143,16 @@ best_y = [ind[1] for ind in individuals_list]
 
 # Plot fitness over generations
 fig, ax2 = plt.subplots(figsize=(9, 5))
-ax2.plot(np.arange(0, number_of_evolutions), fitness_list, label="Function value")
+ax2.plot(np.arange(0, number_of_evolutions), np.minimum(np.array(fitness_list),25), label="Function value")
 # plt.show()
 
 # Plot champion
 champion_n = np.argmin(np.array(fitness_list))
 
 
-print(champion_n)
-best_FTOP = [ind[0] for ind in individuals_list][0]
-best_DEEPESTALT = [ind[1] for ind in individuals_list][0]
+# print(champion_n)
+best_FTOP = pop.champion_x[0]
+best_DEEPESTALT = pop.champion_x[1]
 
 print("FTOP:", best_FTOP, "deepestAlt:",  best_DEEPESTALT)
 saveFiel = "w=" + str(best_FTOP)
@@ -169,7 +173,7 @@ _, save, saveDep = sim.simulate(
     sailGuidanceObject=guidanceObject,
     saveFile=namee,
     yearsToRun=yearsToRun,
-    simStepSize=3600,
+    simStepSize=7200,
     verbose=True,
     initialEpoch=initialEpoch,
     C3BurnVector=C3BurnVec

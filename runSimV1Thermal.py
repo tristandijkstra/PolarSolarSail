@@ -55,7 +55,7 @@ for combination in tqdm(combinations):
         targetInclination=68,
         deepestAltitude=deepestAltitude,
         fastTransferOptimiseParameter=0.04,
-        thermalModel=Thermal(36000)
+        thermalModel=Thermal(10*3600)
     )
 
     finalGuidanceObj, save, saveDep = sim.simulate(

@@ -1,5 +1,5 @@
 from simulation import simulationV1 as sim
-from solarsail.sailPhysicalV3 import SolarSailGuidance
+from solarsail.sailPhysicalV3_opt import SolarSailGuidance
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -42,8 +42,10 @@ paramNames = ["mass", "area"]
 yearsToRun = 50
 yearInSeconds = 365 * 24 * 3600
 targetAltitude = 0.48
+deepestAltitude = 0.3
+FTOP = 0.055
 deepestAltitude = 0.4
-FTOP = 0.05727209780778128
+FTOP = 0.022
 initialEpoch = 1117800000
 escapeBurnDV = np.array([0.084108927717811,0.240321913434112,4.946831358585164]) * 1000
 targetInclination = 52.75

@@ -33,13 +33,14 @@ class SailOptimise:
         thermalModelObject=None,
         mass=500,
         sailArea=10000,
-        targetInclination=90,
+        targetInclination=90.0,
         yearsToRun=25,
         stepSize=72000,
         targetAltitude=0.48,
         initialEpoch=1117886400,
-        C3BurnVector=np.array([0,0,0]),
-        verbose=False
+        C3BurnVector=np.array([0, 0, 0]),
+        verbose=False,
+        endPrecision=0.001,
     ):
         # Set input arguments as attributes, representaing the problem bounds for both design variables
         self.FTOP_min = FTOP_min
@@ -66,17 +67,20 @@ class SailOptimise:
         self.verbose = verbose
 
         if thermalModelObject is not None:
-            self.thermalModel = thermalModelObject(360000)
+            self.thermalModel = thermalModelObject(10*3600)
         else:
             self.thermalModel = None
 
+        self.endPrecision = endPrecision
+
+        self.minSofar = 1000
 
     def __repr__(self) -> str:
         if self.thermalModel is not None:
             return f"SailOptimise V1 | {self.solarSailGuidanceObject} | {self.thermalModel}"
         else:
             return f"SailOptimise V1 | {self.solarSailGuidanceObject}"
-        
+
     def __str__(self) -> str:
         if self.thermalModel is not None:
             return f"SailOptimise V1 | {self.solarSailGuidanceObject} | {self.thermalModel}"
@@ -105,6 +109,7 @@ class SailOptimise:
             fastTransferOptimiseParameter=FTOP,
             thermalModel=self.thermalModel,
             verbose=False,
+            endPrecision=self.endPrecision,
         )
 
         start = time.perf_counter()
@@ -115,14 +120,14 @@ class SailOptimise:
             yearsToRun=self.yearsToRun,
             simStepSize=self.stepSize,
             verbose=False,
-            initialEpoch = self.initialEpoch,
-            C3BurnVector = self.C3BurnVector,
+            initialEpoch=self.initialEpoch,
+            C3BurnVector=self.C3BurnVector,
         )
 
         (
             inclinationChangeDuration,
             lastInclination,
-            timesOutward,
+            spiralInclPrecision,
         ) = finalGuidanceObj.getOptimiseOutput()
 
         incldur = inclinationChangeDuration / SailOptimise.yearInSeconds
@@ -140,17 +145,25 @@ class SailOptimise:
             saveDep,
         ]
 
-        if lastInclination < 90:
-            fun = incldur + 1e9
-        elif timesOutward != self.timesOutwardMax:
-            fun = incldur + 1e9
-        else:
-            fun = incldur
+        expp = 1
+            
+        precPen = (min(self.endPrecision / spiralInclPrecision, 1))**expp
+        precc = (0.5/precPen) - 0.5
+        fun = (incldur + max(0, abs(self.targetInclination - lastInclination))**1.5) + precc
+        if (self.thermalModel is not None) and self.thermalModel.thermalFailure:
+            fun += 10000
+        # if lastInclination < self.targetInclination:
+        #     fun = incldur + 1e9
+        # elif spiralInclPrecision != 1:
+        #     fun = incldur / (min(self.endPrecision / spiralInclPrecision, 1))**expp
+        # else:
+        #     fun = incldur
 
         # logStr = f"duration = {runtime} s | run: {spacecraftName} | Final inclin. = {round(lastInclination, 3)} | Inclin. change duration = {incldur} years"
         self.step += 1
+        self.minSofar = min(fun, self.minSofar)
         if self.verbose:
-            logStr = f"Eval {self.step} | runtime = {runtime} s | FTOP = {round(FTOP,5)} | deepestAltitude = {round(deepestAltitude, 5)} | fun = {round(fun, 3)}"
-            print(logStr)
+            logStr = f"Ev {self.step} | runtime = {runtime} s | FTOP = {round(FTOP,3)} | DA = {round(deepestAltitude, 2)} | prec = {precc} | lastIncl = {round(lastInclination, 1)} | fun = {round(fun, 5)} | min = {round(self.minSofar, 5)}"
+            print(logStr + "\n")
 
         return [fun]
