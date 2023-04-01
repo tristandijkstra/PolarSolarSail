@@ -254,7 +254,7 @@ def time_variant(
         dt_arr = [0]
 
     # integrator = integrate.RK45(fun = lambda self, node_temps: temp_update(node_temps, capacities, rad_matrix, cond_matrix, q_extra), t0 = dt_interp, y0 = node_initial, t_bound = dt_original, vectorized=True)
-    for idx, time_step in enumerate(dt_arr):
+    for time_idx, time_step in enumerate(dt_arr):
         # print(idx)
         # q_rad = np.dot(rad_matrix, node_temperatures**4)
         # q_cond = np.dot(cond_matrix, node_temperatures)

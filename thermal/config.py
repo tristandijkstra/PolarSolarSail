@@ -150,10 +150,10 @@ shield_front = {
     "name": "Heat Shield",
     "area": 2*node_1["area"],
     "sun_vf": 0.40,
-    "space_vf": 0.25,
+    "space_vf": 0.33,
     "external": "ceramic cloth",
     "internal": "multi-layer insulation",
-    "temp_range": [-200, 600],
+    "temp_range": [-200, 630],
     "internal_heat": 0,
 }
 
@@ -161,12 +161,12 @@ shield_inner = {
     "name": "Heat Shield Inner",
     "area": 2*node_1["area"],
     "sun_vf": 0,
-    "space_vf": 0.30,
+    "space_vf": 0.33,
     "external": "multi-layer insulation",
     "internal": "multi-layer insulation",
-    "temp_range": [-200, 600],
+    "temp_range": [-200, 630],
     "internal_heat": 0,
-    "layers": 20,
+    "layers": 10,
 }
 
 # Internal Nodes
