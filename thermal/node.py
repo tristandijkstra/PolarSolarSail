@@ -253,6 +253,7 @@ def time_variant(
     else:
         dt_arr = [0]
 
+    heater_cooler_power = []
     # integrator = integrate.RK45(fun = lambda self, node_temps: temp_update(node_temps, capacities, rad_matrix, cond_matrix, q_extra), t0 = dt_interp, y0 = node_initial, t_bound = dt_original, vectorized=True)
     for time_idx, time_step in enumerate(dt_arr):
         # print(idx)
@@ -305,6 +306,7 @@ def time_variant(
                     nodes[i].solar_heat_in(thermal_case, sail_deployed, panel_duty_cycle, payload_duty_cycle)
                     + nodes[i].internal_heat
                 )
+        heater_cooler_power.append(abs(nodes[12].internal_heat) + abs(nodes[13].internal_heat) + abs(nodes[14].internal_heat) + abs(nodes[15].internal_heat))
 
         
     for i in range(0, len(nodes)):
@@ -326,6 +328,7 @@ def time_variant(
         print(f"Outer Shield: {disp_temps[10]} C, Inner Shield: {disp_temps[11]} C")
         print(f"Batteries: {disp_temps[12]} C, Hydrazine: {disp_temps[13]} C")
         print(f"METIS: {disp_temps[14]} C, CDM: {disp_temps[15]} C")
+        print(f"Average Power:  {np.round(np.mean(np.asarray(heater_cooler_power)), 2)} W, Maximum Power:  {np.round(np.max(np.asarray(heater_cooler_power)), 2)} W")
         print(f"Runtime: {round(t_stop - t_start, 2)} s")
     
     return node_temperatures

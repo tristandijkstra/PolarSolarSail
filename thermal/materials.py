@@ -183,9 +183,9 @@ gallium_arsenide = {
 ### Heat Shield Materials
 ceramic_cloth = {
     "name": "ceramic cloth",
-    "emissivity": 0.19,
-    "reflectivity": 0.19,
-    "absorptivity": 0.81,
+    "emissivity": 0.67,
+    "reflectivity": 0.81,
+    "absorptivity": 0.67,
     "conductivity": 0.35,
     "density": 960,
     "specific_heat": 1130,
