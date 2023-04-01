@@ -149,8 +149,8 @@ antenna = {
 shield_front = {
     "name": "Heat Shield",
     "area": 2*node_1["area"],
-    "sun_vf": 0.40,
-    "space_vf": 0.33,
+    "sun_vf": 0.50,
+    "space_vf": 0.10,
     "external": "ceramic cloth",
     "internal": "multi-layer insulation",
     "temp_range": [-200, 630],
