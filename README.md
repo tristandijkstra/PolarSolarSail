@@ -33,8 +33,6 @@ The folder *Gravity Assist and Launch Parameters* contains scripts in matlab to 
 - Gravity Assist and Launch Parameters/
   - **ExcessVelocity.m** | analysis for optimal launch excess velocity vector and launch date.
   - lambert_venus.m | analysis of a later discarded venus gravity assist.
-### ADCS Models
-**Add text**
 ### Install:
 The ADCS and GA/Launch scripts can be accessed directly using Matlab. For the thermal and orbital models the following install steps can be used:
 1. Clone Repository
