@@ -1,9 +1,11 @@
 """
-mass.py
+budget_properties.py
+
+--- DEPRECATED FILE ---
 
 This file calculates the mass of the passive elements of the thermal control system.
 This does not include heaters and coolers, which require greater localization to 
-estimate
+estimate.
 """
 import numpy as np
 
