@@ -4,10 +4,6 @@ thermal_model.py
 This code presents a callable version of thermal_script.py that the orbital simulation can
 use to properly optimize the orbit.
 
--TODO:
-    - Containerize outputs as dictionary containing each node and whether it has passed or 
-      failed the thermal constraints.
-    - Also consider sending temperature outputs to the orbital simulation as well.
 """
 
 # import node as nd
@@ -24,7 +20,11 @@ from . import node as nd
 class Thermal:
     def __init__(self, dt=None, verbose=False):
         """
+        Initializes the thermal model with the spacecraft nodes and their properties.
+
         Necessary inputs:
+
+        dt (float): The time step as dictated by the orbital model.
 
         """
         self.AU = 1.496e11
@@ -34,13 +34,13 @@ class Thermal:
 
         bus_materials = []
         self.bus_properties = []
-        sail_materials = []
         self.sail_properties = []
         self.total_properties = []
-        shield_materials = []
         self.shield_properties = []
 
         self.shield_layers = config.shield_inner["layers"]
+
+        # Set up the spacecraft nodes and their properties
 
         for i, node in enumerate(config.bus_nodes):
             bus_materials.append(materials.bus_material(node["external"]))
@@ -212,8 +212,8 @@ class Thermal:
         self.spacecraft.append(self.solar_sail)
         boom = nd.Node("Boom", self.boom_properties)
         self.spacecraft.append(boom)
-        solar_panel = nd.Node("Solar Panel", self.panel_properties)
-        self.spacecraft.append(solar_panel)
+        self.solar_panel = nd.Node("Solar Panel", self.panel_properties)
+        self.spacecraft.append(self.solar_panel)
         antenna = nd.Node("Antenna", self.antenna_properties)
         self.spacecraft.append(antenna)
         if self.shield_layers > 0:
@@ -223,14 +223,14 @@ class Thermal:
             self.spacecraft.append(self.shield_inner)
         else:
             self.heat_shield = None
-        batteries = nd.Node("Batteries", self.battery_properties)
-        hydrazine = nd.Node("Propellant", self.propellant_properties)
-        metis = nd.Node("Coronagraph", self.coronagraph_properties)
-        cdm = nd.Node("Doppler Magnetograph", self.doppler_properties)
-        self.spacecraft.append(batteries)
-        self.spacecraft.append(hydrazine)
-        self.spacecraft.append(metis)
-        self.spacecraft.append(cdm)
+        self.batteries = nd.Node("Batteries", self.battery_properties)
+        self.hydrazine = nd.Node("Propellant", self.propellant_properties)
+        self.metis = nd.Node("Coronagraph", self.coronagraph_properties)
+        self.cdm = nd.Node("Doppler Magnetograph", self.doppler_properties)
+        self.spacecraft.append(self.batteries)
+        self.spacecraft.append(self.hydrazine)
+        self.spacecraft.append(self.metis)
+        self.spacecraft.append(self.cdm)
 
         self.node_keys = [config.nodes[i]["name"] for i in range(0, len(config.nodes))]
         self.node_temp_ranges = [
@@ -261,14 +261,16 @@ class Thermal:
 
     def step(self, current_time, alt, coneAngle):
         """
-        Steps forward in time and runs the thermal nodal model again.
+        Steps forward in time and runs the thermal nodal model.
 
         Necessary inputs:
-            - time_step: time step in seconds.
-            - thermal_case [arr]: includes distance from the sun and angle to the sun as [dist, angle].
+            - current_time (int): current time in seconds.
+            - alt (float): distance from the sun, inputted in AU.
+            - coneAngle (float): cone angle of the solar sail from the sun, in rad.
         """
         self.total_nodes = len(self.spacecraft)
 
+        # Used to limit the amount of simulations that are completed.
         if alt < 1.0:
             if self.start_time == False:
                 self.start_time = current_time
@@ -288,14 +290,13 @@ class Thermal:
                 sail_deployed = 1
                 self.relationships = np.asarray(config.node_relationship_deployed)
 
-                # node_temp_step = nd.steady_state(self.spacecraft, self.relationships, dt,
-                #                                  sail_deployed, [alt, coneAngle])
                 node_temp_step = nd.time_variant(
                     self.spacecraft, self.relationships, dt, sail_deployed, [alt, coneAngle],
-                    self.node_temp_ranges, verbose=self.verbose
+                    self.node_temp_ranges, verbose=self.verbose, plot=False
                 )
                 self.node_fail_step = [False] * self.total_nodes
 
+                # Check if temperatures fall within allowable ranges.
                 for idx, temp in enumerate(node_temp_step):
                     tempC = temp - 273.15
                     if (tempC < self.node_temp_ranges[idx][0]) or (tempC > self.node_temp_ranges[idx][1]):
@@ -311,6 +312,14 @@ class Thermal:
 
 
     def stopPropagation(self, time_step):
+        """
+        Checks if the thermal boundaries are broken, and if the propagation needs to be stopped.
+
+        Necessary inputs:
+            - time_step (int): The orbital time step
+        Returns:
+            - True if thermal boundaries are broken and propagation needs to be stopped, False otherwise.
+        """
         if sum(self.node_fail_step) > 0:
             print(f"Stopping Propagation => Heat")
             print(self.node_fail_step)
@@ -320,6 +329,17 @@ class Thermal:
             return False
 
     def optimize_output(self):
+        """
+        
+        Outputs of the thermal model for the optimizer code.
+
+        Necessary inputs:
+            - time_step (int): The orbital time step
+
+        Returns:
+            - self.temps_dict (dict): dictionary containing each node and their temperatures over the simulation.
+            - self.fail_dict (dict): dictionary containing each node and if their limits have been violated.
+        """
         self.temps_dict = dict(zip(self.node_keys, self.node_temperatures))
         self.fail_dict = dict(zip(self.node_keys, self.node_failure))
         return self.fail_dict, self.temps_dict

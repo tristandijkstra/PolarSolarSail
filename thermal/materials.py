@@ -61,7 +61,7 @@ aluminum_alloy = {
     "emissivity": 0.08,
     "reflectivity": 0.98,
     "absorptivity": 0.02,
-    "conductivity": 150,
+    "conductivity": 130,
     "density": 2810,
     "specific_heat": 960,
 }

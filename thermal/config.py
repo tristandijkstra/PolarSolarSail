@@ -5,10 +5,8 @@ from . import materials
 """
 config.py
 
-This file contains the inputs for the thermal model. The inputs will be automatically logged.
+This file contains the inputs for the thermal model.
 
-TODO:
-    - Input correct values for configuration matrix.
 """
 
 ### General Parameters
@@ -353,360 +351,148 @@ masses = [
     cdm_mass
 ]
 
+'''
 
-view_factors = [
-    [0, 0.167*0.5, 0.167*0.5, 0.167*0.5, 0.167*0.5, 0.167*0.5, 0, 0, 0, 0, 0.7*0.5],
-    [0, 0, 0.167*0.5, 0.167*0.5, 0.167*0.5, 0.167*0.5, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0.167*0.5, 0.167*0.5, 0.167*0.5, 0, 0, 0.1*0.25, 0, 0.01*0.25],
-    [0, 0, 0, 0, 0.167*0.5, 0.167*0.5, 0, 0, 0.1*0.25, 0, 0.01*0.25],
-    [0, 0, 0, 0, 0, 0.167*0.5, 0, 0, 0.1*0.25, 0, 0.01*0.25],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0.1*0.25, 0, 0.01*0.25],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.35]
-]
+The view factors were calculated using relationships from Heat Transfer - A Practical Approach (Yunus Cengel).
+More complicated geometries could be calculated using a superposition of view factor equations from simpler
+geometries, as well as estimates based on simplified versions of the geometry.
 
+'''
 view_factors_deployed = [
-    [0, 0.167*0.5, 0.167*0.5, 0.167*0.5, 0.167*0.5, 0.167*0.5, 0, 0, 0, 0.7*0.5],
-    [0, 0, 0.167*0.5, 0.167*0.5, 0.167*0.5, 0.167*0.5, 0, 0, 0, 0],
-    [0, 0, 0, 0.167*0.5, 0.167*0.5, 0.167*0.5, 0.0424413*0.25, 0.00089*0.25, 0.1*0.25, 0.01*0.25],
-    [0, 0, 0, 0, 0.167*0.5, 0.167*0.5, 0.0424413*0.25, 0.00089*0.25, 0.1*0.25, 0.01*0.25],
-    [0, 0, 0, 0, 0, 0.167*0.5, 0.0424413*0.25, 0.00089*0.25, 0.1*0.25, 0.01*0.25],
-    [0, 0, 0, 0, 0, 0, 0.0424413*0.25, 0.00089*0.25, 0.1*0.25, 0.01*0.25],
-    [0, 0, 0, 0, 0, 0, 0, 0.002, 0, 0.0001],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0.00178714, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-]
-
-view_factors_deployed = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.35],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0.0424413*0.5, 0.00085*0.5, 0.01, 0.01, 0, 0.01*0.5],
-    [0, 0, 0, 0, 0, 0, 0.0424413*0.5, 0.00085*0.5, 0.01, 0.01, 0, 0.01*0.5],
-    [0, 0, 0, 0, 0, 0, 0.0424413*0.5, 0.00085*0.5, 0.01, 0.01, 0, 0.01*0.5],
-    [0, 0, 0, 0, 0, 0, 0.0424413*0.5, 0.00085*0.5, 0.01, 0.01, 0, 0.01*0.5],
-    [0, 0, 0, 0, 0, 0, 0, 0.002, 0.005, 0, 0, 0.0001],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0.0017814, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.35],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-]
-
-if internal:
-    view_factors_deployed = [
-        [0, 0.0167*0.5, 0.0167*0.5, 0.0167*0.5, 0.0167*0.5, 0.0167*0.5, 0, 0, 0, 0, 0, 0.35, 0.0167*0.5, 0, 0.0167*0.5, 0.0167*0.5],
-        [0, 0, 0.0167*0.5, 0.0167*0.5, 0.0167*0.5, 0.0167*0.5, 0, 0, 0, 0, 0, 0, 0, 0.0167*0.5, 0, 0],
-        [0, 0, 0, 0.0167*0.5, 0.0167*0.5, 0.0167*0.5, 0.0424413*0.5, 0.00085*0.5, 0.01, 0.01, 0, 0.01*0.5, 0, 0.167*0.5, 0.0167*0.5, 0.0167*0.5],
-        [0, 0, 0, 0, 0.0167*0.5, 0.0167*0.5, 0.0424413*0.5, 0.00085*0.5, 0.01, 0.01, 0, 0.01*0.5, 0.0167*0.5, 0.167*0.5, 0.0167*0.5, 0.0167*0.5],
-        [0, 0, 0, 0, 0, 0.0167*0.5, 0.0424413*0.5, 0.00085*0.5, 0.01, 0.01, 0, 0.01*0.5, 0.0167*0.5, 0.167*0.5, 0.0167*0.5, 0.0167*0.5],
-        [0, 0, 0, 0, 0, 0, 0.0424413*0.5, 0.00085*0.5, 0.01, 0.01, 0, 0.01*0.5, 0.0167*0.5, 0.0167*0.5, 0.0167*0.5, 0.0167*0.5],
-        [0, 0, 0, 0, 0, 0, 0, 0.002, 0.005, 0, 0, 0.0001, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0.0017814, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.1, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.35, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0002, 0.0002, 0.0002],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0002, 0.0002],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0002],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    ]
-
-# view_factors_deployed = [
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0.7],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0.1, 0.1, 0.1, 0.1, 0.02],
-#     [0, 0, 0, 0, 0.1, 0.1, 0.1, 0.1, 0.02],
-#     [0, 0, 0, 0, 0, 0, 0.002014, 0.00018, 0],
-#     [0, 0, 0, 0, 0, 0, 0.002014, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0.00178714, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0],
-# ]
-
-
-
-radiative_area = [
-    [
-        0,
-        0.5*node_1["area"]*0.5*node_2["area"],
-        0.5*node_1["area"]*0.5*node_3["area"],
-        0.5*node_1["area"]*0.5*node_4["area"],
-        0.5*node_1["area"]*0.5*node_5["area"],
-        0.5*node_1["area"]*0.5*node_6["area"],
-        0.5*node_1["area"]*0.125*sail["area"],
-        0.5*node_1["area"]*0.125*booms["area"],
-        0.5*node_1["area"]*solar_panels["area"],
-        0.5*node_1["area"]*antenna["area"],
-        0.5*node_1["area"]*0.5*shield_front["area"],
-        0.5*node_1["area"]*0.5*shield_inner["area"],
-    ],
-    [
-        0,
-        0,
-        0.5*node_2["area"]*0.5*node_3["area"],
-        0.5*node_2["area"]*0.5*node_4["area"],
-        0.5*node_2["area"]*0.5*node_5["area"],
-        0.5*node_2["area"]*0.5*node_6["area"],
-        0.5*node_2["area"]*0.125*sail["area"],
-        0.5*node_2["area"]*0.125*booms["area"],
-        0.5*node_2["area"]*solar_panels["area"],
-        0.5*node_2["area"]*antenna["area"],
-        0.5*node_2["area"]*0.5*shield_front["area"],
-        0.5*node_2["area"]*0.5*shield_inner["area"]
-    ],
-    [
-        0,
-        0,
-        0,
-        0.5*node_3["area"]*0.5*node_4["area"],
-        0.5*node_3["area"]*0.5*node_5["area"],
-        0.5*node_3["area"]*0.5*node_6["area"],
-        0.5*node_3["area"]*0.125*sail["area"],
-        0.5*node_3["area"]*0.125*booms["area"],
-        0.5*node_3["area"]*solar_panels["area"],
-        0.5*node_3["area"]*antenna["area"],
-        0.5*node_3["area"]*0.5*shield_front["area"],
-        0.5*node_3["area"]*0.5*shield_inner["area"],
-    ],
-    [
-        0,
-        0,
-        0,
-        0,
-        0.5*node_4["area"]*0.5*node_5["area"],
-        0.5*node_4["area"]*0.5*node_6["area"],
-        0.5*node_4["area"]*0.125*sail["area"],
-        0.5*node_4["area"]*0.125*booms["area"],
-        0.5*node_4["area"]*solar_panels["area"],
-        0.5*node_4["area"]*antenna["area"],
-        0.5*node_4["area"]*0.5*shield_front["area"],
-        0.5*node_4["area"]*0.5*shield_inner["area"]
-    ],
-    [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0.5*node_5["area"]*0.5*node_6["area"],
-        0.5*node_5["area"]*0.125*sail["area"],
-        0.5*node_5["area"]*0.125*booms["area"],
-        0.5*node_5["area"]*solar_panels["area"],
-        0.5*node_5["area"]*antenna["area"],
-        0.5*node_5["area"]*0.5*shield_front["area"],
-        0.5*node_5["area"]*0.5*shield_inner["area"]
-    ],
-    [0, 0, 0, 0, 0, 0, 0.5*node_6["area"]*0.125*sail["area"], 0.5*node_6["area"]*0.125*booms["area"], 0.5*node_6["area"]*solar_panels["area"], 0.5*node_6["area"]*antenna["area"], 0.5*node_6["area"]*0.5*shield_front["area"], 0.5*node_6["area"]*0.5*shield_inner["area"]],
-    [0, 0, 0, 0, 0, 0, 0, 0.5*sail["area"]*0.125*booms["area"], 0.5*sail["area"]*0.5*solar_panels["area"], 0.125*sail["area"]*antenna["area"], 0.125*sail["area"]*0.5*shield_front["area"], 0.125*sail["area"]*0.5*shield_inner["area"]],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0.125*booms["area"]*solar_panels["area"], 0.125*booms["area"]*antenna["area"], 0.125*booms["area"]*0.5*shield_front["area"],0.125*booms["area"]*0.5*shield_inner["area"]],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, solar_panels["area"]*antenna["area"], solar_panels["area"]*0.5*shield_front["area"], solar_panels["area"]*0.5*shield_inner["area"]],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, antenna["area"]*0.5*shield_front["area"], antenna["area"]*0.5*shield_front["area"]],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.5*shield_front["area"]*0.5*shield_inner["area"]],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-]
-
-if internal:
-    radiative_area = [
-    [
-        0,
-        0.5*node_1["area"]*0.5*node_2["area"],
-        0.5*node_1["area"]*0.5*node_3["area"],
-        0.5*node_1["area"]*0.5*node_4["area"],
-        0.5*node_1["area"]*0.5*node_5["area"],
-        0.5*node_1["area"]*0.5*node_6["area"],
-        0.5*node_1["area"]*0.125*sail["area"],
-        0.5*node_1["area"]*0.125*booms["area"],
-        0.5*node_1["area"]*solar_panels["area"],
-        0.5*node_1["area"]*antenna["area"],
-        0.5*node_1["area"]*0.5*shield_front["area"],
-        0.5*node_1["area"]*0.5*shield_inner["area"],
-        0.5*node_1["area"]*0.167*batteries["area"],
-        0.5*node_1["area"]*0.5*hydrazine["area"],
-        0.5*node_1["area"]*0.083*metis["area"],
-        0.5*node_1["area"]*0.083*cdm["area"]
-    ],
-    [
-        0,
-        0,
-        0.5*node_2["area"]*0.5*node_3["area"],
-        0.5*node_2["area"]*0.5*node_4["area"],
-        0.5*node_2["area"]*0.5*node_5["area"],
-        0.5*node_2["area"]*0.5*node_6["area"],
-        0.5*node_2["area"]*0.125*sail["area"],
-        0.5*node_2["area"]*0.125*booms["area"],
-        0.5*node_2["area"]*solar_panels["area"],
-        0.5*node_2["area"]*antenna["area"],
-        0.5*node_2["area"]*0.5*shield_front["area"],
-        0.5*node_2["area"]*0.5*shield_inner["area"],
-        0.5*node_2["area"]*0.167*batteries["area"],
-        0.5*node_2["area"]*0.5*hydrazine["area"],
-        0.5*node_2["area"]*0.083*metis["area"],
-        0.5*node_2["area"]*0.083*cdm["area"]
-    ],
-    [
-        0,
-        0,
-        0,
-        0.5*node_3["area"]*0.5*node_4["area"],
-        0.5*node_3["area"]*0.5*node_5["area"],
-        0.5*node_3["area"]*0.5*node_6["area"],
-        0.5*node_3["area"]*0.125*sail["area"],
-        0.5*node_3["area"]*0.125*booms["area"],
-        0.5*node_3["area"]*solar_panels["area"],
-        0.5*node_3["area"]*antenna["area"],
-        0.5*node_3["area"]*0.5*shield_front["area"],
-        0.5*node_3["area"]*0.5*shield_inner["area"],
-        0.5*node_3["area"]*0.167*batteries["area"],
-        0.5*node_3["area"]*0.5*hydrazine["area"],
-        0.5*node_3["area"]*0.167*metis["area"],
-        0.5*node_3["area"]*0.167*cdm["area"]
-    ],
-    [
-        0,
-        0,
-        0,
-        0,
-        0.5*node_4["area"]*0.5*node_5["area"],
-        0.5*node_4["area"]*0.5*node_6["area"],
-        0.5*node_4["area"]*0.125*sail["area"],
-        0.5*node_4["area"]*0.125*booms["area"],
-        0.5*node_4["area"]*solar_panels["area"],
-        0.5*node_4["area"]*antenna["area"],
-        0.5*node_4["area"]*0.5*shield_front["area"],
-        0.5*node_4["area"]*0.5*shield_inner["area"],
-        0.5*node_4["area"]*0.167*batteries["area"],
-        0.5*node_4["area"]*0.5*hydrazine["area"],
-        0.5*node_4["area"]*0.167*metis["area"],
-        0.5*node_4["area"]*0.167*cdm["area"]
-    ],
-    [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0.5*node_5["area"]*0.5*node_6["area"],
-        0.5*node_5["area"]*0.125*sail["area"],
-        0.5*node_5["area"]*0.125*booms["area"],
-        0.5*node_5["area"]*solar_panels["area"],
-        0.5*node_5["area"]*antenna["area"],
-        0.5*node_5["area"]*0.5*shield_front["area"],
-        0.5*node_5["area"]*0.5*shield_inner["area"],
-        0.5*node_5["area"]*0.167*batteries["area"],
-        0.5*node_5["area"]*0.5*hydrazine["area"],
-        0.5*node_5["area"]*0.167*metis["area"],
-        0.5*node_5["area"]*0.167*cdm["area"]
-    ],
-    [0, 0, 0, 0, 0, 0, 0.5*node_6["area"]*0.125*sail["area"], 0.5*node_6["area"]*0.125*booms["area"], 0.5*node_6["area"]*solar_panels["area"], 0.5*node_6["area"]*antenna["area"], 0.5*node_6["area"]*0.5*shield_front["area"], 0.5*node_6["area"]*0.5*shield_inner["area"], 0.5*node_6["area"]*0.167*batteries["area"], 0.5*node_6["area"]*0.5*hydrazine["area"], 0.5*node_6["area"]*0.167*metis["area"], 0.5*node_6["area"]*0.167*cdm["area"]],
-    [0, 0, 0, 0, 0, 0, 0, 0.5*sail["area"]*0.125*booms["area"], 0.5*sail["area"]*0.5*solar_panels["area"], 0.125*sail["area"]*antenna["area"], 0.125*sail["area"]*0.5*shield_front["area"], 0.125*sail["area"]*0.5*shield_inner["area"], sail["area"]*0.167*batteries["area"], sail["area"]*0.5*hydrazine["area"], sail["area"]*0.167*metis["area"], sail["area"]*0.167*cdm["area"]],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0.125*booms["area"]*solar_panels["area"], 0.125*booms["area"]*antenna["area"], 0.125*booms["area"]*0.5*shield_front["area"],0.125*booms["area"]*0.5*shield_inner["area"], booms["area"]*0.167*batteries["area"], booms["area"]*0.5*hydrazine["area"], booms["area"]*0.167*metis["area"], booms["area"]*0.167*cdm["area"]],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, solar_panels["area"]*antenna["area"], solar_panels["area"]*0.5*shield_front["area"], solar_panels["area"]*0.5*shield_inner["area"], solar_panels["area"]*batteries["area"], solar_panels["area"]*hydrazine["area"], solar_panels["area"]*metis["area"], solar_panels["area"]*cdm["area"]],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, antenna["area"]*0.5*shield_front["area"], antenna["area"]*0.5*shield_front["area"], antenna["area"]*batteries["area"], antenna["area"]*hydrazine["area"], antenna["area"]*metis["area"], antenna["area"]*cdm["area"]],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.5*shield_front["area"]*0.5*shield_inner["area"], shield_front["area"]*batteries["area"], shield_front["area"]*hydrazine["area"], shield_front["area"]*metis["area"], shield_front["area"]*cdm["area"]],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, shield_inner["area"]*batteries["area"], shield_inner["area"]*hydrazine["area"], shield_inner["area"]*metis["area"], shield_inner["area"]*cdm["area"]],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, batteries["area"]*hydrazine["area"], batteries["area"]*metis["area"], batteries["area"]*cdm["area"]],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, hydrazine["area"]*metis["area"], hydrazine["area"]*cdm["area"]],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, metis["area"]*cdm["area"]],
+    [0, 0.0083, 0.0083, 0.0083, 0.0083, 0.0083, 0, 0, 0, 0, 0, 0.35, 0.0083, 0, 0.0083, 0.0083],
+    [0, 0, 0.0083, 0.0083, 0.0083, 0.0083, 0, 0, 0, 0, 0, 0, 0, 0.0083, 0, 0],
+    [0, 0, 0, 0.0083, 0.0083, 0.0083, 0.021207, 0.00042, 0.01, 0.01, 0, 0.005, 0, 0.083, 0.083, 0.083],
+    [0, 0, 0, 0, 0.0083, 0.0083, 0.0212207, 0.00042, 0.01, 0.01, 0, 0.005, 0.0083, 0.083, 0.0083, 0.0083],
+    [0, 0, 0, 0, 0, 0.0083, 0.0212207, 0.00042, 0.01, 0.01, 0, 0.005, 0.0083, 0.0083, 0.0083, 0.0083],
+    [0, 0, 0, 0, 0, 0, 0.0212207, 0.00042, 0.01, 0.01, 0, 0.005, 0.0083, 0.0083, 0.0083, 0.0083],
+    [0, 0, 0, 0, 0, 0, 0, 0.002, 0.005, 0, 0, 0.0001, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0.0017814, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.1, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.35, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0002, 0.0002, 0.0002],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0002, 0.0002],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0002],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ]
 
+'''
 
+Some of the areas have coefficients because only half (or less of the spacecraft) is
+actually facing the other faces.
 
-# effective_emissivities = [
-#     [
-#         0,
-#         1 / ((1 / emissivities[0]) + (1 / emissivities[1])-1),
-#         1 / ((1 / emissivities[0]) + (1 / emissivities[2])-1),
-#         1 / ((1 / emissivities[0]) + (1 / emissivities[3])-1),
-#         1 / ((1 / emissivities[0]) + (1 / emissivities[4])-1),
-#         1 / ((1 / emissivities[0]) + (1 / emissivities[5])-1),
-#         1 / ((1 / emissivities[0]) + (1 / emissivities[6])-1),
-#         1 / ((1 / emissivities[0]) + (1 / emissivities[7])-1),
-#         1 / ((shield_front["layers"] + 1)*(1 / emissivities[0]) + (1 / emissivities[8])-1),
-#         1 / ((shield_front["layers"] + 1)*(1 / emissivities[0]) + (1 / emissivities[9])-1)
-#     ],
-#     [
-#         0,
-#         0,
-#         1 / ((1 / emissivities[1]) + (1 / emissivities[2])-1),
-#         1 / ((1 / emissivities[1]) + (1 / emissivities[3])-1),
-#         1 / ((1 / emissivities[1]) + (1 / emissivities[4])-1),
-#         1 / ((1 / emissivities[1]) + (1 / emissivities[5])-1),
-#         1 / ((1 / emissivities[1]) + (1 / emissivities[6])-1),
-#         1 / ((1 / emissivities[1]) + (1 / emissivities[7])-1),
-#         1 / ((1 / emissivities[1]) + (1 / emissivities[8])-1),
-#         1 / ((1 / emissivities[1]) + (1 / emissivities[9])-1)
-#     ],
-#     [
-#         0,
-#         0,
-#         0,
-#         1 / ((1 / emissivities[2]) + (1 / emissivities[3])-1),
-#         1 / ((1 / emissivities[2]) + (1 / emissivities[4])-1),
-#         1 / ((1 / emissivities[2]) + (1 / emissivities[5])-1),
-#         1 / ((1 / emissivities[2]) + (1 / emissivities[6])-1),
-#         1 / ((1 / emissivities[2]) + (1 / emissivities[7])-1),
-#         1 / ((1 / emissivities[2]) + (1 / emissivities[8])-1),
-#         1 / ((1 / emissivities[2]) + (1 / emissivities[9])-1)
+'''
 
-#     ],
-#     [
-#         0,
-#         0,
-#         0,
-#         0,
-#         1 / ((1 / emissivities[3]) + (1 / emissivities[4])-1),
-#         1 / ((1 / emissivities[3]) + (1 / emissivities[5])-1),
-#         1 / ((1 / emissivities[3]) + (1 / emissivities[6])-1),
-#         1 / ((1 / emissivities[3]) + (1 / emissivities[7])-1),
-#         1 / ((1 / emissivities[3]) + (1 / emissivities[8])-1),
-#         1 / ((1 / emissivities[3]) + (1 / emissivities[9])-1)
-#     ],
-#     [
-#         0,
-#         0,
-#         0,
-#         0,
-#         0,
-#         1 / ((1 / emissivities[4]) + (1 / emissivities[5])-1),
-#         1 / ((1 / emissivities[4]) + (1 / emissivities[6])-1),
-#         1 / ((1 / emissivities[4]) + (1 / emissivities[7])-1),
-#         1 / ((1 / emissivities[4]) + (1 / emissivities[8])-1),
-#         1 / ((1 / emissivities[4]) + (1 / emissivities[9])-1)
-#     ],
-#     [
-#         0,
-#         0,
-#         0,
-#         0,
-#         0,
-#         0,
-#         1 / ((1 / emissivities[5]) + (1 / emissivities[6])-1),
-#         1 / ((1 / emissivities[5]) + (1 / emissivities[7])-1),
-#         1 / ((1 / emissivities[5]) + (1 / emissivities[8])-1),
-#         1 / ((1 / emissivities[5]) + (1 / emissivities[9])-1)
-#     ],
-#     [
-#         0,
-#         0,
-#         0,
-#         0,
-#         0,
-#         0,
-#         0,
-#         1 / ((1 / emissivities[6]) + (1 / emissivities[7])-1),
-#         1 / ((1 / emissivities[6]) + (1 / emissivities[8])-1),
-#         1 / ((1 / emissivities[6]) + (1 / emissivities[9])-1)
-#     ],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 1 / ((1 / emissivities[7]) + (1 / emissivities[8])-1), 1 / ((1 / emissivities[7]) + (1 / emissivities[9])-1)],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 1 / ((1 / emissivities[8]) + (1 / emissivities[9])-1)],
-#     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-# ]
+radiative_area = [
+[
+    0,
+    0.5*node_1["area"]*0.5*node_2["area"],
+    0.5*node_1["area"]*0.5*node_3["area"],
+    0.5*node_1["area"]*0.5*node_4["area"],
+    0.5*node_1["area"]*0.5*node_5["area"],
+    0.5*node_1["area"]*0.5*node_6["area"],
+    0.5*node_1["area"]*0.125*sail["area"],
+    0.5*node_1["area"]*0.125*booms["area"],
+    0.5*node_1["area"]*solar_panels["area"],
+    0.5*node_1["area"]*antenna["area"],
+    0.5*node_1["area"]*0.5*shield_front["area"],
+    0.5*node_1["area"]*0.5*shield_inner["area"],
+    0.5*node_1["area"]*0.167*batteries["area"],
+    0.5*node_1["area"]*0.5*hydrazine["area"],
+    0.5*node_1["area"]*0.083*metis["area"],
+    0.5*node_1["area"]*0.083*cdm["area"]
+],
+[
+    0,
+    0,
+    0.5*node_2["area"]*0.5*node_3["area"],
+    0.5*node_2["area"]*0.5*node_4["area"],
+    0.5*node_2["area"]*0.5*node_5["area"],
+    0.5*node_2["area"]*0.5*node_6["area"],
+    0.5*node_2["area"]*0.125*sail["area"],
+    0.5*node_2["area"]*0.125*booms["area"],
+    0.5*node_2["area"]*solar_panels["area"],
+    0.5*node_2["area"]*antenna["area"],
+    0.5*node_2["area"]*0.5*shield_front["area"],
+    0.5*node_2["area"]*0.5*shield_inner["area"],
+    0.5*node_2["area"]*0.167*batteries["area"],
+    0.5*node_2["area"]*0.5*hydrazine["area"],
+    0.5*node_2["area"]*0.083*metis["area"],
+    0.5*node_2["area"]*0.083*cdm["area"]
+],
+[
+    0,
+    0,
+    0,
+    0.5*node_3["area"]*0.5*node_4["area"],
+    0.5*node_3["area"]*0.5*node_5["area"],
+    0.5*node_3["area"]*0.5*node_6["area"],
+    0.5*node_3["area"]*0.125*sail["area"],
+    0.5*node_3["area"]*0.125*booms["area"],
+    0.5*node_3["area"]*solar_panels["area"],
+    0.5*node_3["area"]*antenna["area"],
+    0.5*node_3["area"]*0.5*shield_front["area"],
+    0.5*node_3["area"]*0.5*shield_inner["area"],
+    0.5*node_3["area"]*0.167*batteries["area"],
+    0.5*node_3["area"]*0.5*hydrazine["area"],
+    0.5*node_3["area"]*0.167*metis["area"],
+    0.5*node_3["area"]*0.167*cdm["area"]
+],
+[
+    0,
+    0,
+    0,
+    0,
+    0.5*node_4["area"]*0.5*node_5["area"],
+    0.5*node_4["area"]*0.5*node_6["area"],
+    0.5*node_4["area"]*0.125*sail["area"],
+    0.5*node_4["area"]*0.125*booms["area"],
+    0.5*node_4["area"]*solar_panels["area"],
+    0.5*node_4["area"]*antenna["area"],
+    0.5*node_4["area"]*0.5*shield_front["area"],
+    0.5*node_4["area"]*0.5*shield_inner["area"],
+    0.5*node_4["area"]*0.167*batteries["area"],
+    0.5*node_4["area"]*0.5*hydrazine["area"],
+    0.5*node_4["area"]*0.167*metis["area"],
+    0.5*node_4["area"]*0.167*cdm["area"]
+],
+[
+    0,
+    0,
+    0,
+    0,
+    0,
+    0.5*node_5["area"]*0.5*node_6["area"],
+    0.5*node_5["area"]*0.125*sail["area"],
+    0.5*node_5["area"]*0.125*booms["area"],
+    0.5*node_5["area"]*solar_panels["area"],
+    0.5*node_5["area"]*antenna["area"],
+    0.5*node_5["area"]*0.5*shield_front["area"],
+    0.5*node_5["area"]*0.5*shield_inner["area"],
+    0.5*node_5["area"]*0.167*batteries["area"],
+    0.5*node_5["area"]*0.5*hydrazine["area"],
+    0.5*node_5["area"]*0.167*metis["area"],
+    0.5*node_5["area"]*0.167*cdm["area"]
+],
+[0, 0, 0, 0, 0, 0, 0.5*node_6["area"]*0.125*sail["area"], 0.5*node_6["area"]*0.125*booms["area"], 0.5*node_6["area"]*solar_panels["area"], 0.5*node_6["area"]*antenna["area"], 0.5*node_6["area"]*0.5*shield_front["area"], 0.5*node_6["area"]*0.5*shield_inner["area"], 0.5*node_6["area"]*0.167*batteries["area"], 0.5*node_6["area"]*0.5*hydrazine["area"], 0.5*node_6["area"]*0.167*metis["area"], 0.5*node_6["area"]*0.167*cdm["area"]],
+[0, 0, 0, 0, 0, 0, 0, 0.5*sail["area"]*0.125*booms["area"], 0.5*sail["area"]*0.5*solar_panels["area"], 0.125*sail["area"]*antenna["area"], 0.125*sail["area"]*0.5*shield_front["area"], 0.125*sail["area"]*0.5*shield_inner["area"], sail["area"]*0.167*batteries["area"], sail["area"]*0.5*hydrazine["area"], sail["area"]*0.167*metis["area"], sail["area"]*0.167*cdm["area"]],
+[0, 0, 0, 0, 0, 0, 0, 0, 0.125*booms["area"]*solar_panels["area"], 0.125*booms["area"]*antenna["area"], 0.125*booms["area"]*0.5*shield_front["area"],0.125*booms["area"]*0.5*shield_inner["area"], booms["area"]*0.167*batteries["area"], booms["area"]*0.5*hydrazine["area"], booms["area"]*0.167*metis["area"], booms["area"]*0.167*cdm["area"]],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, solar_panels["area"]*antenna["area"], solar_panels["area"]*0.5*shield_front["area"], solar_panels["area"]*0.5*shield_inner["area"], solar_panels["area"]*batteries["area"], solar_panels["area"]*hydrazine["area"], solar_panels["area"]*metis["area"], solar_panels["area"]*cdm["area"]],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, antenna["area"]*0.5*shield_front["area"], antenna["area"]*0.5*shield_front["area"], antenna["area"]*batteries["area"], antenna["area"]*hydrazine["area"], antenna["area"]*metis["area"], antenna["area"]*cdm["area"]],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.5*shield_front["area"]*0.5*shield_inner["area"], shield_front["area"]*batteries["area"], shield_front["area"]*hydrazine["area"], shield_front["area"]*metis["area"], shield_front["area"]*cdm["area"]],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, shield_inner["area"]*batteries["area"], shield_inner["area"]*hydrazine["area"], shield_inner["area"]*metis["area"], shield_inner["area"]*cdm["area"]],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, batteries["area"]*hydrazine["area"], batteries["area"]*metis["area"], batteries["area"]*cdm["area"]],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, hydrazine["area"]*metis["area"], hydrazine["area"]*cdm["area"]],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, metis["area"]*cdm["area"]],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+]
+
+'''
+
+Relationships obtained from SMAD and from Heat Transfer - A Practical Approach.
+
+'''
 
 effective_emissivities = [[0,
                            emissivities[0]*emissivities[1], 
@@ -882,38 +668,28 @@ effective_emissivities = [[0,
 radiative_relationship_deployed = SB * np.multiply(
     np.multiply(view_factors_deployed, radiative_area), effective_emissivities
 )
-# radiative_relationship = SB * np.multiply(
-#     np.multiply(view_factors, radiative_area), effective_emissivities
-# )
+
+
+
 conductive_coeff = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                          [130, 130, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                          [130, 130, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                          [130, 130, 130, 130, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                          [130, 130, 130, 130, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                          [materials.aluminum_alloy["conductivity"], materials.aluminum_alloy["conductivity"], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                          [materials.aluminum_alloy["conductivity"], materials.aluminum_alloy["conductivity"], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                          [materials.aluminum_alloy["conductivity"], materials.aluminum_alloy["conductivity"], materials.aluminum_alloy["conductivity"], materials.aluminum_alloy["conductivity"], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                          [materials.aluminum_alloy["conductivity"], materials.aluminum_alloy["conductivity"], materials.aluminum_alloy["conductivity"], materials.aluminum_alloy["conductivity"], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                          [0, 130, 130, 130, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                          [0, 0, 0, 0, 130, 130, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                          [130, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                          [130, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
-
-# conductive_coeff = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#                           [13.7, 13.7, 0, 0, 0, 0, 0, 0, 0, 0],
-#                           [13.7, 13.7, 13.7, 0, 0, 0, 0, 0, 0, 0],
-#                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#                           [0, 0, 0, 0, 0.155, 0, 0, 0, 0, 0],
-#                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#                           [0, 0, 0, 0, 0.155, 0.155, 0, 0, 0, 0],
-#                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-#                           [0, 0, 0, 0, 0, 0, 0, 0, 0.15, 0]]
+                          [0, materials.aluminum_alloy["conductivity"], materials.aluminum_alloy["conductivity"], materials.aluminum_alloy["conductivity"], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                          [0, 0, 0, 0, materials.aluminum_alloy["conductivity"], materials.aluminum_alloy["conductivity"], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                          [materials.aluminum_alloy["conductivity"], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                          [materials.aluminum_alloy["conductivity"], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
 
+# Assume 5 mm thick rod connection points between the heat shield and the spacecraft bus.
 conductive_area = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [shell_thickness*spacecraft_width, shell_thickness*spacecraft_width, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -988,7 +764,5 @@ conductive_relationship = np.multiply(
 conductive_relationship[conductive_relationship == np.nan] = 0
 
 capacities_matrix = np.diag(np.multiply(masses, capacities))
-
-# node_relationship = conductive_relationship + capacities_matrix + radiative_relationship
 
 node_relationship_deployed = conductive_relationship + capacities_matrix + radiative_relationship_deployed
