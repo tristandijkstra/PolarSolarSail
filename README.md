@@ -4,7 +4,13 @@ This repository contains models created for a Solar Sail mission to the poles of
 The project took place between February and April 2023.
 ## Models
 ### Thermal Model
-**Add text**
+The thermal multi-node model is a time-variant, lumped mass temperature analysis for the spacecraft. It simplifies the spacecraft into 16 nodes, 4 internal and 12 external, corresponding to critical points on the spacecraft. The model uses radiative and conductive heat transfer equations to calculate the temperatures, with inputs from the sun and internal heating accounted for as well as relationships between nodes. These node temperatures are then used to determine if an orbital trajectory is survivable. This code returns the temperatures at each node of the spacecraft, as well as the active thermal control power draw, if required.
+#### Relevant Files
+- thermal/
+  - **thermal_model.py** | Class for the thermal model, initializing spacecraft nodes and node properties (both surface properties and interior properties).
+  - **config.py** | Configuration file, where node properties, materials, and relationships between nodes can be adjusted.
+  - **materials.py** | Database consisting of various internal and external material properties relevant to the spacecraft.
+  - **node.py** | Contains the node temperature calculations by interpolating the orbital time step and applying a Runge-Kutta integrator to calculate all node temperatures simultaneously at each time step.
 ### Orbital Model
 The largest portion of the repository consists of a orbital model based in [Tudat](https://docs.tudat.space/en/latest/). It includes simplified solar sail physics and guidance model to parametrically generate trajectories to the sun. Some aspects of the model involve optimisation using PyGMO. The thermal model is fully integrated and can optionally be turned on or off.
 #### Relevant Files
