@@ -97,7 +97,7 @@ print(algo)
 
 
 # Set population size
-pop_size = 10
+pop_size = 5
 
 # Create population
 pop = pygmo.population(prob, size=pop_size, seed=current_seed)

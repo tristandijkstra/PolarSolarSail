@@ -23,7 +23,7 @@ logging.basicConfig(
 
 
 masses = [590]
-sailAreas = [12000]
+sailAreas = [10000]
 # sailAreas = [7000,10000]
 sailAreas = sailAreas[::-1]
 
@@ -36,7 +36,7 @@ yearsToRun = 25
 yearInSeconds = 365 * 24 * 3600
 targetAltitude = 0.48
 deepestAltitude = 0.372
-FTOP = 0.023630462377472766
+FTOP = 0.0236278
 
 combinations = list(product(masses, sailAreas))
 
@@ -55,7 +55,7 @@ for combination in tqdm(combinations):
         mass=combination[0],
         sailArea=combination[1],
         targetAltitude=targetAltitude,
-        targetInclination=68,
+        targetInclination=52.75,
         deepestAltitude=deepestAltitude,
         fastTransferOptimiseParameter=FTOP
     )
