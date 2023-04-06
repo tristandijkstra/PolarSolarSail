@@ -58,3 +58,7 @@ The animation is generated using [this trajectory animator](https://github.com/t
 ![Orbit animation](doc/anim.gif)
 ![orb](doc/orb.png)
 ![data](doc/data.png)
+
+### Thermal outputs
+![Node Temperatures](doc/boxplot_labelled.png)
+![Active Control](doc/active_thermal_control.png)
