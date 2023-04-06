@@ -23,6 +23,10 @@ The most important files are given in bold.
 - runSimV1FastExample.py | produces a quick example.
 ### Launch and Gravity Assist scripts
 The folder *Gravity Assist and Launch Parameters* contains scripts in matlab to analyse optimal launches and gravity assists. Its used to find initial parameters for the simulation runs.
+#### Relevant Files
+- Gravity Assist and Launch Parameters/
+  - **ExcessVelocity.m** | analysis for optimal launch excess velocity vector and launch date.
+  - lambert_venus.m | analysis of a later discarded venus gravity assist.
 ### ADCS Models
 **Add text**
 ### Install:
