@@ -101,7 +101,7 @@ for combination in tqdm(combinations):
     )
 
 for u in saveFiles:
-    sim.plotSimulation(*u, quiverEvery=0)
+    sim.plotSimulation(*u, quiverEvery=10)
 
 planets = ["Earth", "Venus", "Mercury"]
 
