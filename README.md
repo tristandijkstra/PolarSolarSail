@@ -6,7 +6,7 @@ The project took place between February and April 2023.
 ### Thermal Model
 **Add text**
 ### Orbital Model
-The largest portion of the repository consists of a orbital model based in Tudat. It includes simplified solar sail physics and guidance model to parametrically generate trajectories to the sun. Some aspects of the model involve optimisation using PyGMO. The thermal model is fully integrated and can optionally be turned on or off.
+The largest portion of the repository consists of a orbital model based in [Tudat](https://docs.tudat.space/en/latest/). It includes simplified solar sail physics and guidance model to parametrically generate trajectories to the sun. Some aspects of the model involve optimisation using PyGMO. The thermal model is fully integrated and can optionally be turned on or off.
 #### Relevant Files
 The most important files are given in bold.
 - simulation/
