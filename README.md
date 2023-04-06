@@ -34,7 +34,7 @@ The folder *Gravity Assist and Launch Parameters* contains scripts in matlab to 
   - **ExcessVelocity.m** | analysis for optimal launch excess velocity vector and launch date.
   - lambert_venus.m | analysis of a later discarded venus gravity assist.
 ### Install:
-The ADCS and GA/Launch scripts can be accessed directly using Matlab. For the thermal and orbital models the following install steps can be used:
+The GA/Launch scripts can be accessed directly using Matlab. For the thermal and orbital models the following install steps can be used:
 1. Clone Repository
    ```
    git clone git@github.com:tristandijkstra/PolarSolarSail.git
@@ -53,6 +53,7 @@ The ADCS and GA/Launch scripts can be accessed directly using Matlab. For the th
 
 ### Orbital outputs
 The animation is generated using [this trajectory animator](https://github.com/tristandijkstra/TrajectoryAnimator).
+
 ![Orbit animation](doc/anim.gif)
 ![orb](doc/orb.png)
 ![data](doc/data.png)
