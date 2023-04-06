@@ -149,7 +149,7 @@ class SailOptimise:
             
         precPen = (min(self.endPrecision / spiralInclPrecision, 1))**expp
         precc = (0.5/precPen) - 0.5
-        fun = (incldur + max(0, abs(self.targetInclination - lastInclination))**1.5) + precc
+        fun = (incldur + max(0, abs(self.targetInclination - lastInclination))**4) + precc
         if (self.thermalModel is not None) and self.thermalModel.thermalFailure:
             fun += 10000
         # if lastInclination < self.targetInclination:
@@ -164,6 +164,8 @@ class SailOptimise:
         self.minSofar = min(fun, self.minSofar)
         if self.verbose:
             logStr = f"Ev {self.step} | runtime = {runtime} s | FTOP = {round(FTOP,3)} | DA = {round(deepestAltitude, 2)} | prec = {precc} | lastIncl = {round(lastInclination, 1)} | fun = {round(fun, 5)} | min = {round(self.minSofar, 5)}"
-            print(logStr + "\n")
+            print(logStr)
+            if self.thermalModel is not None:
+                print()
 
         return [fun]

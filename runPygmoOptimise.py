@@ -29,7 +29,7 @@ C3BurnVec = np.array([0.084108927717811,0.240321913434112,4.946831358585164]) * 
 targetAltitude = 0.48
 # deepestAltitude = 0.4
 sailArea = 10000
-mass = 595
+mass = 590
 timesOutwardMax = 1
 
 stepSize = 144000
@@ -37,14 +37,15 @@ stepSize = 144000
 yearsToRun = 25
 yearInSeconds = 365 * 24 * 3600
 
-targetInclination = 52.75
+# targetInclination = 75-7.25
+targetInclination = 60-7.25
 
 
-FTOPmin = 0.02
-FTOPmax = 0.06
-deepestAltitude_min = 0.29
-deepestAltitude_max = 0.41
-endPrecision = 0.02
+FTOPmin = 0.016
+FTOPmax = 0.03
+deepestAltitude_min = 0.372
+deepestAltitude_max = 0.372
+endPrecision = 0.01
 
 
 
@@ -58,7 +59,7 @@ udp = SailOptimise(
     mass=mass,
     sailArea=sailArea,
     targetInclination=targetInclination,
-    thermalModelObject=Thermal,
+    # thermalModelObject=Thermal,
     simuFunction=sim.simulate,
     timesOutwardMax=timesOutwardMax,
     stepSize=stepSize,
@@ -83,7 +84,7 @@ current_seed = 420
 
 # Create Differential Evolution object by passing the number of generations as input
 # de_algo = pygmo.gwo(gen=number_of_generations, seed=current_seed)
-de_algo = pygmo.de(gen=number_of_generations, seed=current_seed,CR=0.8)
+de_algo = pygmo.de(gen=number_of_generations, seed=current_seed,CR=0.8, xtol=1e-4)
 # de_algo = pygmo.sga(gen=number_of_generations, seed=current_seed)
 # de_algo = pygmo.bee_colony(gen=number_of_generations, seed=current_seed)
 # de_algo = pygmo.gaco(gen=number_of_generations, seed=current_seed)
@@ -165,6 +166,7 @@ guidanceObject = SolarSailGuidance(
     targetInclination=targetInclination,
     deepestAltitude=best_DEEPESTALT,
     fastTransferOptimiseParameter=best_FTOP,
+    thermalModel=Thermal(24*3600, verbose=True),
     verbose=True,
 )
 namee = "FTOP=" + str(best_FTOP) + " deepestAlt=" + str(best_DEEPESTALT)
@@ -193,7 +195,18 @@ extraTxt = f"\nMass = {int(guidanceObject.mass)} kg | Area = {int(guidanceObject
 extraTxt2 = f"\nFinal inclin. = {round(finalInclination, 3)} |" + \
             f"Characteristic Acceleration = {round(characteristicacceleration*1000, 4)} mm/s^2" + \
             f"\nInclin. change duration = {dur} years | Total duration = {totdur} years"
-sim.plotSimulation(satName=namee, extraText=extraTxt+extraTxt2, dataFile=save, dataDepFile=saveDep, quiverEvery=1000)
+sim.plotSimulation(satName=namee, extraText=extraTxt+extraTxt2, dataFile=save, dataDepFile=saveDep, quiverEvery=1000, thermalOn=True)
+sim.plotThermal(satName=namee, dataDepFile=saveDep, thermalNodeNames=guidanceObject.thermalModel.node_keys)
+
+
+planets = ["Earth", "Venus", "Mercury"]
+finalEpoch = initialEpoch + spiralDuration + inclinationChangeDuration
+
+
+
+for planet in planets:
+    print(f"Running {planet}")
+    sim.simulatePlanet(planet, initialEpoch, finalEpoch, 7200)
 
 
 plt.show()

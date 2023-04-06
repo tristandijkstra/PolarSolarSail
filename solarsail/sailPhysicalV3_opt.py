@@ -211,6 +211,7 @@ class SolarSailGuidance(SolarSailGuidanceBase):
                     print("Deepest altitude reached -> Inclination Change")
                 # Thermal 
                 if self.thermalAvailable:
+                    print("Hello")
                     self.thermalModel.step(current_time, current_altAU, self.alpha)
 
             self.delta = 1.5 * np.pi

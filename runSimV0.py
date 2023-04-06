@@ -1,4 +1,4 @@
-from simulation import simulationV0
+from simulation import simulationV0, simulationV1
 from solarsail.sailPhysicalV1 import SolarSailGuidance
 import numpy as np
 import pandas as pd
@@ -21,19 +21,14 @@ logging.basicConfig(
     format="%(asctime)s | %(message)s",
 )
 
-masses = [500, 700]
-sailAreas = [15000, 22500]
-masses = [532]
-sailAreas = [22500]
-masses = [532]
-sailAreas = [22500]
-masses = [270]
+
+masses = [590]
 sailAreas = [10000]
-stepSize = 1200
+stepSize = 36000
 
 paramNames = ["mass", "area"]
 
-yearsToRun = 25
+yearsToRun = 20
 yearInSeconds = 365 * 24 * 3600
 
 combinations = list(product(masses, sailAreas))
@@ -50,8 +45,9 @@ for combination in tqdm(combinations):
         sailName=spacecraftName,
         mass=combination[0],
         sailArea=combination[1],
-        targetAltitude=0.5,
-        characteristicAcceleration=0.3027,
+        targetAltitude=0.48,
+        targetInclination=70
+        # characteristicAcceleration=0.3027,
     )
 
     finalGuidanceObj, save, saveDep = simulationV0.simulate(
@@ -77,6 +73,7 @@ for combination in tqdm(combinations):
     logging.info(logStr)
 
 for u in saveFiles:
-    simulationV0.plotSimulation(*u, quiverEvery=200)
+    simulationV1.plotSimulation(*u, quiverEvery=0)
 
+# plt.axis(False)
 plt.show()
