@@ -60,5 +60,5 @@ The animation is generated using [this trajectory animator](https://github.com/t
 ![data](doc/data.png)
 
 ### Thermal outputs
-![Node Temperatures](doc/boxplot_labelled.png)
-![Active Control](doc/active_thermal_control.png)
+![Node Temperatures](doc/box_plot_labelled.png)
+![Active Control](doc/active_control.png)
