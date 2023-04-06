@@ -18,7 +18,7 @@ from . import config
 from . import node as nd
 
 class Thermal:
-    def __init__(self, dt=None):
+    def __init__(self, dt=None, verbose=False):
         """
         Initializes the thermal model with the spacecraft nodes and their properties.
 
@@ -250,6 +250,7 @@ class Thermal:
 
         self.thermalFailure = False
 
+        self.verbose = verbose
 
     def __repr__(self) -> str:
         return "Thermal V1"
@@ -291,7 +292,7 @@ class Thermal:
 
                 node_temp_step = nd.time_variant(
                     self.spacecraft, self.relationships, dt, sail_deployed, [alt, coneAngle],
-                    self.node_temp_ranges, verbose=False, plot=False
+                    self.node_temp_ranges, verbose=self.verbose, plot=False
                 )
                 self.node_fail_step = [False] * self.total_nodes
 
